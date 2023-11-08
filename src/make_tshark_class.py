@@ -223,7 +223,11 @@ class TShark:
 
             # Use the 'uniq' command to count unique occurrences and prefix each line with the count
             unique_count_output = subprocess.run(['uniq', '-c'], input=sorted_output, stdout=subprocess.PIPE, text=True).stdout
-            return unique_count_output
+
+            # Sort the output by count, numerically and in reverse (highest count first)
+            sorted_by_count_output = subprocess.run(['sort', '-nr'], input=unique_count_output, stdout=subprocess.PIPE,text=True).stdout
+            
+            return sorted_by_count_output
         else:
             return output
 
