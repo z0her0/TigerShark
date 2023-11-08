@@ -235,6 +235,7 @@ class TShark:
         method, note = get_dcerpc_info(service_name_input, opnum_input)
 
         if method:
+            print("")
             print(f"{Color.AQUA}Info for {service_name_input} opnum {opnum_input}{Color.END}")
             print(f"{Color.UNDERLINE}Function:{Color.END} {method}")
             print(f"{Color.UNDERLINE}Note:{Color.END} {note}")
@@ -308,8 +309,8 @@ class TShark:
         cmd = [tshark, '-r', self.pcap_file, '-T', 'fields', '-e', 'http.user_agent']
         output = self._run_command(cmd)
 
-        # Clean, split, and count the User Agent strings
-        user_agents = output.strip().split('\n')
+        # Clean, split, and filter out blank User Agent strings
+        user_agents = [ua for ua in output.strip().split('\n') if ua.strip()]
         user_agent_counts = Counter(user_agents).most_common()
         print("User Agent (by count):")
         return json.dumps(user_agent_counts, indent=2)
