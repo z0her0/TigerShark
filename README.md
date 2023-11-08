@@ -81,5 +81,5 @@ TigerShark is a Python script that provides a user-friendly interface for intera
 
 3. Run the `TigerShark.py` script:
    ```bash
-   python TigerShark.py
+   python src/TigerShark.py
    ```
