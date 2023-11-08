@@ -28,12 +28,13 @@ def valid_display_filters_tshark():
             "-G",
             "fields",
         ]
-        process = subprocess.Popen(command, stdout=subprocess.PIPE)
-        output, _ = process.communicate()
+        # The specified command is run in a subprocess, captures its standard output, treats it as text, 
+        # and raises an error if the subprocess returns a non-zero exit status
+        completed_process = subprocess.run(command, stdout=subprocess.PIPE, text=True, check=True)
 
-        # Process the output using Python
-
-        lines = output.decode("utf-8").splitlines()
+        # The standard output (stdout) from the completed_process subprocess is split into individual lines, 
+        # resulting in a list of lines from the command's output.
+        lines = completed_process.stdout.splitlines()
         for line in lines:
             """
             Here's a low-level breakdown of what each part of the code is doing:
@@ -71,8 +72,11 @@ def valid_display_filters_tshark():
             if len(fields) >= 5 and fields[4] == protocol and "string" in line.lower():
                 print(f"{fields[2]:<40} : {fields[1]} [{fields[3]}]")
 
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    # If the subprocess.run() call raises a subprocess.CalledProcessError exception due to a non-zero 
+    # exit status from the executed command, it captures the exception as e and prints an error message 
+    # containing the exception details.
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":
