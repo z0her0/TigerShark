@@ -183,47 +183,70 @@ dcerpc_services = {
         "Methods": {
             0: {
                 "Method": "DsBind",
-                "Note": "APT groups could potentially use DsBind to establish a persistent connection to a domain "
-                        "controller."
+                "Note": "Fundamental to interactions with Domain Controllers. APT groups could potentially use DsBind"
+                        " to establish a persistent connection to a domain controller. Though not exclusive to any"
+                        " malware, its misuse would likely correlate with APTs engaging in Active Directory "
+                        "reconnaissance or establishment of persistence mechanisms, such as APT29 from Russia."
             },
             1: {
                 "Method": "DsUnbind",
-                "Note": "Although DsUnbind itself is not directly exploitable for malicious purposes since it's used "
-                        "to terminate a context handle with the directory service, threat actors might use it to "
-                        "clean up after conducting operations that manipulate or extract data from a domain "
-                        "controller. By unbinding properly, they could attempt to avoid leaving traces of their "
-                        "activity that might be picked up by monitoring tools."
+                "Note": "As a standard operation to end a directory service session, its occurrence should be "
+                        "contextualized with surrounding activities. Its misuse might be an attempt to evade detection"
+                        " after malicious activity. Although DsUnbind itself is not directly exploitable for malicious"
+                        " purposes since it's used to terminate a context handle with the directory service, threat "
+                        "actors might use it to clean up after conducting operations that manipulate or extract data "
+                        "from a domain controller. By unbinding properly, they could attempt to avoid leaving traces "
+                        "of their activity that might be picked up by monitoring tools."
             },
             3: {
                 "Method": "DRSGetNCChanges",
                 "Note": "DRSGetNCChanges has been known to be used by various APT groups, such as APT29, in their "
-                        "malware strain 'COZYDUKE'."
+                        "malware strain 'COZYDUKE'. Critical in DCSync attacks for acquiring sensitive replication "
+                        "data. Mimikatz leverages this, and it’s a tactic associated with APTs like APT29 (Russia) "
+                        "for credential theft."
             },
             5: {
                 "Method": "DsReplicaSync",
-                "Note": "DsReplicaSync can be abused by APT groups to force synchronization of directory data."
+                "Note": "DsReplicaSync can be abused by APT groups to force synchronization of directory data. In "
+                        "isolation, it is a typical replication-related function. In conjunction with other anomalous"
+                        " activities, it might indicate APTs manipulating Active Directory replication to spread their"
+                        " footprint within a compromised network."
             },
             7: {
                 "Method": "DRSGetNT4ChangeLog",
                 "Note": "DRSGetNT4ChangeLog has the potential for abuse in providing access to sensitive directory "
-                        "changes."
+                        "changes. Given its rarity in modern systems, its use might signal an attempt by an APT to "
+                        "interact with legacy systems, which can sometimes have weaker security postures."
             },
             8: {
                 "Method": "DsReplicaAdd",
-                "Note": "APT groups could theoretically use DsReplicaAdd to add a replication source reference."
+                "Note": "APT groups could theoretically use DsReplicaAdd to add a replication source reference. "
+                        "Misuse might be indicative of efforts to establish unauthorized replication paths, a "
+                        "technique that could be consistent with APT strategies for maintaining persistence or "
+                        "escalating privileges within a domain."
             },
             9: {
+                "Method": "IDL_DRSGetNCChanges",
+                "Note": "Employed by tools like Mimikatz for DCSync attacks. Its misuse might be a red flag for "
+                        "credential access and exfiltration activities by groups such as APT29."
+            },
+            10: {
                 "Method": "DRSUpdateRefs",
-                "Note": "DRSUpdateRefs has potential for abuse in managing the replication topology."
+                "Note": "If misused, might suggest an attempt to alter the replication topology, which could disrupt "
+                        "the normal replication process or mask unauthorized replication activity, a technique that"
+                        " may align with APT-level sophistication."
             },
             11: {
                 "Method": "DsReplicaModify",
-                "Note": "Manipulation of DsReplicaModify could potentially alter replication behavior to an attacker's "
-                        "advantage."
+                "Note": "Although not associated with specific malware, unexpected use might indicate an"
+                        " attempt to modify replication settings for malicious purposes, potentially to maintain "
+                        "persistence or control over replication flows."
             },
             12: {
                 "Method": "DRSCrackNames",
-                "Note": "DRSCrackNames can be exploited for reconnaissance, as seen in the activities of APT1."
+                "Note": "DRSCrackNames can be exploited for reconnaissance, as seen in the activities of APT1. While "
+                        "not exclusively malicious, its frequent use could indicate an APT’s reconnaissance efforts "
+                        "to map domain resources and structure, which is often a precursor to targeted attacks."
             },
             13: {
                 "Method": "DsWriteAccountSpn",
@@ -234,19 +257,27 @@ dcerpc_services = {
                         "account passwords. Successfully exploiting this method could lead to the compromise of "
                         "service accounts which often have elevated privileges within a domain."
             },
+            15: {
+                "Method": "IDL_DRSReplicaSync",
+                "Note": "Should be monitored for indications of forced replication, which could signify an APT’s "
+                        "intent to spread their impact laterally across a compromised environment."
+            },
             16: {
                 "Method": "DsGetDomainControllerInfo",
-                "Note": "DsGetDomainControllerInfo could be used by threat actors for gathering detailed information "
-                        "about the domain controllers."
+                "Note": "Utilized by reconnaissance tools to identify Domain Controllers. High frequency or anomalous"
+                        " use might be a hallmark of APT-driven reconnaissance phases. could be used by threat actors"
+                        " for gathering detailed information about the domain controllers."
             },
             28: {
                 "Method": "DRSAddEntry",
-                "Note": "DRSAddEntry could potentially be exploited by APT groups to create objects in Active Directory."
+                "Note": "This could potentially be exploited by APT groups to create objects in Active Directory."
             },
             34: {
                 "Method": "DRSVerifyNames",
                 "Note": "APT groups could potentially use DRSVerifyNames in an enumeration attack to verify the "
-                        "existence of certain users or objects within AD."
+                        "existence of certain users or objects within AD. Its usage could be part of validation "
+                        "processes during an APT’s advanced reconnaissance phase, typically aiming to identify "
+                        "accessible resources before launching targeted attacks."
             },
         }
     },
