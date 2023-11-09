@@ -1,11 +1,9 @@
-import ipaddress
-# Used for parsing and manipulating IP addresses
-
-import platform
-# Used to access underlying platform's identifying data, like its OS and version.
+import ipaddress  # Used for parsing and manipulating IP addresses
+import platform  # Used to access underlying platform's identifying data, like its OS and version.
+from typing import Callable, Optional, Tuple, Union
 
 
-def set_tshark_path():
+def set_tshark_path() -> Tuple[str, str]:
     """
     Set the paths for tshark and capinfos based on the host operating system.
 
@@ -13,9 +11,10 @@ def set_tshark_path():
     for the tshark and capinfos executables based on that information.
 
     Returns:
-        tuple: A tuple containing the paths for tshark and capinfos, or a message indicating unsupported OS.
+        Tuple[str, str]: A tuple containing the paths for tshark and capinfos.
+
     Raises:
-        ValueError: If the host operating system is not supported
+        ValueError: If the host operating system is not supported.
     """
     # Get the host operating system
     os_system = platform.system()
@@ -44,7 +43,7 @@ def set_tshark_path():
     return tshark, capinfo
 
 
-def is_valid_ipv4_address(ip):
+def is_valid_ipv4_address(ip: str) -> bool:
     """
     Check if the given string is a valid IPv4 address.
 
@@ -61,7 +60,7 @@ def is_valid_ipv4_address(ip):
         return False
 
 
-def is_valid_interval(freq):
+def is_valid_interval(freq: str) -> bool:
     """
     Check if the given string represents a valid numeric interval.
 
@@ -74,7 +73,7 @@ def is_valid_interval(freq):
     return freq.isnumeric()
 
 
-def is_valid_digit(input_dig):
+def is_valid_digit(input_dig: str) -> bool:
     """
     Check if the given string represents a valid numeric digit.
 
@@ -87,7 +86,7 @@ def is_valid_digit(input_dig):
     return input_dig.isnumeric()
 
 
-def get_input_opnum():
+def get_input_opnum() -> int:
     """
     Prompt the user to enter an operation number repeatedly until valid input is received.
 
@@ -106,13 +105,13 @@ def get_input_opnum():
             print("Invalid input. Please enter a numeric value.")
 
 
-def input_prompt(prompt, validator=None):
+def input_prompt(prompt: str, validator: Optional[Callable[[str], bool]] = None) -> str:
     """
     Prompt the user for input and validate it using a custom validator function.
 
     Args:
         prompt (str): The prompt to display to the user.
-        validator (function, optional): A function that takes a string input and returns True if
+        validator (Callable[[str], bool], optional): A function that takes a string input and returns True if
         the input is valid, or False otherwise. Default is None.
 
     Returns:
@@ -120,7 +119,7 @@ def input_prompt(prompt, validator=None):
     """
     while True:
         user_input = input(prompt)
-        if validator and not validator(user_input):
+        if validator is not None and not validator(user_input):
             print("Invalid input. Please try again.")
             continue
         return user_input
