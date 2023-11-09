@@ -31,41 +31,10 @@ TigerShark is a Python script that provides a user-friendly interface for intera
 
 ![TigerShark Main Menu](images/main_menu_tigershark.png)
 
-
 ## Requirements
 - Python 3.x
 - Mac or Linux.  Support for Windows is coming soon.
 - WireShark (installed to default location)
-- Configuration profile named THunt (e.g., /Users/username/.config/wireshark/profiles/THunt)
-
-  It doesn't matter how you have the columns arranged, just that
-  you have a profile named THunt.  It's easy to setup:
-
-  Launch WireShark.
-
-  Go to: Edit -> Configuration Profiles
-
-  ![config_profile](images/edit_config_profile.png)
-
-  Click the + to add a new profile
-
-  ![add_profile](images/add_profile.png)
-
-  Give it a name (THunt), select it, then click OK.
-
-  See the name in the bottom-right?
-
-  ![add_profile](images/corner.png)
-
-  TigerShark will now see your new configuration profile.
-
-  Click on WireShark -> Preferences -> Columns
-
-  ![prefs](images/wireshark_preferences.png)
-
-  Feel free to arrange the columns how you want:
-
-  ![columns](images/config_profile_columns.png)
 
 ## Installation
 
