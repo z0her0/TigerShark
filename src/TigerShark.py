@@ -9,6 +9,12 @@ import sys
 import make_banner_art
 # Custom module for creating ASCII art for banners.
 
+from typing import (
+    Dict,       # Dict: A container datatype that stores key-value pairs.
+    Callable,   # Callable: A type hint for variables that are callable.
+    Union       # Union: A type hint that a variable can be one of several types
+)
+
 from make_tshark_class import TShark
 # Custom TShark class to provide an interface to the tshark network protocol analyzer.
 
@@ -18,8 +24,14 @@ from search_tshark_filters import valid_display_filters_tshark
 from make_colorful import Color, ColorCustom
 # Classes from a custom module for adding color to text or console outputs for aesthetic or organizational purposes.
 
+# Type alias for the action in menu options
+ActionType = Callable[[], None]
 
-def main():
+# Define a dictionary type for menu options
+MenuOptionsType = Dict[str, Dict[str, Union[str, ActionType]]]
+
+
+def main() -> None:
     """
     This is the main function that orchestrates the display and interaction of a colorful, music-themed
     command-line interface (CLI) menu.
@@ -58,7 +70,7 @@ def main():
 
 
 # Define a dictionary to store menu options and their corresponding actions
-menu_options = {
+menu_options: MenuOptionsType = {
     "1": {
         "description": "Get PCAP Info",
         "action": lambda: print(f"{Color.LIGHTBLUE}Capture File Information{Color.END}:\n{TShark(pcap_file=ask_user_input).pcap_info()}")
@@ -150,7 +162,7 @@ menu_options = {
 }
 
 # Define the dictionary of menu colors for each menu option
-menu_colors = {str(i): ColorCustom() for i in range(1, 23)}
+menu_colors: Dict[str, ColorCustom] = {str(i): ColorCustom() for i in range(1, 23)}
 
 # Check if this script is the main script (it is) and call the main function
 if __name__ == '__main__':
