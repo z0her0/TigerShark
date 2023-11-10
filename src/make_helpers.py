@@ -1,6 +1,8 @@
-import ipaddress  # Used for parsing and manipulating IP addresses
-import platform  # Used to access underlying platform's identifying data, like its OS and version.
+import json
+import ipaddress
+import platform
 from typing import Callable, Optional, Tuple, Union
+from collections import Counter
 
 
 def set_tshark_path() -> Tuple[str, str]:
@@ -123,6 +125,31 @@ def input_prompt(prompt: str, validator: Optional[Callable[[str], bool]] = None)
             print("Invalid input. Please try again.")
             continue
         return user_input
+
+
+def process_output(raw_output: str) -> str:
+    """
+    Process the output from the tshark command: it cleans the raw output data by removing
+    empty lines, leading and trailing whitespace and tabs. It then counts the occurrences
+    of each line and returns a JSON string of these counts sorted from most to least common.
+
+    Args:
+    raw_output (str): The raw string output from the tshark command.
+
+    Returns:
+    str: A JSON formatted string representing the sorted counts of each line in the raw output.
+    """
+    # Split the output into lines
+    lines = raw_output.strip().split('\n')
+
+    # Remove leading and trailing whitespace and tabs from each line
+    cleaned_lines = [line.strip().replace('\t', '') for line in lines if line.strip()]
+
+    # Count occurrences of each cleaned line
+    sorted_counts = Counter(cleaned_lines).most_common()
+
+    # Return the counts as a JSON formatted string
+    return json.dumps(sorted_counts, indent=2)
 
 
 # The following block will only be executed if this module is run as the main script.
