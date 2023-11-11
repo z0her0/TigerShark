@@ -1,28 +1,13 @@
+import os
 import subprocess
-# The subprocess module allows you to spawn new processes, connect to their input/output/error pipes, and obtain
-# their return codes.
-
 import sys
-# This module provides access to some variables used or maintained by the interpreter and to functions that interact
-# strongly with the interpreter.
+from typing import Dict, Callable, Union
 
 import make_banner_art
-# Custom module for creating ASCII art for banners.
-
-from typing import (
-    Dict,       # Dict: A container datatype that stores key-value pairs.
-    Callable,   # Callable: A type hint for variables that are callable.
-    Union       # Union: A type hint that a variable can be one of several types
-)
-
 from make_tshark_class import TShark
-# Custom TShark class to provide an interface to the tshark network protocol analyzer.
-
 from search_tshark_filters import valid_display_filters_tshark
-# Function related to validating display filters for TShark from a custom module.
-
 from make_colorful import Color, ColorCustom
-# Classes from a custom module for adding color to text or console outputs for aesthetic or organizational purposes.
+
 
 # Type alias for the action in menu options
 ActionType = Callable[[], None]
@@ -31,18 +16,73 @@ ActionType = Callable[[], None]
 MenuOptionsType = Dict[str, Dict[str, Union[str, ActionType]]]
 
 
+def clear_screen():
+    """
+    Clears the console screen.  Built-in support for Windows.
+    """
+    # For Windows
+    if os.name == 'nt':
+        _ = os.system('cls')
+    # For Mac and Linux(here, os.name is 'posix')
+    else:
+        _ = os.system('clear')
+
+
+def wait_for_menu():
+    """
+    Waits for the user to press Enter to display the menu.
+    """
+    input("\nPress Enter to display the menu... ")
+
+
+def print_menu_options(menu_options, menu_colors):
+    """
+    Prints the menu options in a horizontal layout, two options per line, with alignment.
+
+    Args:
+    menu_options (dict): The dictionary containing the menu options.
+    menu_colors (dict): The dictionary containing the colors for the menu options.
+    """
+    keys = list(menu_options.keys())
+    # Calculate max length of options with numbers
+    max_length = max(len(f"{key}. {menu_options[key]['description']}") for key in keys) + 3
+
+    for i in range(0, len(keys), 2):
+        key1 = keys[i]
+        desc1 = menu_options[key1]["description"]
+        color1 = menu_colors[key1].color
+        option1 = f"{color1}{key1}. {desc1}{Color.END}"
+
+        if i + 1 < len(keys):
+            key2 = keys[i + 1]
+            desc2 = menu_options[key2]["description"]
+            color2 = menu_colors[key2].color
+            option2 = f"{color2}{key2}. {desc2}{Color.END}"
+        else:
+            option2 = ""
+
+        # Calculate padding for the first column
+        padding = max_length - len(f"{key1}. {desc1}")
+        line = f"{option1}{' ' * padding}{option2}"
+
+        print(line)
+
+
 def main() -> None:
     """
     This is the main function that orchestrates the display and interaction of a colorful, music-themed
     command-line interface (CLI) menu.
 
     Upon calling, it:
-    - Prints a styled banner with different colors.
-    - Continuously displays a series of menu options with a music-themed prompt until the user exits.
+    - Clears the screen and prints a styled banner with different colors.
+    - Waits for user input to display the menu.
     - Allows the user to select an option by entering the corresponding number.
     - Calls the appropriate function associated with the chosen option.
     - Handles invalid selections with an error message.
+    - Clears the screen and shows results after executing an option.
+    - Waits for the user to press enter to bring up the menu again.
     """
+    clear_screen()
     print('')
     print(rf"{Color.LIGHTRED}                           ___ _  _, __, __,  _, _,_  _, __, _,_{Color.END}")
     print(rf"{Color.LIGHTYELLOW}                            |  | / _ |_  |_) (_  |_| /_\ |_) |_/{Color.END}")
@@ -53,19 +93,21 @@ def main() -> None:
     print(make_banner_art.banner)
 
     while True:
+        wait_for_menu()
+        clear_screen()
         print(rf"{Color.LIGHTYELLOW}((*´_●｀☆ﾟ+.•°•.•°• 🎧♪┏(°.°)┛🎼 Wh47 w0u1d y0u 1!k3 70 d0 ? 🎼┏(°.°)┛♪🎧 •°•.•°•.+ﾟ☆´●_｀*)){Color.END}")
         print(f'{Color.MAROON}____________________________________________________________________________________________{Color.END}')
 
-        for key, option in menu_options.items():
-            print(f"{menu_colors[key].color}{key}. {option['description']}{menu_colors[key].END}")
-
-        print(f"")
+        print_menu_options(menu_options, menu_colors)
 
         user_choice = input('> ENTER NUMBER HERE (◦′ᆺ‵◦) ♬° ✧❥✧¸.•*¨*✧♡✧ ✧♡✧*¨*•.❥ : ')
 
         if user_choice in menu_options:
+            clear_screen()
+            print("\n")
             menu_options[user_choice]["action"]()
         else:
+            clear_screen()
             print(f"{Color.RED}Invalid selection. Please choose a number between 1 and 22.{Color.END}")
 
 
@@ -85,7 +127,7 @@ menu_options: MenuOptionsType = {
     },
     "4": {
         "description": "Search Protocol",
-        "action": lambda: print(f"{Color.LIGHTGREEN}Search Protocol{Color.END}\n{TShark(pcap_file=ask_user_input).read_verbose()}")
+        "action": lambda: print(f"{Color.LIGHTGREEN}Search Results{Color.END}:\n{TShark(pcap_file=ask_user_input).read_verbose()}")
     },
     "5": {
         "description": "Enumerate Streams",
@@ -120,7 +162,7 @@ menu_options: MenuOptionsType = {
         "action": lambda: print(f"{Color.YELLOW}Find TCP Stream From Frame{Color.END}:\n{TShark(pcap_file=ask_user_input).viewframe_getstream()}")
     },
     "13": {
-        "description": "Search For Specific Domain in DNS",
+        "description": "Search For Domain in DNS",
         "action": lambda: print(f"{Color.CYAN}Search For Domain Name{Color.END}:\n{TShark(pcap_file=ask_user_input).dns_hunt()}")
     },
     "14": {
@@ -129,7 +171,7 @@ menu_options: MenuOptionsType = {
     },
     "15": {
         "description": "Get User Agents",
-        "action": lambda: print(f"{Color.LIGHTYELLOW}Get User Agents{Color.END}:\n{TShark(pcap_file=ask_user_input).user_agent()}")
+        "action": lambda: print(f"{Color.LIGHTYELLOW}User Agents (by count){Color.END}:\n{TShark(pcap_file=ask_user_input).user_agent()}")
     },
     "16": {
         "description": "Detect Signs Of ARP Poisoning",
