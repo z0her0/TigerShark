@@ -632,23 +632,7 @@ class TShark:
             # Get counts for server names
             counts = Counter(tls_server_names).most_common(20)
 
-            # Get TLS x509sat Certificate
-            tls_certs = self._run_tshark_command(['-Y', 'tls', '-T', 'fields', '-e',
-                                                  'x509sat.printableString']).strip().split('\n')
-
-            # List comprehension to remove blank lines
-            tls_certs = [cert for cert in tls_certs if cert]
-
-            # Get counts for certificates
-            count_cert = Counter(tls_certs).most_common(20)
-            return f"{Color.BOLD}TLS Handshake Extensions Server Name (Top 10):{Color.END}" + '\n' \
-                + json.dumps(counts, indent=2) + '\n\n' \
-                + f"{Color.BOLD}TLS Handshake Certificate x509sat Printable String(Top 10):{Color.END}" + '\n' \
-                + json.dumps(count_cert, indent=2)
-
-        # 'pkix-cert' Protocol
-        elif ask_protocol == "pkix-cert":
-            return self._run_tshark_command(['-Y', 'pkix-cert.cert', '-T', 'json', '-e', 'x509sat.printableString'])
+            return f"{Color.BOLD}TLS Handshake Extensions Server Name (Top 10):{Color.END}" + json.dumps(counts)
 
         # 'icmp' Protocol
         elif ask_protocol == "icmp":
