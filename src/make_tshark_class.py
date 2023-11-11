@@ -3,20 +3,21 @@ import os                                              # Operating system interf
 import json                                            # JSON encoder and decoder
 import subprocess                                      # Process creation and management
 from collections import Counter                        # Container for counting hashable objects
+import logging
 
 # Type hinting imports
 from typing import Optional, Dict, List, Tuple, Union, Any
 
 # Custom module imports
-from dcerpc_method_abuse_notes import get_dcerpc_info  # DCERPC service opnums and method names helper
 from make_colorful import Color                        # Terminal color output utility
+from dcerpc_method_abuse_notes import get_dcerpc_info  # MSRPC to ATT&CK lookup table
 from make_helpers import (
     input_prompt,                                      # Standardized user input prompt
     is_valid_interval,                                 # Interval validation
     is_valid_digit,                                    # Digit validation
     is_valid_ipv4_address,                             # IPv4 address validation
     set_tshark_path,                                   # Set the path to the tshark application
-    get_input_opnum,                                   # Validate user input for opnum
+    get_input_opnum,
     process_output,                                    # Takes input, processes it, cleans it, and returns it
 )
 
@@ -30,25 +31,23 @@ tshark, capinfo = set_tshark_path()
 
 class TShark:
     """
-    A class to interface with the TShark utility, allowing parsing and analysis of pcap files.
+    A class to provide an interface to the TShark network protocol analyzer.
 
-    Attributes
-    ----------
-    pcap_file : str
-        The file path to the pcap file to be analyzed.
-    proc : Optional[subprocess.Popen]
-        A subprocess.Popen object for running the TShark commands. This is initialized as None and
-        may be set later if needed.
+    Attributes:
+        pcap_file (str): The path to the pcap file to be analyzed.
+        proc (Optional[subprocess.CompletedProcess]): A subprocess.CompletedProcess object
+                                                      to run TShark commands.
     """
 
     def __init__(self, pcap_file: str) -> None:
         """
         Initializes the TShark class with the specified pcap file.
 
-        Parameters
-        ----------
-            pcap_file : str
-                the file path to the pcap file
+        Args:
+            pcap_file (str): The path to the pcap file to be analyzed.
+
+        Raises:
+            FileNotFoundError: If the tshark executable is not found.
         """
         self.pcap_file: str = pcap_file
         self.proc: Optional[subprocess.CompletedProcess] = None
@@ -58,21 +57,15 @@ class TShark:
     def _run_tshark_command(self, options: List[str], display_filter: Optional[str] = None,
                             custom_fields: Optional[str] = None) -> str:
         """
-        Executes a tshark command with the given options, display filter, and custom fields.
+        Runs a TShark command with the specified options, display filter, and custom fields.
 
-        Parameters
-        ----------
-        options : List[str]
-            List of command-line options for tshark.
-        display_filter : str, optional
-            A string representing the display filter for tshark.
-        custom_fields : str, optional
-            A string representing custom fields to include in the tshark output.
+        Args:
+            options (List[str]): A list of options to pass to TShark.
+            display_filter (Optional[str]): A display filter to use.
+            custom_fields (Optional[str]): Custom fields to extract from the output.
 
-        Returns
-        -------
-        str
-            The decoded stdout from the executed command.
+        Returns:
+            str: The decoded stdout from the completed TShark process.
         """
         cmd = [tshark, '-r', self.pcap_file] + options
         if display_filter:
@@ -85,19 +78,16 @@ class TShark:
         completed_process: subprocess.CompletedProcess = subprocess.run(cmd, stdout=subprocess.PIPE, check=False)
         return completed_process.stdout.decode()
 
-    def _run_command(self, cmd: List[str]) -> str:
+    @staticmethod
+    def _run_command(cmd: List[str]) -> str:
         """
-        Executes a command in a subprocess and returns its output.
+        Runs a command in a subprocess and returns its output.
 
-        Parameters
-        ----------
-        cmd : List[str]
-            The command to run, specified as a list of strings.
+        Args:
+            cmd (List[str]): The command to run as a list of strings.
 
-        Returns
-        -------
-        str
-            The decoded stdout from the executed command.
+        Returns:
+            str: The decoded stdout from the completed process.
         """
         completed_process: subprocess.CompletedProcess = subprocess.run(cmd, stdout=subprocess.PIPE, check=False)
         return completed_process.stdout.decode()
@@ -124,29 +114,25 @@ class TShark:
 
     def pcap_info(self) -> str:
         """
-        Retrieves and returns information about the pcap file using capinfo.
+        Retrieves information about the pcap file using capinfo.
 
-        Returns
-        -------
-        str
-            Information about the pcap file as a decoded string.
+        Returns:
+            str: The output from capinfo containing details about the pcap file.
         """
         return self._run_command([capinfo, self.pcap_file])
 
     def iophs(self) -> str:
         """
-        Returns I/O phase statistics of the pcap file by executing the appropriate tshark command.
+        Generates Input/Output Protocol Hierarchy Statistics from the pcap file.
 
-        Returns
-        -------
-        str
-            I/O phase statistics as a decoded string.
+        Returns:
+            str: The protocol hierarchy statistics.
         """
         return self._run_tshark_command(['-qz', 'io,phs'])
 
     def whois_ip(self) -> None:
         """
-        Executes a tshark command to retrieve IP addresses and prints whois information for each unique IP address.
+        Retrieves WHOIS information for unique destination IP addresses found in the pcap file.
         """
         # Use tshark to extract destination IP addresses from the pcap file
         check_tshark_output = self._run_tshark_command(['-T', 'fields', '-e', 'ip.dst'])
@@ -166,21 +152,14 @@ class TShark:
 
     def find_beacons(self, ip_address: Optional[str] = None, interval_frequency: Optional[str] = None) -> Any:
         """
-        Analyzes the pcap for beacon-like traffic patterns based on the specified IP address and interval frequency.
+        Identifies beacon-like traffic patterns for a specified IP address and interval frequency.
 
-        If `ip_address` or `interval_frequency` is not provided, the method will prompt the user for input.
+        Args:
+            ip_address (Optional[str]): The IP address to check for beacon-like patterns.
+            interval_frequency (Optional[str]): The frequency interval for checking beacon-like patterns.
 
-        Parameters
-        ----------
-        ip_address : str, optional
-            The IPv4 address to look for beacon patterns. If None, prompts the user.
-        interval_frequency : str, optional
-            The frequency interval (in seconds) to analyze for beacon patterns. If None, prompts the user.
-
-        Returns
-        -------
-        Any
-            The output from the TShark command, which includes statistics related to beacon-like traffic patterns.
+        Returns:
+            Any: The result of the TShark command to identify beacon-like traffic.
         """
         if ip_address is None:
             ip_address = input_prompt(
@@ -195,24 +174,19 @@ class TShark:
 
     def expert_chat(self) -> str:
         """
-        Returns expert chat messages and analysis results from the pcap file.
+        Runs TShark to obtain 'expert chat' diagnostic messages from the pcap file.
 
-        Returns
-        -------
-        str
-            Expert chat messages as a decoded string.
+        Returns:
+            str: The expert chat diagnostic messages.
         """
         return self._run_tshark_command(['-qz', 'expert,chat'])
 
     def display_filter(self) -> str:
         """
-        Prompts the user for a display filter and additional options, then executes a tshark command and
-        returns the filtered and formatted output.
+        Applies a custom display filter specified by the user and returns the filtered output.
 
-        Returns
-        -------
-        str
-            The formatted output after applying the display filter.
+        Returns:
+            str: The output of the TShark command with the applied display filter.
         """
         get_input = input("Enter a valid display filter: ")
         view_verbose = input("Expand the packet layers? (Y/N): ")
@@ -245,27 +219,27 @@ class TShark:
             output = self._run_tshark_command(options)
             return output
 
-    def get_dcerpc_abuse_info(self) -> None:
+    @staticmethod
+    def get_dcerpc_abuse_info() -> None:
         """
-        Prompts the user for a service and operation number, then prints detailed information about potential
-        DCERPC method abuse.
+        Retrieves and prints abuse information for a specified DCERPC service and method.
         """
-
+        
         service_name_input = input("Enter the service (e.g., samr, drsuapi, netlogon, lsarpc, srvsvc): ")
         opnum_input = get_input_opnum()
 
         method, note, attack_ttp, attack_type = get_dcerpc_info(service_name_input, opnum_input)
 
         if method:
-            print("")
             print(f"{Color.AQUA}Info for {service_name_input} opnum {opnum_input}:{Color.END}")
-            print(f"{Color.UNDERLINE}Function{Color.END}: {method}")
             print("")
-            print(f"{Color.UNDERLINE}Note{Color.END}: {note}")
+            print(f"{Color.UNDERLINE}Function{Color.END}: {method}")
             print("")
             print(f"{Color.UNDERLINE}ATT&CK TTP{Color.END}: {attack_ttp}")
             print("")
             print(f"{Color.UNDERLINE}Attack Type{Color.END}: {attack_type}")
+            print("")
+            print(f"{Color.UNDERLINE}Note{Color.END}: {note}")
             print("")
 
         else:
@@ -273,23 +247,20 @@ class TShark:
 
     def failed_connections(self) -> str:
         """
-        Analyzes the pcap file for failed TCP connections by executing the appropriate tshark command.
+        Identifies and returns information about failed TCP connection attempts.
 
-        Returns
-        -------
-        str
-            Formatted string with information about failed TCP connections.
+        Returns:
+            str: The output of the TShark command showing failed TCP connections.
         """
         return self._run_tshark_command(['-Y', 'tcp.analysis.retransmission and tcp.flags eq 0x0002'])
 
     def arp_thunt(self) -> Tuple[str, str]:
         """
-        Returns information about ARP threats such as duplicate address detection and packet storms.
+        Searches for ARP poisoning attacks within the pcap file.
 
-        Returns
-        -------
-        Tuple[str, str]
-            A tuple containing information about ARP duplicate address detection and packet storms.
+        Returns:
+            Tuple[str, str]: A tuple containing the outputs for duplicate address detection and
+                             packet storm detection, respectively.
         """
         return self._run_tshark_command(['-Y', 'arp.duplicate-address-detected', '-T', 'fields', '-e',
                                          'arp.duplicate-address-detected']), \
@@ -298,26 +269,21 @@ class TShark:
 
     def dns_hunt(self) -> str:
         """
-        Prompts the user for a domain to search for, then returns DNS queries that match the given domain name.
+        Searches for DNS queries or responses involving a specific domain.
 
-        Returns
-        -------
-        str
-            Formatted string with DNS queries matching the domain.
+        Returns:
+            str: The output of the TShark command showing DNS traffic related to the specified domain.
         """
         ask_dns = input("Enter the domain you want to search for here in double quotes: ")
         return self._run_tshark_command(['-Y', 'dns matches ' + f"{ask_dns}"])
 
     def user_agent(self) -> str:
         """
-        Returns a list of user agent strings found in the pcap file, along with their occurrence counts.
+        Analyzes and returns a count of user agents found in the HTTP traffic.
 
-        Returns
-        -------
-        str
-            JSON formatted string containing user agent strings and their counts.
+        Returns:
+            str: A JSON-formatted string containing the count of different user agents.
         """
-
         # Extract User Agent strings using tshark
         cmd = ['-T', 'fields', '-e', 'http.user_agent']
         output = self._run_tshark_command(cmd)
@@ -325,29 +291,24 @@ class TShark:
         # Clean, split, and filter out blank User Agent strings
         user_agents = [ua for ua in output.strip().split('\n') if ua.strip()]
         user_agent_counts = Counter(user_agents).most_common()
-        print("User Agent (by count):")
         return json.dumps(user_agent_counts, indent=2)
 
     def viewframe_getstream(self) -> str:
         """
-        Prompts the user for a frame number and returns the TCP stream index associated with that frame.
+        Retrieves the TCP stream index for a specified frame number.
 
-        Returns
-        -------
-        str
-            TCP stream index associated with the provided frame number.
+        Returns:
+            str: The TCP stream index corresponding to the given frame number.
         """
         ask_frame = input("Enter the frame number you'd like to get the tcp stream index for: ")
         return self._run_tshark_command(['-Y', f"frame.number == {ask_frame}", '-T', 'fields', '-e', 'tcp.stream'])
 
     def web_basic(self) -> str:
         """
-        Returns basic web traffic information from the pcap file, focusing on HTTP and TLS handshakes.
+        Extracts basic web traffic information from the pcap file.
 
-        Returns
-        -------
-        str
-            Formatted string with basic web traffic information.
+        Returns:
+            str: The output of the TShark command showing basic web traffic information.
         """
         print('')
         print(f"{Color.GREEN}Web Traffic:{Color.END}")
@@ -356,39 +317,33 @@ class TShark:
 
     def tcp_stream(self) -> str:
         """
-        Prompts the user for a TCP stream index and returns the ASCII representation of that TCP stream.
+        Follows a specified TCP stream and returns its contents.
 
-        Returns
-        -------
-        str
-            ASCII representation of the selected TCP stream.
+        Returns:
+            str: The ASCII contents of the specified TCP stream.
         """
         get_tcp_stream_number = input_prompt("Which TCP stream index would you like to see? ", is_valid_digit)
         return self._run_tshark_command(['-qz', f'follow,tcp,ascii,{get_tcp_stream_number}'])
 
     def http_stream(self) -> str:
         """
-        Prompts the user for an HTTP stream index and returns the ASCII representation of that HTTP stream.
+        Follows a specified HTTP stream and returns its contents.
 
-        Returns
-        -------
-        str
-            ASCII representation of the selected HTTP stream.
+        Returns:
+            str: The ASCII contents of the specified HTTP stream.
         """
         get_http_stream_number = input_prompt("Which HTTP stream index would you like to see? ", is_valid_digit)
         return self._run_tshark_command(['-qz', f'follow,http,ascii,{get_http_stream_number}'])
 
     def enum_streams(self) -> str:
         """
-        Prompts the user for a protocol filter, then enumerates and returns streams that match the filter.
+        Enumerates streams for a specified protocol within the pcap file.
 
-        Returns
-        -------
-        str
-            Formatted string with enumerated streams matching the protocol filter.
+        Returns:
+            str: The enumerated streams for the specified protocol.
         """
         ask = input("Which protocol would you like to search for? Examples: "
-                    "x509sat.printableString, http.request.full_uri, dns.qry.name: ")
+                    "x509sat.uTF8String, http.request.full_uri, dns.qry.name: ")
         print(' ')
         return self._run_tshark_command(
             ['-Y', f"{ask}", '-T', 'fields', '-e', 'frame.number', '-e', 'tcp.stream',
@@ -396,12 +351,10 @@ class TShark:
 
     def show_packets(self) -> str:
         """
-        Depending on user input, displays all packets or all packets for a selected protocol from the pcap file.
+        Displays packets based on the user's choice of either all packets or a specific protocol.
 
-        Returns
-        -------
-        str
-            Formatted string with all packets or all packets for a specified protocol.
+        Returns:
+            str: The output of the TShark command showing the specified packets.
         """
         get_proto = input("Show all packets? (yes or no) ")
         print('')
@@ -418,14 +371,12 @@ class TShark:
 
     def statistics(self) -> Optional[str]:
         """
-        Prompts the user to choose a type of statistics to view from a pcap file.
-        Depending on the choice, it calls a corresponding nested function to handle
-        the specific statistics functionality.
+        Displays various types of statistics like conversations, server response times, or tree statistics
+        based on the user's choice.
 
         Returns:
-            Optional[str]: A string indicating an unsupported protocol if a user's choice
-            does not match any of the provided options. Otherwise, it prints the statistics
-            and returns None.
+            Optional[str]: The output of the TShark command showing the chosen statistics, or a message
+                           if an unsupported option is chosen.
         """
         which_stats = input(
             f"{Color.LIGHTYELLOW}What type of statistics do you want to view? (conv/hosts/srt/tree): {Color.END}: ")
@@ -439,7 +390,7 @@ class TShark:
             ask_protocol = input(
                 f"{Color.CYAN}Which protocol would you like to view conversations for? "
                 f"(bluetooth/eth/ip/tcp/usb/wlan){Color.END}: ")
-            # Define a dictionary mapping protocol names to TShark commands
+            # Dictionary mapping protocol names to TShark commands
             protocol_commands: Dict[str, List[str]] = {
                 'bluetooth': ['conv,bluetooth'],
                 'eth': ['conv,eth'],
@@ -525,135 +476,110 @@ class TShark:
 
     def read_verbose(self) -> Union[List[Tuple[str, int]], Any]:
         """
-        Prompts the user to choose a protocol and processes the pcap file to extract and
-        count occurrences of fields related to that protocol. The counts are returned as a sorted list of tuples,
-        where each tuple contains a field value and its occurrence count.
-
-        If the protocol requires processing multiple fields, each field is processed separately and
-        the results are combined into a single output.
+        Provides verbose information based on the user's choice of protocol to search within the pcap file.
 
         Returns:
-            Union[List[Tuple[str, int]], Any]: Depending on the protocol, this method returns either
-            a list of tuples with the field values and their counts, or a JSON string representation
-            of such lists for protocols that require double processing.
+            Union[List[Tuple[str, int]], Any]: Processed output based on the selected protocol,
+                                               which may vary in format (list, str, etc.).
         """
-        # Prompt the user to select a protocol to search within the pcap file.
-        ask_protocol = input(f"{Color.CYAN}Choose a protocol to search{Color.END}: ")
+        try:
+            # Prompt the user to select a protocol to search within the pcap file.
+            ask_protocol = input(f"{Color.CYAN}Choose a protocol to search{Color.END}: ")
 
-        # Dictionary mapping protocol names to their corresponding field names and display filters.
-        # This is used to construct the appropriate tshark command for each protocol.
-        protocol_args = {
-            'eth': (['eth.addr.oui_resolved'], 'eth'),          # Ethernet protocol, filter on OUI resolved addresses
-            'samr': (['samr.samr_LookupNames.names'], 'samr'),  # SAMR protocol, filter on LookupNames
-            'smb2': (['smb2.filename'], 'smb2.filename'),       # SMB2 protocol, filter on filenames
-            'dns': (['dns.qry.name'], 'dns'),                   # DNS protocol, filter on query names
-            'dhcp': (['dhcp.option.hostname'], 'dhcp'),         # DHCP protocol, filter on option hostnames
-        }
+            # Dictionary mapping protocol names to their corresponding field names and display filters.
+            # This is used to construct the appropriate tshark command for each protocol.
+            protocol_args = {
+                'eth': (['eth.addr.oui_resolved'], 'eth'),          # Ethernet protocol, filter on OUI addresses
+                'samr': (['samr.samr_LookupNames.names'], 'samr'),  # SAMR protocol, filter on LookupNames
+                'smb2': (['smb2.filename'], 'smb2.filename'),       # SMB2 protocol, filter on filenames
+                'dns': (['dns.qry.name'], 'dns'),                   # DNS protocol, filter on query names
+                'dhcp': (['dhcp.option.hostname'], 'dhcp'),         # DHCP protocol, filter on option hostnames
+                'tls': (['tls.handshake.extensions_server_name'], 'tls'),  # TLS protocol, filter on server name
+                'http': (['http.request.full_uri'], 'http'),        # HTTP protocol, filter on requests
+                'ldap': (['ldap.baseObject'], 'ldap.AttributeDescription == "givenName"'),  # LDAP protocol
+            }
 
-        # Check if the selected protocol is one of the common ones with predefined args.
-        # Common tshark command processing
-        if ask_protocol in protocol_args:
-            # Extract the fields and display filter for the chosen protocol.
-            fields, display_filter = protocol_args[ask_protocol]
-            # Run the tshark command with the fields and display filter, process the output,
-            # and return the results as a JSON string.
-            output = self._process_protocol(display_filter, fields)
-            return process_output(output)
+            # Check if the selected protocol is one of the common ones with predefined args.
+            # Common tshark command processing
+            if ask_protocol in protocol_args:
+                # Extract the fields and display filter for the chosen protocol.
+                fields, display_filter = protocol_args[ask_protocol]
+                # Run the tshark command with the fields and display filter, process the output,
+                # and return the results as a JSON string.
+                output = self._process_protocol(display_filter, fields)
+                processed_output = process_output(output, ask_protocol)
+                return json.dumps(processed_output, indent=2)
 
-        # 'http' Protocol
-        elif ask_protocol == 'http':
-            return self._run_tshark_command(['-Y', 'http.request || http.response', '-Tfields', '-e', 'frame.number',
-                                             '-e', 'frame.time', '-e', 'ip.src', '-e', 'http.request.full_uri', '-e',
-                                             'http.response_for.uri', '-E', 'header=y'])
+            # 'smb' Protocol
+            elif ask_protocol == 'smb':
+                # NTLMSSP Auth Hostname
+                out_smb_ntlmssp = self._run_tshark_command(['-T', 'fields', '-e', 'ntlmssp.auth.hostname'])
+                hostnames = [hostname for hostname in out_smb_ntlmssp.strip().split('\n') if hostname]
+                count_hostnames = Counter(sorted(hostnames)).most_common()
 
-        # 'smb' Protocol
-        elif ask_protocol == 'smb':
-            # NTLMSSP Auth Hostname
-            out_smb_ntlmssp = self._run_tshark_command(['-T', 'fields', '-e', 'ntlmssp.auth.hostname'])
-            hostnames = [hostname for hostname in out_smb_ntlmssp.strip().split('\n') if hostname]
-            count_hostnames = Counter(sorted(hostnames)).most_common()
+                # NTLMSSP Auth Username
+                out_smb_ntlmssp_uname = self._run_tshark_command(['-T', 'fields', '-e', 'ntlmssp.auth.username'])
+                usernames = [username for username in out_smb_ntlmssp_uname.strip().split('\n') if username]
+                count_usernames = Counter(sorted(usernames)).most_common()
 
-            # NTLMSSP Auth Username
-            out_smb_ntlmssp_uname = self._run_tshark_command(['-T', 'fields', '-e', 'ntlmssp.auth.username'])
-            usernames = [username for username in out_smb_ntlmssp_uname.strip().split('\n') if username]
-            count_usernames = Counter(sorted(usernames)).most_common()
+                return (
+                    f"{Color.YELLOW}NTLMSSP Auth Hostname (by count): {Color.END}\n{count_hostnames}\n\n"
+                    f"{Color.RED}NTLMSSP Auth Username (by count): {Color.END}\n{count_usernames}\n\n"
+                )
 
-            return (
-                f"{Color.YELLOW}NTLMSSP Auth Hostname (by count): {Color.END}\n{count_hostnames}\n\n"
-                f"{Color.RED}NTLMSSP Auth Username (by count): {Color.END}\n{count_usernames}\n\n"
-            )
+            # 'data-text-lines' Protocol
+            elif ask_protocol == 'data-text-lines':
+                return self._run_tshark_command(['-Y', 'data-text-lines', '-V', '-O', 'data-text-lines'])
 
-        # 'data-text-lines' Protocol
-        elif ask_protocol == 'data-text-lines':
-            return self._run_tshark_command(['-Y', 'data-text-lines', '-V', '-O', 'data-text-lines'])
+            # 'mime_multipart' Protocol
+            elif ask_protocol == 'mime_multipart':
+                return self._run_tshark_command(['-Y', 'mime_multipart', '-V', '-O', 'mime_multipart'])
 
-        # 'mime_multipart' Protocol
-        elif ask_protocol == 'mime_multipart':
-            return self._run_tshark_command(['-Y', 'mime_multipart', '-V', '-O', 'mime_multipart'])
+            # 'kerberos' Protocol
+            elif ask_protocol == 'kerberos':
+                # Analyzes Kerberos protocol traffic within the PCAP file to extract user and hostnames
+                # from Kerberos tickets. It distinguishes between regular usernames and machine accounts
+                # (which contain a '$'), counts the occurrences, and returns a formatted string containing
+                # the results.
+                tshark_args = ['-Tfields', '-e', 'kerberos.CNameString']
+                cname_string = self._run_tshark_command(
+                    tshark_args + ['-Y', 'kerberos.CNameString and !(kerberos.CNameString contains "$")'])
+                cname_string_with_dollar = self._run_tshark_command(
+                    tshark_args + ['-Y', 'kerberos.CNameString and (kerberos.CNameString contains "$")'])
 
-        # 'kerberos' Protocol
-        elif ask_protocol == 'kerberos':
-            # Analyzes Kerberos protocol traffic within the PCAP file to extract user and hostnames
-            # from Kerberos tickets. It distinguishes between regular usernames and machine accounts
-            # (which contain a '$'), counts the occurrences, and returns a formatted string containing
-            # the results.
+                kerb_users = [name for name in set(cname_string.strip().split('\n')) if name]
+                kerb_hosts = [name for name in set(cname_string_with_dollar.strip().split('\n')) if name]
 
-            tshark_args = ['-Tfields', '-e', 'kerberos.CNameString']
+                return (f'Windows Account Username\n{Counter(kerb_users).most_common()}\n\nHostname\n'
+                        f'{Counter(kerb_hosts).most_common()}\n')
 
-            cname_string = self._run_tshark_command(
-                tshark_args + ['-Y', 'kerberos.CNameString and !(kerberos.CNameString contains "$")']
-            )
-            cname_string_with_dollar = self._run_tshark_command(
-                tshark_args + ['-Y', 'kerberos.CNameString and (kerberos.CNameString contains "$")']
-            )
+            # 'epm' Protocol
+            elif ask_protocol == "epm":
+                return self._run_tshark_command(['-Y', 'epm', '-V', '-O', 'epm'])
 
-            kerb_users = [name for name in set(cname_string.strip().split('\n')) if name]
-            kerb_hosts = [name for name in set(cname_string_with_dollar.strip().split('\n')) if name]
+            # 'icmp' Protocol
+            elif ask_protocol == "icmp":
+                # Common tshark arguments shared by all commands
+                tshark_args = ['-t', 'ad']
 
-            return (f'Windows Account Username\n{Counter(kerb_users).most_common()}\n\nHostname\n'
-                    f'{Counter(kerb_hosts).most_common()}\n')
+                # Capture ICMP Echo Requests data
+                icmp_req = self._run_tshark_command([*tshark_args, '-Y', '(icmp.type == 8) && (icmp.code == 0)'])
 
-        # 'ldap' Protocol
-        elif ask_protocol == "ldap":
-            return self._run_tshark_command(['-Y', 'ldap.AttributeDescription == "givenName"'])
+                # Capture ICMP Echo Replies data
+                icmp_resp = self._run_tshark_command([*tshark_args, '-Y', '(icmp[0] == 0) && (icmp[1] == 0)'])
 
-        # 'epm' Protocol
-        elif ask_protocol == "epm":
-            return self._run_tshark_command(['-Y', 'epm', '-V', '-O', 'epm'])
+                # Return formatted ICMP data
+                return (f"{Color.LIGHTBLUE}ECHO Requests (frame #, time, src ip, dst ip, info):{Color.END}\n{icmp_req}\n"
+                        f"{Color.LIGHTGREEN}ECHO replies (frame #, time, src ip, dst ip, info):{Color.END}\n{icmp_resp}")
 
-        # 'tls' Protocol
-        elif ask_protocol == "tls":
-            # Get TLS extension server name
-            tls_server_names = self._run_tshark_command(['-Y', 'tls', '-T', 'fields', '-e',
-                                                         'tls.handshake.extensions_server_name']).strip().split('\n')
-            # List comprehension to remove blank lines
-            tls_server_names = [name for name in tls_server_names if name]
+            else:
+                raise ValueError(f"Unknown protocol: {ask_protocol}")
 
-            # Get counts for server names
-            counts = Counter(tls_server_names).most_common(20)
-
-            return f"{Color.BOLD}TLS Handshake Extensions Server Name (Top 10):{Color.END}" + json.dumps(counts)
-
-        # 'icmp' Protocol
-        elif ask_protocol == "icmp":
-            # Common tshark arguments shared by all commands
-            tshark_args = ['-t', 'ad']
-
-            # Capture ICMP Echo Requests data
-            icmp_req = self._run_tshark_command([*tshark_args, '-Y', '(icmp.type == 8) && (icmp.code == 0)'])
-
-            # Capture ICMP Echo Replies data
-            icmp_resp = self._run_tshark_command([*tshark_args, '-Y', '(icmp[0] == 0) && (icmp[1] == 0)'])
-
-            # Return formatted ICMP data
-            return (f"{Color.LIGHTBLUE}ECHO Requests (frame #, time, src ip, dst ip, info):{Color.END}\n{icmp_req}\n"
-                    f"{Color.LIGHTGREEN}ECHO replies (frame #, time, src ip, dst ip, info):{Color.END}\n{icmp_resp}")
-
-        else:
-            raise ValueError(f"Unknown protocol: {ask_protocol}")
+        except ValueError as err:
+            # Handle the error
+            logging.error(err)
+            print(f"An error occurred: {err}. Please enter a valid protocol.")
 
 
-# The following block will only be executed if this module is run as the main script.
 if __name__ == '__main__':
-    # This code will not run when the module is imported.
     pass
