@@ -1,18 +1,12 @@
 from typing import Tuple, Optional, Dict, Any, Union
 
-from make_colorful import Color           # Import custom Color class to enable colored text output
-from dcerpc_data import dcerpc_services   # Import MSRPC to ATT&CK lookup table
-from make_helpers import get_input_opnum  # Import custom function that validates user input and returns int
+from make_colorful import Color
+from dcerpc_data import dcerpc_services
 
 
-def get_dcerpc_info(service_name: str, opnum: int) -> Union[tuple[None, str], tuple[Any, Any, Any, Any]]:
+def get_dcerpc_info(service_name: str, opnum: int) -> Union[tuple[None, str, None, None], tuple[int, int, int, int, int]]:
     """
-    Retrieves information about the operation number (opnum) and associated method
-    name for a given DCERPC service.
-
-    Args:
-        service_name (str): The name of the service to query (e.g., "samr").
-        opnum (int): The operation number for which to retrieve the method info.
+    Retrieves MITRE ATT&CK TTP information for the DCERPC protocol method.
     """
     service: Optional[Dict[str, Any]] = dcerpc_services.get(service_name.lower())
     if not service:
@@ -24,7 +18,8 @@ def get_dcerpc_info(service_name: str, opnum: int) -> Union[tuple[None, str], tu
             method_info["Method"],
             method_info["Note"],
             method_info["ATT&CK TTP"],
-            method_info['Attack Type']
+            method_info['Attack Type'],
+            method_info['IOC']
         )
     else:
         return None, f"Method with opnum {opnum} not found in service {service_name}.", None, None
@@ -40,3 +35,4 @@ if __name__ == '__main__':
     print(results[1])  # Note
     print(results[2])  # ATT&CK TTP
     print(results[3])  # Attack Type
+    print(results[4])  # IOC
