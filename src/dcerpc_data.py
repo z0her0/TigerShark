@@ -54,7 +54,7 @@ dcerpc_services = {
             1: {
                 "Method": "IDL_DRSUnbind",
                 "Note": "The IDL_DRSUnbind method destroys a context handle previously created by the IDL_DRSBind\n"
-                        " method. This is the equivalent of saying 'Goodbye' at the end of a phone call. After two \n"
+                        "method. This is the equivalent of saying 'Goodbye' at the end of a phone call. After two \n"
                         "systems have finished communicating about replication, IDL_DRSUnbind is used to end the \n"
                         "session. It's like one computer saying, 'Our conversation is finished, let's hang up the \n"
                         "line,' and the connection is closed properly.",
@@ -68,7 +68,7 @@ dcerpc_services = {
                 "Note": "Triggers replication from another DC, which could be used in a DCSync attack to spread \n"
                         "malicious changes rapidly. This is like a request to immediately send out any new updates or\n"
                         "changes. It's like calling a friend and saying, 'Hi, if you have any new news, tell me now!'\n"
-                        " It's a way to ensure that a computer has the latest information without waiting for the \n"
+                        "It's a way to ensure that a computer has the latest information without waiting for the \n"
                         "regular update schedule.",
                 "ATT&CK TTP": "T1003.006 - DCSync",
                 "Attack Type": "Credential Access and Lateral Movement",
@@ -99,12 +99,12 @@ dcerpc_services = {
                         ""
                         "This function is like updating the contact list on your phone. It manages references to \n"
                         "other computers that should receive updates. It's like telling your phone which friends to\n"
-                        " keep in the loop about your news.",
+                        "keep in the loop about your news.",
                 "ATT&CK TTP": "T1484.002 - Domain Trust Modification, T1583: Acquire Infrastructure: Domains, \n"
                               "T1584: Compromise Infrastructure",
                 "Attack Type": "Persistence and Defense Evasion, Infrastructure Hijacking or Traffic Redirection",
                 "IOC": "Unexpected updates to replication references, which could signify an attempt to redirect\n"
-                       " or manipulate replication traffic."
+                       "or manipulate replication traffic."
             },
             5: {
                 "Method": "IDL_DRSReplicaAdd",
@@ -142,7 +142,7 @@ dcerpc_services = {
                 "Note": "Modifies replication settings, potentially to evade defenses or maintain unauthorized \n"
                         "access within an environment. Specifically, it's a function used in Windows Active \n"
                         "Directory environments that allows changes to be made to how domain controllers replicate\n"
-                        " directory information among each other. \n\n"
+                        "directory information among each other. \n\n"
                         ""
                         "This function is a part of the internal workings of Active Directory that helps \n"
                         "administrators or the system itself to manage the replication topology—the 'map' that \n"
@@ -237,7 +237,7 @@ dcerpc_services = {
                         "credentials. \n\n"
                         ""
                         "This function is like a labeling machine for user accounts. SPN stands for Service Principal\n"
-                        " Name, which is essentially a unique identifier for a service on a network. By modifying \n"
+                        "Name, which is essentially a unique identifier for a service on a network. By modifying \n"
                         "SPNs, this function can change the labels attached to user accounts, which can affect how \n"
                         "users or services prove their identity on the network. If someone changes these labels \n"
                         "incorrectly or maliciously, it could allow unauthorized access to network services.",
@@ -419,8 +419,8 @@ dcerpc_services = {
             27: {
                 "Method": "IDL_DRSFinishDemotion",
                 "Note": "Either performs one or more steps toward the complete removal of a DC from an AD LDS forest,\n"
-                        " or it undoes the effects of the first phase of removal (performed by IDL_DRSInitDemotion).\n"
-                        " This method is supported by AD LDS only. This is the final step in the retirement process. \n"
+                        "or it undoes the effects of the first phase of removal (performed by IDL_DRSInitDemotion).\n"
+                        "This method is supported by AD LDS only. This is the final step in the retirement process. \n"
                         "After all the data and duties have been handed off, this function completes the demotion, \n"
                         "essentially removing the manager's status and ensuring the office can run smoothly without \n"
                         "them.",
@@ -674,7 +674,7 @@ dcerpc_services = {
                 "Note": "Part of the secure channel establishment process, this method is used in the initial stages \n"
                         "of the Zerologon exploit. Imagine this as the security guard asking for a password before \n"
                         "letting someone in. It's a part of the process where the computer and the network's security\n"
-                        " system agree on a 'secret handshake' so that they can communicate securely. \n\n"
+                        "system agree on a 'secret handshake' so that they can communicate securely. \n\n"
                         ""
                         "The NetrServerReqChallenge method SHOULD receive a client challenge and return a server \n"
                         "challenge (SC).",
@@ -728,7 +728,7 @@ dcerpc_services = {
             42: {
                 "Method": "NetrServerTrustPasswordsGet",
                 "Note": "This method can be abused to retrieve inter-domain trust passwords, potentially compromising\n"
-                        " the entire AD forest. This could be likened to a higher-up security officer who has the \n"
+                        "the entire AD forest. This could be likened to a higher-up security officer who has the \n"
                         "authority to access the master keys or passwords for various doors in the building. The \n"
                         "function retrieves special passwords (trust passwords) that are used by domain controllers \n"
                         "to establish secure communication with each other.\n\n"
@@ -800,7 +800,7 @@ dcerpc_services = {
                 "ATT&CK TTP": "T1558.002 - Silver Ticket, T1482, T1201",
                 "Attack Type": "Credential Access and Persistence",
                 "IOC": "Suspicious activities around domain trust relationships, possibly indicating efforts to map\n"
-                       " trust policies."
+                       "trust policies."
             },
             45: {
                 "Method": "NetrLogonSamLogonWithFlags",
