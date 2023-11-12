@@ -1,11 +1,11 @@
-# Standard library imports
-import json  # JSON encoder and decoder
 import logging
 import os  # Operating system interfaces
 import subprocess  # Process creation and management
 from collections import Counter  # Container for counting hashable objects
-# Type hinting imports
-from typing import Optional, Dict, List, Tuple, Union, Any
+
+from rich.table import Table
+from rich.console import Console
+from typing import Optional, Dict, List, Tuple, Any
 
 from dcerpc_method_abuse_notes import get_dcerpc_info  # MSRPC to ATT&CK lookup table
 # Custom module imports
@@ -17,7 +17,6 @@ from make_helpers import (
     is_valid_ipv4_address,  # IPv4 address validation
     set_tshark_path,  # Set the path to the tshark application
     get_input_opnum,  # Get and validate user input
-    process_output,  # Takes input, processes it, cleans it, and returns it
 )
 
 # tuple unpacking into the variables tshark and capinfo
@@ -38,7 +37,7 @@ class TShark:
             raise FileNotFoundError('Cannot find tshark in ' + tshark)
 
 
-    # »»————--༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇ B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ S༙྇t༙྇a༙྇t༙྇i༙྇c༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇ -༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇————-««
+    # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ S༙྇t༙྇a༙྇t༙྇i༙྇c༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
 
 
     @staticmethod
@@ -52,18 +51,24 @@ class TShark:
     @staticmethod
     def display_results(results: Dict[str, List[Tuple[str, int]]], fields: Dict[str, str]) -> None:
         """
-        Displays the results of the tshark command processing in a formatted manner.
+        Displays the results of the tshark command processing in a formatted manner using rich.
         Args:
             results (Dict[str, List[Tuple[str, int]]]): The processed results from tshark commands.
             fields (Dict[str, str]): The fields used for each protocol in the tshark command.
         """
+        console = Console()
         for protocol, data in results.items():
             field = fields[protocol]
-            print(f"\n")
-            print(f"{Color.MAROON}{'Count'.rjust(6)}  Host   {protocol}:{field}{Color.END}")
-            print('-' * 40)
+            # Enhanced table with custom box and header style
+            table = Table(title=f"{field}: {protocol}")
+            table.add_column("Count", style="bold cyan", justify="right")
+            table.add_column(f"{protocol}", style="bold red", overflow="fold")
+            # Conditional row styling (example: bold rows with count > 100)
             for host, count in data:
-                print(f"{str(count).rjust(6)}  {host}")
+                style = "bold" if count > 100 else ""
+                # table.add_row(str(count), host)
+                table.add_row(str(count), host, style=style)
+            console.print(table)
 
     @staticmethod
     def _process_output(output: str) -> List[Tuple[str, int]]:
@@ -75,9 +80,7 @@ class TShark:
         Returns:
             List[Tuple[str, int]]: A list of tuples containing the item and its count, sorted by the count.
         """
-        # Remove blank lines and sort
         sorted_output = [line for line in output.strip().split('\n') if line.strip()]
-        # Count and sort based on counts
         return Counter(sorted_output).most_common()
 
     @staticmethod
@@ -109,10 +112,10 @@ class TShark:
             method, note, attack_ttp, attack_type, ioc = None, None, None, None, None
 
 
-    # »»————--྇-྇-྇-྇-྇-྇-྇-྇ E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇  :྇ S྇t྇a྇t྇i྇c྇ M྇e྇t྇h྇o྇d྇s྇ -྇-྇-྇-྇-྇-྇-྇————-««
+    # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ S྇t྇a྇t྇i྇c྇ M྇e྇t྇h྇o྇d྇s྇
 
 
-    # »»————--༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇ B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ T༙྇S༙྇h༙྇a༙྇r༙྇k༙྇ C༙྇o༙྇m༙྇m༙྇a༙྇n༙྇d༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇ -༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇————-««
+    # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ T༙྇S༙྇h༙྇a༙྇r༙྇k༙྇ C༙྇o༙྇m༙྇m༙྇a༙྇n༙྇d༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
 
 
     def _run_tshark_command(self, options: List[str], display_filter: Optional[str] = None,
@@ -135,18 +138,24 @@ class TShark:
         Constructs and executes a tshark command to extract specific fields from packets
         that match a given display filter.
         """
-        # Construct the tshark command options for extracting fields
         options = ['-T', 'fields'] + ['-e' + field for field in fields]
-        # Run the tshark command and capture the output
         output = self._run_tshark_command(options, display_filter=display_filter)
         return output
 
 
-    # »»————--྇-྇-྇-྇-྇-྇-྇-྇ E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇  :྇ T྇S྇h྇a྇r྇k྇ C྇o྇m྇m྇a྇n྇d྇ M྇e྇t྇h྇o྇d྇s྇ -྇-྇-྇-྇-྇-྇-྇————-««
+    # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ T྇S྇h྇a྇r྇k྇ C྇o྇m྇m྇a྇n྇d྇ M྇e྇t྇h྇o྇d྇s྇
 
 
-    # »»————--༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇ B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ A༙྇u༙྇t༙྇o༙྇n༙྇o༙྇m༙྇o༙྇u༙྇s༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇ -༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇————-««
+    # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ A༙྇u༙྇t༙྇o༙྇n༙྇o༙྇m༙྇o༙྇u༙྇s༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
 
+
+    def process_and_display_verbose_results(self):
+        verbose_results, verbose_fields = self.read_verbose()
+        self.display_results(verbose_results, verbose_fields)
+
+    def process_and_display_user_agents(self):
+        user_agent_results, user_agent_fields = self.user_agent()
+        self.display_results(user_agent_results, user_agent_fields)
 
     def host_enum(self) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]:
         """
@@ -246,17 +255,15 @@ class TShark:
             self._run_tshark_command(['-Y', 'arp.packet-storm-detected', '-T', 'fields', '-e',
                                       'arp.packet-storm-detected'])
 
-    def user_agent(self) -> str:
-        """
-        Analyzes and returns a count of user agents found in the HTTP traffic.
-        """
-        # Extract User Agent strings using tshark
+    def user_agent(self) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]:
         cmd = ['-T', 'fields', '-e', 'http.user_agent']
         output = self._run_tshark_command(cmd)
-        # Clean, split, and filter out blank User Agent strings
         user_agents = [ua for ua in output.strip().split('\n') if ua.strip()]
         user_agent_counts = Counter(user_agents).most_common()
-        return json.dumps(user_agent_counts, indent=2)
+        formatted_results = {"HTTP User Agents": [(ua, count) for ua, count in user_agent_counts]}
+        fields_dict = {"HTTP User Agents": "User Agent"}
+        return formatted_results, fields_dict
+
 
     def web_basic(self) -> str:
         """
@@ -267,10 +274,10 @@ class TShark:
         print('')
         return self._run_tshark_command(['-Y', '(http.request or http.response or tls.handshake.type eq 1) and !(ssdp)'])
 
-    # »»————--྇-྇-྇-྇-྇-྇-྇-྇ E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇  :྇ A྇u྇t྇o྇n྇o྇m྇o྇u྇s྇ M྇e྇t྇h྇o྇d྇s྇ -྇-྇-྇-྇-྇-྇-྇————-««
+    # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ A྇u྇t྇o྇n྇o྇m྇o྇u྇s྇ M྇e྇t྇h྇o྇d྇s྇
 
 
-    # »»————--༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇ B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ U༙྇s༙྇e༙྇r༙྇ I༙྇n༙྇p༙྇u༙྇t༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇ -༙྇-༙྇-༙྇-༙྇-༙྇-༙྇-༙྇————-««
+    # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ U༙྇s༙྇e༙྇r༙྇ I༙྇n༙྇p༙྇u༙྇t༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
 
 
     def find_beacons(self, ip_address: Optional[str] = None, interval_frequency: Optional[str] = None) -> Any:
@@ -376,11 +383,6 @@ class TShark:
             f"{Color.LIGHTYELLOW}What type of statistics do you want to view? (conv/hosts/srt/tree): {Color.END}: ")
 
         def conversations() -> None:
-            """
-            Asks the user for a specific protocol and prints the conversation statistics
-            for that protocol using TShark. It accesses a predefined dictionary of commands
-            to generate the appropriate statistics.
-            """
             ask_protocol = input(
                 f"{Color.CYAN}Which protocol would you like to view conversations for? "
                 f"(bluetooth/eth/ip/tcp/usb/wlan){Color.END}: ")
@@ -400,11 +402,6 @@ class TShark:
                 print("Unsupported protocol")
 
         def server_resp_times() -> None:
-            """
-            Asks the user for a specific protocol and prints the server response time
-            statistics for that protocol using TShark. It accesses a predefined dictionary
-            of commands to generate the appropriate statistics.
-            """
             ask_protocol = input(
                 f"{Color.GOLD}Which protocol would you like to see server response times for? "
                 f"(icmp/ldap/smb/smb2/srvsvc/drsuapi/lsarpc/netlogon/samr){Color.END}: ")
@@ -426,11 +423,6 @@ class TShark:
                 print("Unsupported protocol")
 
         def tree() -> None:
-            """
-            Asks the user for a specific protocol and prints the protocol tree statistics
-            for that protocol using TShark. It accesses a predefined dictionary of commands
-            to generate the appropriate statistics.
-            """
             ask_protocol = input(
                 f"{Color.LIGHTGREEN}Which protocol would you like to see tree statistics for? "
                 f"(dns/ip_hosts/http/http_req/http_srv/plen/ptype){Color.END}: ")
@@ -451,9 +443,6 @@ class TShark:
                 print("Unsupported protocol")
 
         def hosts() -> None:
-            """
-            Prints the host statistics from the PCAP file using TShark.
-            """
             tshark_command = ['-qz', 'hosts,ip']
             print(self._run_tshark_command(tshark_command))
 
@@ -468,16 +457,12 @@ class TShark:
         # Call the selected function or print an error if the choice is invalid
         return stats_functions.get(which_stats, lambda: "Unsupported protocol")()
 
-    def read_verbose(self) -> Union[List[Tuple[str, int]], Any]:
-        """
-        Provides verbose information based on the user's choice of protocol to search within the pcap file.
-        """
+    def read_verbose(self) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]:
         try:
             # Prompt the user to select a protocol to search within the pcap file.
             ask_protocol = input(f"{Color.CYAN}Choose a protocol to search (dns, eth, http, icmp, smb2, tls){Color.END}: ")
 
             # Dictionary mapping protocol names to their corresponding field names and display filters.
-            # This is used to construct the appropriate tshark command for each protocol.
             protocol_args = {
                 'eth': (['eth.addr.oui_resolved'], 'eth'),          # Ethernet protocol, filter on OUI addresses
                 'smb2': (['smb2.filename'], 'smb2.filename'),       # SMB2 protocol, filter on filenames
@@ -486,26 +471,12 @@ class TShark:
                 'http': (['http.request.full_uri'], 'http'),        # HTTP protocol, filter on requests
 
             }
-
-            # Common tshark command processing
             if ask_protocol in protocol_args:
                 fields, display_filter = protocol_args[ask_protocol]
                 output = self._process_protocol(display_filter, fields)
-                processed_output = process_output(output, ask_protocol)
-                return json.dumps(processed_output, indent=2)
-
-            # 'icmp' Protocol
-            elif ask_protocol == "icmp":
-                # Common tshark arguments shared by all commands
-                tshark_args = ['-t', 'ad']
-
-                # Capture ICMP Echo Requests data, and Echo Replies data
-                icmp_req = self._run_tshark_command([*tshark_args, '-Y', '(icmp.type == 8) && (icmp.code == 0)'])
-                icmp_resp = self._run_tshark_command([*tshark_args, '-Y', '(icmp[0] == 0) && (icmp[1] == 0)'])
-
-                # Return formatted ICMP data
-                return (f"{Color.LIGHTBLUE}ECHO Requests (frame #, time, src ip, dst ip, info):{Color.END}\n{icmp_req}\n"
-                        f"{Color.LIGHTGREEN}ECHO replies (frame #, time, src ip, dst ip, info):{Color.END}\n{icmp_resp}")
+                processed_output = self.process_output(output, ask_protocol)
+                fields_dict = {ask_protocol: "Description"}
+                return processed_output, fields_dict
 
             else:
                 raise ValueError(f"Unknown protocol: {ask_protocol}")
@@ -515,9 +486,18 @@ class TShark:
             logging.error(err)
             print(f"An error occurred: {err}. Please enter a valid protocol.")
 
+    @staticmethod
+    def process_output(output, protocol):
+        # Split the output into lines
+        lines = output.strip().split('\n')
+        # Remove leading and trailing whitespace and tabs from each line
+        cleaned_lines = [line.strip().replace('\t', '') for line in lines if line.strip()]
+        sorted_counts = Counter(cleaned_lines).most_common()
+        return {protocol: sorted_counts}
 
-    # »»————--྇-྇-྇-྇-྇-྇-྇-྇ E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇  :྇ U྇s྇e྇r྇ I྇n྇p྇u྇t྇ M྇e྇t྇h྇o྇d྇s྇ -྇-྇-྇-྇-྇-྇-྇————-««
+
+    # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ U྇s྇e྇r྇ I྇n྇p྇u྇t྇ M྇e྇t྇h྇o྇d྇s྇
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
