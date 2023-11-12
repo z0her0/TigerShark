@@ -6,7 +6,16 @@ from dcerpc_data import dcerpc_services
 
 def get_dcerpc_info(service_name: str, opnum: int) -> Union[tuple[None, str, None, None], tuple[int, int, int, int, int]]:
     """
-    Retrieves MITRE ATT&CK TTP information for the DCERPC protocol method.
+    Retrieves information about the operation number (opnum) and associated method
+    name for a given DCERPC service.
+
+    Args:
+        service_name (str): The name of the service to query (e.g., "SAMR").
+        opnum (int): The operation number for which to retrieve the method info.
+
+    Returns:
+        tuple: A tuple containing the method name and note associated with the opnum,
+               or (None, None) if not found.
     """
     service: Optional[Dict[str, Any]] = dcerpc_services.get(service_name.lower())
     if not service:
