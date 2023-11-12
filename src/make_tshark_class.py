@@ -87,22 +87,26 @@ class TShark:
         """
         service_name_input = input("Enter the service (e.g., samr, drsuapi, netlogon, lsarpc, srvsvc): ")
         opnum_input = get_input_opnum()
-        method, note, attack_ttp, attack_type, ioc = get_dcerpc_info(service_name_input, opnum_input)
-        if method:
-            print(f"{Color.AQUA}Info for {service_name_input} opnum {opnum_input}:{Color.END}")
-            print("")
-            print(f"{Color.UNDERLINE}Function{Color.END}: {method}")
-            print("")
-            print(f"{Color.UNDERLINE}ATT&CK TTP{Color.END}: {attack_ttp}")
-            print("")
-            print(f"{Color.UNDERLINE}Attack Type{Color.END}: {attack_type}")
-            print("")
-            print(f"{Color.UNDERLINE}IOC{Color.END}: {ioc}")
-            print("")
-            print(f"{Color.UNDERLINE}Note{Color.END}: {note}")
-            print("")
-        else:
-            print(note)
+        try:
+            method, note, attack_ttp, attack_type, ioc = get_dcerpc_info(service_name_input, opnum_input)
+            if method:
+                print(f"{Color.AQUA}Info for {service_name_input} opnum {opnum_input}:{Color.END}")
+                print("")
+                print(f"{Color.UNDERLINE}Function{Color.END}: {method}")
+                print("")
+                print(f"{Color.UNDERLINE}ATT&CK TTP{Color.END}: {attack_ttp}")
+                print("")
+                print(f"{Color.UNDERLINE}Attack Type{Color.END}: {attack_type}")
+                print("")
+                print(f"{Color.UNDERLINE}IOC{Color.END}: {ioc}")
+                print("")
+                print(f"{Color.UNDERLINE}Note{Color.END}: {note}")
+                print("")
+            else:
+                print(note)
+        except ValueError as e:
+            print(f"Error occurred: {e}")
+            method, note, attack_ttp, attack_type, ioc = None, None, None, None, None
 
 
     # »»————--྇-྇-྇-྇-྇-྇-྇-྇ E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇  :྇ S྇t྇a྇t྇i྇c྇ M྇e྇t྇h྇o྇d྇s྇ -྇-྇-྇-྇-྇-྇-྇————-««
@@ -470,7 +474,7 @@ class TShark:
         """
         try:
             # Prompt the user to select a protocol to search within the pcap file.
-            ask_protocol = input(f"{Color.CYAN}Choose a protocol to search{Color.END}: ")
+            ask_protocol = input(f"{Color.CYAN}Choose a protocol to search (dns, eth, http, icmp, smb2, tls){Color.END}: ")
 
             # Dictionary mapping protocol names to their corresponding field names and display filters.
             # This is used to construct the appropriate tshark command for each protocol.
