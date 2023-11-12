@@ -353,7 +353,10 @@ dcerpc_services = {
                         "giving them the correct access to files and systems they need for those groups.",
                 "ATT&CK TTP": "T1069 - Permission Groups Discovery",
                 "Attack Type": "Discovery",
-                "IOC": ""
+                "IOC": "Unusual patterns or a high volume of queries to retrieve group memberships of users, \n"
+                       "particularly if focused on accounts with elevated permissions or in sensitive groups, \n"
+                       "which might indicate an attempt to discover permission groups for subsequent exploitation \n"
+                       "or access escalation."
             },
             22: {
                 "Method": "IDL_DRSReplicaVerifyObjects",
@@ -491,7 +494,8 @@ dcerpc_services = {
                         "example.",
                 "ATT&CK TTP": "T1087 - Account Discovery",
                 "Attack Type": "Discovery of Privileged Accounts",
-                "IOC": ""
+                "IOC": "Increased queries to enumerate account objects, especially those with elevated privileges \n"
+                       "or in critical organizational units."
             },
             13: {
                 "Method": "LsarEnumerateTrustedDomains",
@@ -507,7 +511,8 @@ dcerpc_services = {
                         "center trusts for its members to visit, this function would provide you with that information",
                 "ATT&CK TTP": "T1482 - Domain Trust Discovery",
                 "Attack Type": "Lateral Movement Preparation",
-                "IOC": ""
+                "IOC": "Unusual requests or spikes in queries for trusted domain objects, indicating reconnaissance \n"
+                       "of trust relationships."
             },
             14: {
                 "Method": "LsarLookupNames",
@@ -522,7 +527,8 @@ dcerpc_services = {
                         "(in technical terms, their security identifiers or SIDs).",
                 "ATT&CK TTP": "T1087 - Account Discovery",
                 "Attack Type": "Privilege Escalation and Reconnaissance",
-                "IOC": ""
+                "IOC": "High volume of name-to-SID resolution requests, particularly for high-privilege or \n"
+                       "administrative accounts."
             },
             15: {
                 "Method": "LsarLookupSids",
@@ -536,7 +542,8 @@ dcerpc_services = {
                         "the actual names of the customers.",
                 "ATT&CK TTP": "T1178 - SID-History Injection",
                 "Attack Type": "Privilege Escalation",
-                "IOC": ""
+                "IOC": "Multiple SID-to-name translation requests that could indicate attempts at mapping network \n"
+                       "privileges or account reconnaissance."
             },
             23: {
                 "Method": "LsarGetSystemAccessAccount",
@@ -549,7 +556,8 @@ dcerpc_services = {
                         "checking what services a customer has signed up for based on their account information.",
                 "ATT&CK TTP": "T1003 - Credential Dumping",
                 "Attack Type": "Discovery of Account Vulnerabilities",
-                "IOC": ""
+                "IOC": "Queries for system access account flags that are not part of routine checks, possibly \n"
+                       "indicating a search for accounts with weak security."
             },
             26: {
                 "Method": "LsarQueryInfoTrustedDomain",
@@ -563,7 +571,8 @@ dcerpc_services = {
                         "the way they operate, or the agreements they have with your own department.\n",
                 "ATT&CK TTP": "T1482 - Domain Trust Discovery",
                 "Attack Type": "Lateral Movement",
-                "IOC": ""
+                "IOC": "Elevated frequency of requests for information about trusted domains, potentially for \n"
+                       "planning cross-domain lateral movements."
             },
             35: {
                 "Method": "LsarEnumerateAccountsWithUserRight",
@@ -577,7 +586,8 @@ dcerpc_services = {
                         "would give you that list.",
                 "ATT&CK TTP": "T1069 - Permission Groups Discovery",
                 "Attack Type": "Privilege Escalation",
-                "IOC": ""
+                "IOC": "Frequent requests to enumerate accounts with specific user rights, possibly to identify \n"
+                       "accounts with exploitable privileges."
             },
             44: {
                 "Method": "LsarOpenPolicy2",
@@ -591,16 +601,21 @@ dcerpc_services = {
                         "the policy file cabinet. This function gets you those keys if you're authorized.",
                 "ATT&CK TTP": "T1484 - Domain Policy Modification, T1087: Account Discovery",
                 "Attack Type": "Privilege Escalation or Policy Manipulation",
-                "IOC": ""
+                "IOC": "Unusual or unauthorized attempts to access or modify LSA policy settings, indicating \n"
+                       "potential policy manipulation or privilege escalation attempts."
             },
             45: {
                 "Method": "LsarGetUserName",
                 "Note": "Returns the name and the domain name of the security principal that is invoking the method. \n"
                         "This is like asking, 'Who am I?' to the receptionist. It’s a simple request that tells you \n"
                         "your own name and job title as per the office records.",
-                "ATT&CK TTP": "",
-                "Attack Type": "",
-                "IOC": ""
+                "ATT&CK TTP": "T1087.002 - Account Discovery: Domain Account. This technique involves discovering \n"
+                              "domain accounts, which can include queries for user data.",
+                "Attack Type": "Reconnaissance. This method, when used by adversaries, is typically part of \n"
+                               "reconnaissance activities to gather information about user accounts within a network \n"
+                               "or system.",
+                "IOC": "High frequency of requests for the invoking security principal's name, potentially part of \n"
+                       "reconnaissance activities."
             },
             76: {
                 "Method": "lsa_LookupSids3",
@@ -615,7 +630,8 @@ dcerpc_services = {
                         "phonebook for employee IDs that helps figure out who these IDs belong to.",
                 "ATT&CK TTP": "T1087 - Account Discovery",
                 "Attack Type": "Reconnaissance",
-                "IOC": ""
+                "IOC": "Repeated SID-to-name resolution activities, possibly as part of an effort to map out users \n"
+                       "and groups within Active Directory."
             },
             77: {
                 "Method": "lsa_LookupNames4",
@@ -633,7 +649,8 @@ dcerpc_services = {
                         "other details like the department and direct line for each employee.",
                 "ATT&CK TTP": "T1558.001 - Golden Ticket",
                 "Attack Type": "Credential Theft and Privilege Escalation",
-                "IOC": ""
+                "IOC": "Frequent translation of account names to SIDs, which could be preparatory steps for creating\n"
+                       "Golden Tickets or identifying escalation targets."
             }
         }
     },
@@ -667,7 +684,13 @@ dcerpc_services = {
                         "The NetrLogonSamLogoff method SHOULD update the user lastLogoff attribute for the SAM \n"
                         "accounts.",
                 "ATT&CK TTP": "T1485 - Data Destruction",
-                "Attack Type": "Denial of Service"
+                "Attack Type": "Denial of Service",
+                "IOC": "-Patterns where users are logged off en masse or at unusual times, which could indicate an \n"
+                       "attempt to disrupt normal operations. \n"
+                       "-Multiple logoff requests for the same user accounts in a short period, especially outside of \n"
+                       "usual working hours, could suggest an attempt to disrupt the user's access. \n"
+                       "-System or security logs displaying an unusually high number of failed logoff attempts or \n"
+                       "errors related to user logoff processes."
             },
             4: {
                 "Method": "NetrServerReqChallenge",
@@ -842,7 +865,7 @@ dcerpc_services = {
                         "a large company. ",
                 "ATT&CK TTP": "T1087 - Account Discovery",
                 "Attack Type": "Discovery",
-                "IOC": ""
+                "IOC": "Numerous or repeated queries to enumerate domain names in a network."
             },
             5: {
                 "Method": "SamrLookupDomainInSamServer",
@@ -854,7 +877,7 @@ dcerpc_services = {
                         "department's internal code by its name.",
                 "ATT&CK TTP": "T1069 - Permission Groups Discovery",
                 "Attack Type": "Privilege Escalation",
-                "IOC": ""
+                "IOC": "Repeated queries to resolve domain names to SIDs."
             },
             17: {
                 "Method": "SamrLookupNamesInDomain",
@@ -864,7 +887,7 @@ dcerpc_services = {
                         "Translates a set of account names into a set of RIDs.",
                 "ATT&CK TTP": "T1087 - Account Discovery",
                 "Attack Type": "Credential Access",
-                "IOC": ""
+                "IOC": "Frequent translation requests from usernames to RIDs."
             },
             13: {
                 "Method": "SamrEnumerateUsersInDomain",
@@ -874,7 +897,7 @@ dcerpc_services = {
                         "Enumerates all users.",
                 "ATT&CK TTP": "T1087 - Account Discovery",
                 "Attack Type": "Credential Access",
-                "IOC": ""
+                "IOC": "Multiple queries to list all user accounts in a domain."
             },
             7: {
                 "Method": "SamrOpenDomain",
@@ -884,7 +907,7 @@ dcerpc_services = {
                         "Obtains a handle to a domain object, given a SID.",
                 "ATT&CK TTP": "T1087 - Account Discovery",
                 "Attack Type": "Discovery",
-                "IOC": ""
+                "IOC": "Attempts to open multiple domain objects in quick succession."
             },
             8: {
                 "Method": "SamrQueryInformationDomain",
@@ -894,7 +917,7 @@ dcerpc_services = {
                         "Obtains attributes from a domain object.",
                 "ATT&CK TTP": "T1201 - Password Policy Discovery",
                 "Attack Type": "Credential Access",
-                "IOC": ""
+                "IOC": "Queries to access domain policies or attributes."
             },
             34: {
                 "Method": "SamrOpenUser",
@@ -904,7 +927,7 @@ dcerpc_services = {
                         "Obtains a handle to a user, given a RID.",
                 "ATT&CK TTP": "T1087 - Account Discovery",
                 "Attack Type": "Persistence",
-                "IOC": ""
+                "IOC": "Repeated requests to obtain handles to various user accounts."
             },
             36: {
                 "Method": "SamrQueryInformationUser",
@@ -914,7 +937,7 @@ dcerpc_services = {
                         "Obtains attributes from a user object.",
                 "ATT&CK TTP": "T1078 - Valid Accounts, T1087: Account Discovery",
                 "Attack Type": "Credential Access",
-                "IOC": ""
+                "IOC": "Frequent requests for detailed user account information."
             },
             25: {
                 "Method": "SamrGetMembersInGroup",
@@ -924,14 +947,15 @@ dcerpc_services = {
                         "Reads the members of a group.",
                 "ATT&CK TTP": "T1069 - Permission Groups Discovery",
                 "Attack Type": "Privilege Escalation",
-                "IOC": ""
+                "IOC": "Queries to obtain group membership details, especially for administrative or sensitive groups."
             },
             38: {
                 "Method": "SamrChangePasswordUser",
                 "Note": "The SamrChangePasswordUser method changes the password of a user object.",
                 "ATT&CK TTP": "T1003: OS Credential Dumping",
                 "Attack Type": "Credential Dumping",
-                "IOC": ""
+                "IOC": "Attempts to change user passwords, especially if targeting multiple accounts or \n"
+                       "privileged users."
             }
         }
     },
@@ -953,7 +977,7 @@ dcerpc_services = {
                         "The NetrShareEnum method retrieves information about each shared resource on a server.",
                 "ATT&CK TTP": "T1135 - Network Share Discovery",
                 "Attack Type": "Discovery and Lateral Movement",
-                "IOC": ""
+                "IOC": "Unusual network share enumeration requests, especially from unexpected sources or at odd times."
             },
             16: {
                 "Method": "NetrShareGetInfo",
@@ -966,7 +990,8 @@ dcerpc_services = {
                         "Retrieves information about a particular shared resource on the server from the ShareList.",
                 "ATT&CK TTP": "T1082 - System Information Discovery",
                 "Attack Type": "Discovery",
-                "IOC": ""
+                "IOC": "Specific queries for information on particular network shares, outside of regular \n"
+                       "administrative activity."
             },
             12: {
                 "Method": "NetrSessionEnum",
@@ -982,7 +1007,8 @@ dcerpc_services = {
                         "server or return an error code.",
                 "ATT&CK TTP": "T1049 - System Network Connections Discovery",
                 "Attack Type": "Discovery",
-                "IOC": ""
+                "IOC": "Excessive session enumeration requests which might indicate an attempt to map active \n"
+                       "connections and user sessions."
             },
             13: {
                 "Method": "NetrSessionDel",
@@ -992,7 +1018,8 @@ dcerpc_services = {
                         "client.",
                 "ATT&CK TTP": "T1070 - Indicator Removal on Host",
                 "Attack Type": "Defense Evasion",
-                "IOC": ""
+                "IOC": "Unexpected termination of user sessions, potentially disrupting normal operations or hiding \n"
+                       "unauthorized access."
             },
             9: {
                 "Method": "NetrFileEnum",
@@ -1002,7 +1029,8 @@ dcerpc_services = {
                         "depending on the parameters specified, or return an error code.",
                 "ATT&CK TTP": "T1083 - File and Directory Discovery",
                 "Attack Type": "Discovery",
-                "IOC": ""
+                "IOC": "Abnormal patterns of file access queries, which might indicate an adversary trying to locate \n"
+                       "specific files or directories."
             },
             11: {
                 "Method": "NetrFileClose",
@@ -1015,7 +1043,8 @@ dcerpc_services = {
                         "means.",
                 "ATT&CK TTP": "T1489 - Service Stop",
                 "Attack Type": "Impact",
-                "IOC": ""
+                "IOC": "Unusual closing of files, especially those critical to system or application functionality, \n"
+                       "which could disrupt services."
             },
             14: {
                 "Method": "NetrShareAdd",
@@ -1024,7 +1053,8 @@ dcerpc_services = {
                         "The NetrShareAdd method shares a server resource.",
                 "ATT&CK TTP": "T1135 - Network Share Discovery",
                 "Attack Type": "Persistence and Lateral Movement",
-                "IOC": ""
+                "IOC": "Creation of new network shares that are not in line with standard IT practices or business \n"
+                       "needs."
             },
             18: {
                 "Method": "NetrShareDel",
@@ -1035,7 +1065,8 @@ dcerpc_services = {
                         "is also deleted from permanent storage.",
                 "ATT&CK TTP": "T1070 - Indicator Removal on Host",
                 "Attack Type": "Defense Evasion",
-                "IOC": ""
+                "IOC": "Deletion of network shares, possibly in an effort to cover tracks after data exfiltration or \n"
+                       "unauthorized access."
             },
             17: {
                 "Method": "NetrShareSetInfo",
@@ -1044,7 +1075,8 @@ dcerpc_services = {
                         "The NetrShareSetInfo method sets the parameters of a shared resource in a ShareList.",
                 "ATT&CK TTP": "T1222 - File and Directory Permissions Modification",
                 "Attack Type": "Privilege Escalation",
-                "IOC": ""
+                "IOC": "Changes to network share permissions or settings, particularly those granting wider access or\n"
+                       "reducing security controls."
             }
         }
     },
@@ -1058,7 +1090,8 @@ dcerpc_services = {
                 "Note": "Provides access to system-wide settings and configurations through the HKLM hive.",
                 "ATT&CK TTP": "T1112 - Modify Registry",
                 "Attack Type": "Persistence, Privilege Escalation, and Configuration Tampering",
-                "IOC": ""
+                "IOC": "Unauthorized registry changes in HKLM hive, unusual remote access to HKLM hive, unexpected \n"
+                       "system-wide changes in configurations."
             },
             5: {
                 "Method": "OpenHKU",
@@ -1066,7 +1099,8 @@ dcerpc_services = {
                         "configuration tampering.",
                 "ATT&CK TTP": "T1112 - Modify Registry",
                 "Attack Type": "Persistence and Privilege Escalation",
-                "IOC": ""
+                "IOC": "Changes in user profiles that are unexplained or unauthorized, unusual access patterns to \n"
+                       "HKU hive."
             },
             22: {
                 "Method": "RegSetValue",
@@ -1074,21 +1108,23 @@ dcerpc_services = {
                         "propagation and system configuration changes.",
                 "ATT&CK TTP": "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
                 "Attack Type": "Persistence, Privilege Escalation, and System Compromise",
-                "IOC": ""
+                "IOC": "Creation of unusual or suspicious registry keys and values, particularly in startup or \n"
+                       "run keys."
             },
             6: {
                 "Method": "RegCreateKey",
                 "Note": "Can be used to create new registry keys for storing data or establishing persistence.",
                 "ATT&CK TTP": "T1136 - Create Account",
                 "Attack Type": "Persistence via New Account Creation",
-                "IOC": ""
+                "IOC": "Creation of new, unexpected registry keys, possibly with unusual names or in unusual locations."
             },
             8: {
                 "Method": "RegDeleteKey",
                 "Note": "Potential for removing evidence of presence or disrupting system/application functionality.",
                 "ATT&CK TTP": "T1485 - Data Destruction",
                 "Attack Type": "Defense Evasion by Removing Evidence",
-                "IOC": ""
+                "IOC": "Deletion of registry keys that are critical for system or application functionality, unusual\n"
+                       "patterns of registry key deletions."
             },
             9: {
                 "Method": "RegEnumKey",
@@ -1096,7 +1132,8 @@ dcerpc_services = {
                         "exploitation targets.",
                 "ATT&CK TTP": "T1082 - System Information Discovery",
                 "Attack Type": "Discovery and Reconnaissance",
-                "IOC": ""
+                "IOC": "Unusual, systematic enumeration of registry keys, particularly sensitive system or \n"
+                       "application keys."
             },
             10: {
                 "Method": "RegEnumValue",
@@ -1104,7 +1141,8 @@ dcerpc_services = {
                         "of other malware.",
                 "ATT&CK TTP": "T1012 - Query Registry",
                 "Attack Type": "Discovery and Information Gathering",
-                "IOC": ""
+                "IOC": "Systematic scanning or enumeration of registry values, especially if correlated with other \n"
+                       "suspicious activities."
             }
         }
     },
