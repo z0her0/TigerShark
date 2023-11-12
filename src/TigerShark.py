@@ -1,12 +1,22 @@
 import os
+import random
 import subprocess
 import sys
 from typing import Dict, Callable, Union
-
+from rich.console import Console
+from rich.table import Table
+from rich.text import Text
 import make_banner_art
 from make_tshark_class import TShark
 from search_tshark_filters import valid_display_filters_tshark
-from make_colorful import Color, ColorCustom
+from make_colorful import Color
+
+
+class ColorRGB:
+    @staticmethod
+    def random_color():
+        """Generate a random RGB color tuple."""
+        return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
 
 # Type alias for the action in menu options
@@ -36,53 +46,26 @@ def wait_for_menu() -> None:
 
 
 def print_menu_options(menu_options: dict, menu_colors: dict) -> None:
-    """
-    Prints the menu options in a horizontal layout, two options per line, with alignment.
-
-    Args:
-    menu_options (dict): The dictionary containing the menu options.
-    menu_colors (dict): The dictionary containing the colors for the menu options.
-    """
-    # Retrieve all the keys (menu option numbers) from the menu_options dictionary
+    console = Console()
+    table = Table(show_header=True)
+    print(rf"    ٩(●̮̮̃•̃)=/̵͇̿̿/'̿̿ ̿̿                              ̿̿ ̿̿ ̿̿\̵͇̿̿\=(•̃●̮̮̃)۶")
+    table.add_column("🎧♪┏(°.°)┛🎼", style="bold cyan", justify="left")
+    table.add_column("🎼┏(°.°)┛♪🎧", style="bold magenta", justify="right")
     keys = list(menu_options.keys())
-    # Calculate the maximum length of any menu option string for alignment purposes
-    max_length = max(len(f"{key}. {menu_options[key]['description']}") for key in keys) + 3
-
-    # Iterate over the keys in pairs (0, 1), (2, 3), etc.
     for i in range(0, len(keys), 2):
-        # Extract the first key in the current pair
         key1 = keys[i]
-        # Retrieve the description for the first key from the menu_options dictionary
         desc1 = menu_options[key1]["description"]
-        # Retrieve the color for the first key from the menu_colors dictionary
-        color1 = menu_colors[key1].color
-        # Format the first option by combining the color, key, description, and resetting color at the end
-        option1 = f"{color1}{key1}. {desc1}{Color.END}"
-
-        # This `if` statement checks whether there is a next menu option available. It does this by comparing i + 1
-        # (which would be the index of the next menu option) to the length of the keys list. If i + 1 is less than
-        # the length of keys, it means there is another menu option to process.
+        color1 = menu_colors[key1]
+        text1 = Text(f"{key1}. {desc1}", style=f"rgb({color1[0]},{color1[1]},{color1[2]})")
         if i + 1 < len(keys):
-            # If true, the next key (menu option number) is retrieved from the keys list using the index i + 1.
             key2 = keys[i + 1]
-            # The description of the menu option corresponding to key2 is accessed from the menu_options dictionary.
             desc2 = menu_options[key2]["description"]
-            # The color for this menu option, specified in menu_colors dictionary, is retrieved.
-            color2 = menu_colors[key2].color
-            # Formatting the menu option into a string. It includes the menu option number (key2), its
-            # description (desc2), and the color codes to apply the specified color to the text.
-            option2 = f"{color2}{key2}. {desc2}{Color.END}"
+            color2 = menu_colors[key2]
+            text2 = Text(f"{key2}. {desc2}", style=f"rgb({color2[0]},{color2[1]},{color2[2]})")
         else:
-            # If there is no second option, set it to an empty string
-            option2 = ""
-
-        # Calculate the necessary padding for alignment of the first option
-        padding = max_length - len(f"{key1}. {desc1}")
-        # Combine the two options into a single line with appropriate spacing
-        line = f"{option1}{' ' * padding}{option2}"
-
-        # Print the combined line
-        print(line)
+            text2 = Text("")
+        table.add_row(text1, text2)
+    console.print(table)
 
 
 def main() -> None:
@@ -145,7 +128,7 @@ menu_options: MenuOptionsType = {
     },
     "4": {
         "description": "Search Protocol",
-        "action": lambda: print(f"{Color.LIGHTGREEN}Search Results{Color.END}:\n{TShark(pcap_file=ask_user_input).read_verbose()}")
+        "action": lambda: TShark(pcap_file=ask_user_input).process_and_display_verbose_results()
     },
     "5": {
         "description": "Enumerate Hostnames",
@@ -193,7 +176,7 @@ menu_options: MenuOptionsType = {
     },
     "16": {
         "description": "Get User Agents",
-        "action": lambda: print(f"{Color.LIGHTYELLOW}User Agents (by count){Color.END}:\n{TShark(pcap_file=ask_user_input).user_agent()}")
+        "action": lambda: TShark(pcap_file=ask_user_input).process_and_display_user_agents()
     },
     "17": {
         "description": "Detect Signs Of ARP Poisoning",
@@ -226,7 +209,7 @@ menu_options: MenuOptionsType = {
 }
 
 # Define the dictionary of menu colors for each menu option
-menu_colors: Dict[str, ColorCustom] = {str(i): ColorCustom() for i in range(1, 24)}
+menu_colors: Dict[str, tuple] = {str(i): ColorRGB.random_color() for i in range(1, 24)}
 
 # Check if this script is the main script (it is) and call the main function
 if __name__ == '__main__':
