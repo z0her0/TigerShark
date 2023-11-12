@@ -3,6 +3,50 @@ import random
 # Import the random module to generate random numbers, shuffle sequences randomly, and choose random items.
 # This is used to generate different menu option colors each time you use TigerShark
 
+
+class ColorRGB:
+    """Class to represent RGB color values equivalent to the ANSI color codes."""
+
+    # Builtin colors (approximations)
+    PURPLE = (128, 0, 128)  # Equivalent to ANSI 'Purple'
+    CYAN = (0, 255, 255)    # Equivalent to ANSI 'Cyan'
+    DARKCYAN = (0, 139, 139)  # Equivalent to ANSI 'Dark Cyan'
+    MAGENTA = (255, 0, 255)  # Equivalent to ANSI 'Magenta'
+    BLUE = (0, 0, 255)      # Equivalent to ANSI 'Blue'
+    LIGHTBLUE = (173, 216, 230)  # Equivalent to ANSI 'Light Blue'
+    GREEN = (0, 128, 0)     # Equivalent to ANSI 'Green'
+    LIGHTGREEN = (144, 238, 144)  # Equivalent to ANSI 'Light Green'
+    LIGHTYELLOW = (255, 255, 224)  # Equivalent to ANSI 'Light Yellow'
+    YELLOW = (255, 255, 0)  # Equivalent to ANSI 'Yellow'
+    RED = (255, 0, 0)       # Equivalent to ANSI 'Red'
+    LIGHTRED = (255, 204, 203)  # Equivalent to ANSI 'Light Red'
+
+    # Custom colors (based on xterm-256color palette approximations)
+    ORANGE = (255, 135, 0)
+    PINK = (255, 105, 180)
+    TEAL = (0, 128, 128)
+    GREY = (190, 190, 190)
+    LIME = (50, 205, 50)
+    AQUA = (0, 255, 255)
+    VIOLET = (238, 130, 238)
+    GOLD = (255, 215, 0)
+    INDIGO = (75, 0, 130)
+    ROSE = (255, 0, 127)
+    LAVENDER = (230, 230, 250)
+    MAROON = (128, 0, 0)
+    OLIVE = (128, 128, 0)
+    SKY_BLUE = (135, 206, 235)
+    CORAL = (255, 127, 80)
+    BEIGE = (245, 245, 220)
+    TURQUOISE = (64, 224, 208)
+    MINT = (189, 252, 201)
+    NAVY = (0, 0, 128)
+    PLUM = (221, 160, 221)
+    MUSTARD = (255, 219, 88)
+    CYCLAMEN = (255, 113, 113)
+    SEAFOAM = (159, 226, 191)
+
+
 class ColorCustom:
     """Class to represent the text color codes used for terminal output."""
 
