@@ -1,4 +1,31 @@
-#dcerpc_data.py
+"""  # pylint: disable=line-too-long
+Module: dcerpc_data
+
+This module defines structured data representations for DCERPC (Distributed Computing Environment/Remote Procedure Call)
+services and their associated methods, focusing on identifying and understanding potential vulnerabilities and common
+attack patterns leveraged by Advanced Persistent Threats (APTs). It includes detailed descriptions of several key DCERPC
+services, their operation numbers (opnums), and specific RPC methods that are known targets for exploitation.
+
+Classes:
+- MethodDetails: Defines detailed information about specific methods in a DCERPC service, including potential attack
+vectors and indicators of compromise.
+- ServiceInfo: Encapsulates information about a DCERPC service, including its UUID, protocol, version, and methods.
+- SummaryDetail: Provides summary information for various aspects of DCERPC services, offering a high-level overview
+of their roles and characteristics.
+- DcerpcData: A comprehensive collection of DCERPC data, including service details, summaries, and references.
+
+Data:
+- dcerpc_services: A dictionary containing a comprehensive map of DCERPC services, their methods, and associated
+security implications. Each entry provides insights into how these services and methods might be exploited by APTs
+and includes references to additional information.
+
+The module is structured to facilitate easy access and interpretation of complex DCERPC data, serving as a valuable
+resource for security analysis and threat modeling in network protocol environments.
+"""
+
+from typing import Dict, TypedDict
+
+# pylint: disable=line-too-long
 
 # The `dcerpc_services` dictionary is a comprehensive map of several DCERPC services, their UUIDs, descriptions,
 # versions, and associated methods along with operation numbers (opnums). This data structure can be utilized to
@@ -6,6 +33,89 @@
 # Each service in the dictionary details specific RPC methods that may be targeted by APTs, with a focus on methods
 # known to be exploited historically or which may pose potential security risks.
 
+
+class MethodDetails(TypedDict, total=False):
+    """
+    Represents detailed information about a specific method in a DCERPC service.
+
+    Attributes:
+        Method (str): The name of the method.
+        Note (str): A note or description of the method.
+        Attack_TTP (str): Tactics, Techniques, and Procedures used in attacks involving this method.
+        Attack_Type (str): The type of attack associated with this method.
+        IOC (str): Indicators of Compromise associated with this method.
+    """
+    Method: str
+    Note: str
+    Attack_TTP: str
+    Attack_Type: str
+    IOC: str
+
+
+class ServiceInfo(TypedDict, total=False):
+    """
+    Represents information about a specific DCERPC service.
+
+    Attributes:
+        UUID (str): The Universal Unique Identifier of the service.
+        Protocol (str): The protocol used by the service.
+        Version (str): The version of the service.
+        Methods (Dict[int, MethodDetails]): A dictionary mapping operation numbers (opnums) to their corresponding
+        method details.
+    """
+    UUID: str
+    Protocol: str
+    Version: str
+    Methods: Dict[int, MethodDetails]
+
+
+class SummaryDetail(TypedDict):
+    """
+    Represents summary details for different aspects of DCERPC services.
+
+    Attributes:
+        overview (str): General overview of the DCERPC services.
+        dcerpc (str): Details specific to the DCERPC protocol.
+        ms_nrpc (str): Details specific to the MS-NRPC protocol.
+        ms_drsr (str): Details specific to the MS-DRSR protocol.
+        ms_lsad (str): Details specific to the MS-LSAD protocol.
+        ms_srvs (str): Details specific to the MS-SRVS protocol.
+        ms_samr (str): Details specific to the MS-SAMR protocol.
+    """
+    overview: str
+    dcerpc: str
+    ms_nrpc: str
+    ms_drsr: str
+    ms_lsad: str
+    ms_srvs: str
+    ms_samr: str
+
+
+class DcerpcData(TypedDict, total=False):
+    """
+    Represents a comprehensive collection of DCERPC data, including service details and references.
+
+    Attributes:
+        summary (SummaryDetail): A summary of the DCERPC data.
+        drsuapi (ServiceInfo): Information about the DRSUAPI service.
+        lsarpc (ServiceInfo): Information about the LSARPC service.
+        netlogon (ServiceInfo): Information about the NETLOGON service.
+        samr (ServiceInfo): Information about the SAMR service.
+        srvsvc (ServiceInfo): Information about the SRVSVC service.
+        winreg (ServiceInfo): Information about the WINREG service.
+        references (Dict[str, str]): A dictionary of references or sources of information.
+    """
+    summary: SummaryDetail
+    drsuapi: ServiceInfo
+    lsarpc: ServiceInfo
+    netlogon: ServiceInfo
+    samr: ServiceInfo
+    srvsvc: ServiceInfo
+    winreg: ServiceInfo
+    references: Dict[str, str]
+
+
+# pylint: disable=line-too-long
 dcerpc_services = {
     "summary": {
         "overview": "Think of these protocols like different specialized tools in a toolbox, each with a specific \n"
@@ -46,8 +156,8 @@ dcerpc_services = {
                         "to communicate about replication. It's the way a computer says 'Hello, I'd like to talk \n"
                         "about keeping our user and computer information in sync,' to which the other system responds\n"
                         "by establishing a connection for them to communicate securely.",
-                "ATT&CK TTP": "T1190: Exploit Public-Facing Application, T1210: Exploitation of Remote Services",
-                "Attack Type": "Initial System Compromise or Network Mapping",
+                "Attack_TTP": "T1190: Exploit Public-Facing Application, T1210: Exploitation of Remote Services",
+                "Attack_Type": "Initial System Compromise or Network Mapping",
                 "IOC": "Irregular binding requests to the directory service, possibly indicating initial \n"
                        "exploitation or reconnaissance attempts."
             },
@@ -58,8 +168,8 @@ dcerpc_services = {
                         "systems have finished communicating about replication, IDL_DRSUnbind is used to end the \n"
                         "session. It's like one computer saying, 'Our conversation is finished, let's hang up the \n"
                         "line,' and the connection is closed properly.",
-                "ATT&CK TTP": "T1485: Data Destruction, T1070: Indicator Removal on Host",
-                "Attack Type": "Post-Attack Cleanup or Evasion",
+                "Attack_TTP": "T1485: Data Destruction, T1070: Indicator Removal on Host",
+                "Attack_Type": "Post-Attack Cleanup or Evasion",
                 "IOC": "Unusual or untimely unbinding operations on directory services, potentially indicative \n"
                        "of cleanup activities post-attack."
             },
@@ -70,8 +180,8 @@ dcerpc_services = {
                         "changes. It's like calling a friend and saying, 'Hi, if you have any new news, tell me now!'\n"
                         "It's a way to ensure that a computer has the latest information without waiting for the \n"
                         "regular update schedule.",
-                "ATT&CK TTP": "T1003.006 - DCSync",
-                "Attack Type": "Credential Access and Lateral Movement",
+                "Attack_TTP": "T1003.006 - DCSync",
+                "Attack_Type": "Credential Access and Lateral Movement",
                 "IOC": "Unusual synchronization patterns or rates, suggesting unauthorized data movement or \n"
                        "synchronization manipulation."
             },
@@ -85,8 +195,8 @@ dcerpc_services = {
                         "So, IDL_DRSReplicaSync is about triggering an update across the network, and \n"
                         "IDL_DRSGetNCChanges is about getting the specifics of what has changed. They work together \n"
                         "to keep the entire network in sync and up-to-date.",
-                "ATT&CK TTP": "T1003.006: OS Credential Dumping: DCSync, T1204: User Execution",
-                "Attack Type": "Credential Access via Directory Replication, Credential Harvesting or Reconnaissance",
+                "Attack_TTP": "T1003.006: OS Credential Dumping: DCSync, T1204: User Execution",
+                "Attack_Type": "Credential Access via Directory Replication, Credential Harvesting or Reconnaissance",
                 "IOC": "Anomalous replication requests, particularly those requesting large amounts of directory \n"
                        "data, indicative of credential harvesting or reconnaissance."
             },
@@ -100,9 +210,9 @@ dcerpc_services = {
                         "This function is like updating the contact list on your phone. It manages references to \n"
                         "other computers that should receive updates. It's like telling your phone which friends to\n"
                         "keep in the loop about your news.",
-                "ATT&CK TTP": "T1484.002 - Domain Trust Modification, T1583: Acquire Infrastructure: Domains, \n"
+                "Attack_TTP": "T1484.002 - Domain Trust Modification, T1583: Acquire Infrastructure: Domains, \n"
                               "T1584: Compromise Infrastructure",
-                "Attack Type": "Persistence and Defense Evasion, Infrastructure Hijacking or Traffic Redirection",
+                "Attack_Type": "Persistence and Defense Evasion, Infrastructure Hijacking or Traffic Redirection",
                 "IOC": "Unexpected updates to replication references, which could signify an attempt to redirect\n"
                        "or manipulate replication traffic."
             },
@@ -118,8 +228,8 @@ dcerpc_services = {
                         "another server that it wasn't talking to before. It's like saying, 'Hey, start sending \n"
                         "copies of your files and updates over to this new server so it stays up-to-date with what's \n"
                         "happening.'",
-                "ATT&CK TTP": "T1207 - Rogue Domain Controller, T1105: Ingress Tool Transfer, T1078: Valid Accounts",
-                "Attack Type": "Persistence and Privilege Escalation, Unauthorized Access or Persistence in Network",
+                "Attack_TTP": "T1207 - Rogue Domain Controller, T1105: Ingress Tool Transfer, T1078: Valid Accounts",
+                "Attack_Type": "Persistence and Privilege Escalation, Unauthorized Access or Persistence in Network",
                 "IOC": "Unauthorized additions of directory replicas, potentially indicating lateral movement or \n"
                        "persistence attempts."
             },
@@ -132,8 +242,8 @@ dcerpc_services = {
                         "You're telling a server to stop sending its information to another server. It's like \n"
                         "telling the post office to stop delivering mail to an address because it's no longer in use \n"
                         "or needed.",
-                "ATT&CK TTP": "T1070.004 - File Deletion, T1485: Data Destruction, T1486: Data Encrypted for Impact",
-                "Attack Type": "Defense Evasion, Directory Services Sabotage or Ransomware Preparation",
+                "Attack_TTP": "T1070.004 - File Deletion, T1485: Data Destruction, T1486: Data Encrypted for Impact",
+                "Attack_Type": "Defense Evasion, Directory Services Sabotage or Ransomware Preparation",
                 "IOC": "Unexplained deletion or unbinding of directory replicas, indicative of sabotage or ransomware\n"
                        "preparation."
             },
@@ -152,8 +262,8 @@ dcerpc_services = {
                         "This one is more like setting up a schedule for when you call your friends and what topics \n"
                         "you'll talk about. It adjusts the details of how and when computers in the network sync up \n"
                         "their information.",
-                "ATT&CK TTP": "T1484.002 - Domain Trust Modification, T1105, T1222",
-                "Attack Type": "Persistence and Defense Evasion, Replication Traffic Interception, Replication Data \n"
+                "Attack_TTP": "T1484.002 - Domain Trust Modification, T1105, T1222",
+                "Attack_Type": "Persistence and Defense Evasion, Replication Traffic Interception, Replication Data \n"
                                "Alteration",
                 "IOC": "Modifications to replication settings, which might indicate attempts to intercept or \n"
                        "manipulate replication data."
@@ -169,8 +279,8 @@ dcerpc_services = {
                         "you say you are before letting you in. In the context of a computer network, it checks the \n"
                         "names (like usernames or computer names) to confirm they exist and are correct within the \n"
                         "network's directory, which is like the club's guest list.",
-                "ATT&CK TTP": "T1087.002 - Account Discovery: Domain Account, T1087, T1069",
-                "Attack Type": "Account Verification,Targeted Attack Preparation",
+                "Attack_TTP": "T1087.002 - Account Discovery: Domain Account, T1087, T1069",
+                "Attack_Type": "Account Verification,Targeted Attack Preparation",
                 "IOC": "Frequent verification requests for directory names, potentially for validating reconnaissance\n"
                        "data."
             },
@@ -180,8 +290,8 @@ dcerpc_services = {
                         "has a list of all the clubs each person belongs to. When someone wants to know what clubs a \n"
                         "user is a part of, this function provides that information. It tells you every group or \n"
                         "club within the network that the user is a member of.",
-                "ATT&CK TTP": "T1069 - Permission Groups Discovery, T1069, T1087",
-                "Attack Type": "Privilege Discovery,User Group Mapping",
+                "Attack_TTP": "T1069 - Permission Groups Discovery, T1069, T1087",
+                "Attack_Type": "Privilege Discovery,User Group Mapping",
                 "IOC": "Queries for group memberships, which could be a sign of privilege discovery."
             },
             10: {
@@ -194,8 +304,8 @@ dcerpc_services = {
                         "technical terms, this function helps move an account from one domain to another within the \n"
                         "same forest (a collection of connected domains). It ensures that the account retains its \n"
                         "history and rights in the new domain.",
-                "ATT&CK TTP": "T1105, T1098",
-                "Attack Type": "Lateral Movement, Unauthorized Domain Access",
+                "Attack_TTP": "T1105, T1098",
+                "Attack_Type": "Lateral Movement, Unauthorized Domain Access",
                 "IOC": "Movement of objects across domains, potentially indicating lateral movement or persistence \n"
                        "efforts."
             },
@@ -209,8 +319,8 @@ dcerpc_services = {
                         "network related to user accounts and passwords, but specifically from old Windows NT 4.0 \n"
                         "systems. It's a way to look back at what has been done, which can be important for \n"
                         "understanding changes or for troubleshooting issues.",
-                "ATT&CK TTP": "T1003, T1202",
-                "Attack Type": "Credential Dumping,Change Log Analysis",
+                "Attack_TTP": "T1003, T1202",
+                "Attack_Type": "Credential Dumping,Change Log Analysis",
                 "IOC": "Accesses to the NT4 changelog, which could indicate attempts to extract credential or change \n"
                        "data."
             },
@@ -225,8 +335,8 @@ dcerpc_services = {
                         "controllers have the same, updated information about these objects. It's a bit like a \n"
                         "translator that makes sure everyone is speaking the same language when they talk about who \n"
                         "or what is in the network and any updates to it.",
-                "ATT&CK TTP": "T1087.002 - Account Discovery: Domain Account, T1087, T1069",
-                "Attack Type": "Account Enumeration,Directory Reconnaissance",
+                "Attack_TTP": "T1087.002 - Account Discovery: Domain Account, T1087, T1069",
+                "Attack_Type": "Account Enumeration,Directory Reconnaissance",
                 "IOC": "High volume of name resolution requests, potentially for account enumeration."
             },
             13: {
@@ -241,8 +351,8 @@ dcerpc_services = {
                         "SPNs, this function can change the labels attached to user accounts, which can affect how \n"
                         "users or services prove their identity on the network. If someone changes these labels \n"
                         "incorrectly or maliciously, it could allow unauthorized access to network services.",
-                "ATT&CK TTP": "T1134, T1078",
-                "Attack Type": "Credential Access via SPN Manipulation,Unauthorized Directory Modifications",
+                "Attack_TTP": "T1134, T1078",
+                "Attack_Type": "Credential Access via SPN Manipulation,Unauthorized Directory Modifications",
                 "IOC": "Modifications to Service Principal Names (SPNs) that are abnormal or unauthorized."
             },
             14: {
@@ -254,8 +364,8 @@ dcerpc_services = {
                         "longer needed, it uses a process (this function) to officially remove that manager from \n"
                         "their role. In network terms, this function is used to remove a domain controller (a server \n"
                         "that manages network security and user information) from the network.",
-                "ATT&CK TTP": "T1485, T1486",
-                "Attack Type": "Server Object Tampering,Directory Service Disruption",
+                "Attack_TTP": "T1485, T1486",
+                "Attack_Type": "Server Object Tampering,Directory Service Disruption",
                 "IOC": "Unusual deletion or removal of server objects from the directory service."
             },
             15: {
@@ -267,8 +377,8 @@ dcerpc_services = {
                         "to do so. In the context of a network, this function is used to remove an entire domain, \n"
                         "which is a subdivision within an Active Directory environment. This could mean taking down \n"
                         "all the management and infrastructure related to a particular subset of the network.",
-                "ATT&CK TTP": "T1485, T1486",
-                "Attack Type": "Domain Sabotage,Directory Services Manipulation",
+                "Attack_TTP": "T1485, T1486",
+                "Attack_Type": "Domain Sabotage,Directory Services Manipulation",
                 "IOC": "Removal of domain-related objects, possibly indicating sabotage or domain manipulation."
             },
             16: {
@@ -283,8 +393,8 @@ dcerpc_services = {
                         "their roles and responsibilities. It's a way to get an overview of who's who and which \n"
                         "department they're overseeing. The 'opnum' here is like a different form number for this \n"
                         "type of request.",
-                "ATT&CK TTP": "T1018 - Remote System Discovery, T1016, T1087",
-                "Attack Type": "Discovery, Reconnaissance and Intelligence Gathering,Domain Controller Mapping",
+                "Attack_TTP": "T1018 - Remote System Discovery, T1016, T1087",
+                "Attack_Type": "Discovery, Reconnaissance and Intelligence Gathering,Domain Controller Mapping",
                 "IOC": "Excessive queries for domain controller information, indicating reconnaissance."
             },
             17: {
@@ -297,8 +407,8 @@ dcerpc_services = {
                         "improperly, it could allow someone to insert false or unauthorized entries into the \n"
                         "network's 'phone book,' which could be used for malicious purposes like creating fake user \n"
                         "accounts.",
-                "ATT&CK TTP": "T1136.002 - Create Account: Domain Account, T1069, T1087",
-                "Attack Type": "Persistence, Privilege Escalation, and Initial Access, Unauthorized Directory Object\n"
+                "Attack_TTP": "T1136.002 - Create Account: Domain Account, T1069, T1087",
+                "Attack_Type": "Persistence, Privilege Escalation, and Initial Access, Unauthorized Directory Object\n"
                                " Modification, Privilege Escalation Attempt",
                 "IOC": "Unusual addition of new directory objects or entries, particularly those with elevated \n"
                        "privileges."
@@ -312,8 +422,8 @@ dcerpc_services = {
                         "between servers that manage logins and data security in a company's computer network. It's \n"
                         "like ensuring that all the cables and Wi-Fi signals are arranged for the best speed and \n"
                         "efficiency, so information flows smoothly and reliably.",
-                "ATT&CK TTP": "T1489, T1222",
-                "Attack Type": "Network Topology Manipulation,Unauthorized Domain Control Actions",
+                "Attack_TTP": "T1489, T1222",
+                "Attack_Type": "Network Topology Manipulation,Unauthorized Domain Control Actions",
                 "IOC": "Unexpected execution of the Knowledge Consistency Checker (KCC), potentially indicating \n"
                        "manipulation of domain topology."
             },
@@ -326,8 +436,8 @@ dcerpc_services = {
                         "synchronized between the servers in charge of keeping user information and security \n"
                         "settings up-to-date. If you're managing the network, this report would tell you if \n"
                         "everything is being shared correctly or if there are any delays or problems.",
-                "ATT&CK TTP": "T1203, T1087",
-                "Attack Type": "Directory Replication Surveillance,Replication Data Mining",
+                "Attack_TTP": "T1203, T1087",
+                "Attack_Type": "Directory Replication Surveillance,Replication Data Mining",
                 "IOC": "Excessive or unusual requests for replication information from the directory."
             },
             20: {
@@ -339,8 +449,8 @@ dcerpc_services = {
                         "like updating their keycard so it works on doors in both departments. It adds a user's old \n"
                         "identification from a previous domain to their new account in another domain, so they \n"
                         "can access resources from both without issue.",
-                "ATT&CK TTP": "T1134, T1484",
-                "Attack Type": "SID History Injection,Access Token Manipulation",
+                "Attack_TTP": "T1134, T1484",
+                "Attack_Type": "SID History Injection,Access Token Manipulation",
                 "IOC": "Unauthorized attempts to add or modify SID history in directory objects."
             },
             21: {
@@ -351,8 +461,8 @@ dcerpc_services = {
                         "a company. IDL_DRSGetMemberships2 is like looking up all the teams and committees a person \n"
                         "is a part of. This function checks which groups a user is a member of, which can help in \n"
                         "giving them the correct access to files and systems they need for those groups.",
-                "ATT&CK TTP": "T1069 - Permission Groups Discovery",
-                "Attack Type": "Discovery",
+                "Attack_TTP": "T1069 - Permission Groups Discovery",
+                "Attack_Type": "Discovery",
                 "IOC": "Unusual patterns or a high volume of queries to retrieve group memberships of users, \n"
                        "particularly if focused on accounts with elevated permissions or in sensitive groups, \n"
                        "which might indicate an attempt to discover permission groups for subsequent exploitation \n"
@@ -371,8 +481,8 @@ dcerpc_services = {
                         "would help find and remove that false entry. This ensures that only valid and accurate \n"
                         "information is shared across the network. The 'opnum' for this function is the unique \n"
                         "identifier that tells the system to perform this specific check.",
-                "ATT&CK TTP": "T1003.006, T1203",
-                "Attack Type": "Replication Integrity Tampering,Unauthorized Data Access",
+                "Attack_TTP": "T1003.006, T1203",
+                "Attack_Type": "Replication Integrity Tampering,Unauthorized Data Access",
                 "IOC": "Unusual replication verification requests that could suggest attempts to access or \n"
                        "manipulate directory data."
             },
@@ -390,8 +500,8 @@ dcerpc_services = {
                         "supposed to send in their details and the center isn't sure if they've received them all, \n"
                         "this tool would help confirm whether anything is missing or if there are any extra, \n"
                         "unexpected records.",
-                "ATT&CK TTP": "T1087, T1016",
-                "Attack Type": "Mapping Directory Services, Reconnaissance Activity",
+                "Attack_TTP": "T1087, T1016",
+                "Attack_Type": "Mapping Directory Services, Reconnaissance Activity",
                 "IOC": "Excessive queries for object existence, potentially indicating reconnaissance or mapping \n"
                        "of directory services."
             },
@@ -403,8 +513,8 @@ dcerpc_services = {
                         "This is like starting a retirement process for a manager. It prepares the domain controller \n"
                         "to be demoted by making sure all the initial conditions are met and everything is in place \n"
                         "for a smooth transition.",
-                "ATT&CK TTP": "T1489, T1108",
-                "Attack Type": "Unauthorized Demotion Processes, Domain Controller Destabilization",
+                "Attack_TTP": "T1489, T1108",
+                "Attack_Type": "Unauthorized Demotion Processes, Domain Controller Destabilization",
                 "IOC": "Initial demotion activities on domain controllers that do not align with standard \n"
                        "operational procedures."
             },
@@ -415,8 +525,8 @@ dcerpc_services = {
                         "This function is like handing over the responsibilities and data that the manager had to \n"
                         "other managers. It ensures that all the important information this domain controller has \n"
                         "is replicated or transferred to other domain controllers before it is demoted.",
-                "ATT&CK TTP": "T1489, T1108",
-                "Attack Type": "Replication Manipulation, Domain Controller Compromise",
+                "Attack_TTP": "T1489, T1108",
+                "Attack_Type": "Replication Manipulation, Domain Controller Compromise",
                 "IOC": "Unexpected replication changes or demotion requests for domain controllers."
             },
             27: {
@@ -427,8 +537,8 @@ dcerpc_services = {
                         "After all the data and duties have been handed off, this function completes the demotion, \n"
                         "essentially removing the manager's status and ensuring the office can run smoothly without \n"
                         "them.",
-                "ATT&CK TTP": "T1489, T1108",
-                "Attack Type": "Domain Controller Demotion,Network Destabilization",
+                "Attack_TTP": "T1489, T1108",
+                "Attack_Type": "Domain Controller Demotion,Network Destabilization",
                 "IOC": "Unusual demotion activities in domain controllers, especially if unauthorized."
             },
             28: {
@@ -442,8 +552,8 @@ dcerpc_services = {
                         "use this tool. It's used to make an exact replica of a domain controller, which can be \n"
                         "helpful for balancing the load of network traffic or for setting up a new controller \n"
                         "without having to configure everything from scratch.",
-                "ATT&CK TTP": "T1078, T1108",
-                "Attack Type": "Unauthorized Domain Controller Cloning, Impersonation Attack",
+                "Attack_TTP": "T1078, T1108",
+                "Attack_Type": "Unauthorized Domain Controller Cloning, Impersonation Attack",
                 "IOC": "Creation of unexpected or unauthorized domain controller clones."
             },
             29: {
@@ -454,8 +564,8 @@ dcerpc_services = {
                         "key (known as a Next Generation Credentials key, which is used for modern authentication \n"
                         "methods) for a user's account. This could be used if you need to update or reset the way \n"
                         "a user logs into the network to ensure their credentials are up-to-date and secure.",
-                "ATT&CK TTP": "T1003, T1558",
-                "Attack Type": "Unauthorized Credential Modification, Key Manipulation",
+                "Attack_TTP": "T1003, T1558",
+                "Attack_Type": "Unauthorized Credential Modification, Key Manipulation",
                 "IOC": "Unauthorized write operations or modifications to NGC keys."
             },
             30: {
@@ -468,8 +578,8 @@ dcerpc_services = {
                         "fill out to get this information. In technical terms, this function reads the data related \n"
                         "to Next Generation Credentials (NGC), which are a type of more secure digital keys used for\n"
                         "authentication.",
-                "ATT&CK TTP": "T1003, T1558",
-                "Attack Type": "Credential Access, Key Compromise",
+                "Attack_TTP": "T1003, T1558",
+                "Attack_Type": "Credential Access, Key Compromise",
                 "IOC": "Unusual access or read requests for NGC keys from non-standard accounts."
             },
         }
@@ -492,8 +602,8 @@ dcerpc_services = {
                         "employee badges. It's a way to get an overview of all the user accounts that the security \n"
                         "system is keeping track of. You might do this to see who has access to the building, for \n"
                         "example.",
-                "ATT&CK TTP": "T1087 - Account Discovery",
-                "Attack Type": "Discovery of Privileged Accounts",
+                "Attack_TTP": "T1087 - Account Discovery",
+                "Attack_Type": "Discovery of Privileged Accounts",
                 "IOC": "Increased queries to enumerate account objects, especially those with elevated privileges \n"
                        "or in critical organizational units."
             },
@@ -509,8 +619,8 @@ dcerpc_services = {
                         "A domain is like a neighborhood, and a trusted domain is a neighborhood that's considered \n"
                         "friendly and safe. So, if you wanted to know which neighborhoods your local community \n"
                         "center trusts for its members to visit, this function would provide you with that information",
-                "ATT&CK TTP": "T1482 - Domain Trust Discovery",
-                "Attack Type": "Lateral Movement Preparation",
+                "Attack_TTP": "T1482 - Domain Trust Discovery",
+                "Attack_Type": "Lateral Movement Preparation",
                 "IOC": "Unusual requests or spikes in queries for trusted domain objects, indicating reconnaissance \n"
                        "of trust relationships."
             },
@@ -525,8 +635,8 @@ dcerpc_services = {
                         "It's like asking a receptionist to find the office and job title for a person just by their \n"
                         "name. This function takes a list of user names and figures out their respective job titles \n"
                         "(in technical terms, their security identifiers or SIDs).",
-                "ATT&CK TTP": "T1087 - Account Discovery",
-                "Attack Type": "Privilege Escalation and Reconnaissance",
+                "Attack_TTP": "T1087 - Account Discovery",
+                "Attack_Type": "Privilege Escalation and Reconnaissance",
                 "IOC": "High volume of name-to-SID resolution requests, particularly for high-privilege or \n"
                        "administrative accounts."
             },
@@ -540,8 +650,8 @@ dcerpc_services = {
                         "identify user accounts or groups within a computer network, and finds out the names of \n"
                         "those user accounts or groups. It's like looking up a list of customer numbers to find \n"
                         "the actual names of the customers.",
-                "ATT&CK TTP": "T1178 - SID-History Injection",
-                "Attack Type": "Privilege Escalation",
+                "Attack_TTP": "T1178 - SID-History Injection",
+                "Attack_Type": "Privilege Escalation",
                 "IOC": "Multiple SID-to-name translation requests that could indicate attempts at mapping network \n"
                        "privileges or account reconnaissance."
             },
@@ -554,8 +664,8 @@ dcerpc_services = {
                         "This function is used to retrieve specific settings (referred to as 'system access account \n"
                         "flags') that determine what a user account is permitted to do on the network. It's like \n"
                         "checking what services a customer has signed up for based on their account information.",
-                "ATT&CK TTP": "T1003 - Credential Dumping",
-                "Attack Type": "Discovery of Account Vulnerabilities",
+                "Attack_TTP": "T1003 - Credential Dumping",
+                "Attack_Type": "Discovery of Account Vulnerabilities",
                 "IOC": "Queries for system access account flags that are not part of routine checks, possibly \n"
                        "indicating a search for accounts with weak security."
             },
@@ -569,8 +679,8 @@ dcerpc_services = {
                         "This function is like going into the records of a 'trusted' department in a company and \n"
                         "pulling out specific files to learn more about it. It could be details about their policies,\n"
                         "the way they operate, or the agreements they have with your own department.\n",
-                "ATT&CK TTP": "T1482 - Domain Trust Discovery",
-                "Attack Type": "Lateral Movement",
+                "Attack_TTP": "T1482 - Domain Trust Discovery",
+                "Attack_Type": "Lateral Movement",
                 "IOC": "Elevated frequency of requests for information about trusted domains, potentially for \n"
                        "planning cross-domain lateral movements."
             },
@@ -584,8 +694,8 @@ dcerpc_services = {
                         "specific right or permission in the system. For example, if you want to see a list \n"
                         "of all the people in a company who have the key to the storage room, this function \n"
                         "would give you that list.",
-                "ATT&CK TTP": "T1069 - Permission Groups Discovery",
-                "Attack Type": "Privilege Escalation",
+                "Attack_TTP": "T1069 - Permission Groups Discovery",
+                "Attack_Type": "Privilege Escalation",
                 "IOC": "Frequent requests to enumerate accounts with specific user rights, possibly to identify \n"
                        "accounts with exploitable privileges."
             },
@@ -599,8 +709,8 @@ dcerpc_services = {
                         "This is like asking for permission to look at or change the company's security policies. \n"
                         "Before you can make any changes or even just view the policies, you need to get the keys to \n"
                         "the policy file cabinet. This function gets you those keys if you're authorized.",
-                "ATT&CK TTP": "T1484 - Domain Policy Modification, T1087: Account Discovery",
-                "Attack Type": "Privilege Escalation or Policy Manipulation",
+                "Attack_TTP": "T1484 - Domain Policy Modification, T1087: Account Discovery",
+                "Attack_Type": "Privilege Escalation or Policy Manipulation",
                 "IOC": "Unusual or unauthorized attempts to access or modify LSA policy settings, indicating \n"
                        "potential policy manipulation or privilege escalation attempts."
             },
@@ -609,9 +719,9 @@ dcerpc_services = {
                 "Note": "Returns the name and the domain name of the security principal that is invoking the method. \n"
                         "This is like asking, 'Who am I?' to the receptionist. It’s a simple request that tells you \n"
                         "your own name and job title as per the office records.",
-                "ATT&CK TTP": "T1087.002 - Account Discovery: Domain Account. This technique involves discovering \n"
+                "Attack_TTP": "T1087.002 - Account Discovery: Domain Account. This technique involves discovering \n"
                               "domain accounts, which can include queries for user data.",
-                "Attack Type": "Reconnaissance. This method, when used by adversaries, is typically part of \n"
+                "Attack_Type": "Reconnaissance. This method, when used by adversaries, is typically part of \n"
                                "reconnaissance activities to gather information about user accounts within a network \n"
                                "or system.",
                 "IOC": "High frequency of requests for the invoking security principal's name, potentially part of \n"
@@ -628,8 +738,8 @@ dcerpc_services = {
                         "Imagine every worker has a unique ID badge. This function takes a bunch of these ID \n"
                         "numbers and matches them to the worker's names and their departments. It's like a reverse \n"
                         "phonebook for employee IDs that helps figure out who these IDs belong to.",
-                "ATT&CK TTP": "T1087 - Account Discovery",
-                "Attack Type": "Reconnaissance",
+                "Attack_TTP": "T1087 - Account Discovery",
+                "Attack_Type": "Reconnaissance",
                 "IOC": "Repeated SID-to-name resolution activities, possibly as part of an effort to map out users \n"
                        "and groups within Active Directory."
             },
@@ -647,8 +757,8 @@ dcerpc_services = {
                         "This function is a newer, more efficient way of doing what LsarLookupNames does. It's \n"
                         "like having an upgraded office directory that not only tells you the job titles but also \n"
                         "other details like the department and direct line for each employee.",
-                "ATT&CK TTP": "T1558.001 - Golden Ticket",
-                "Attack Type": "Credential Theft and Privilege Escalation",
+                "Attack_TTP": "T1558.001 - Golden Ticket",
+                "Attack_Type": "Credential Theft and Privilege Escalation",
                 "IOC": "Frequent translation of account names to SIDs, which could be preparatory steps for creating\n"
                        "Golden Tickets or identifying escalation targets."
             }
@@ -670,8 +780,8 @@ dcerpc_services = {
                         "The NetrLogonSamLogon method is a predecessor to the NetrLogonSamLogonWithFlags method \n"
                         "(section 3.5.4.5.2). All parameters of this method have the same meanings as the \n"
                         "identically named parameters of the NetrLogonSamLogonWithFlags method.",
-                "ATT&CK TTP": "T1110 - Brute Force, T1078, T1557",
-                "Attack Type": "Credential Access via Password Spraying",
+                "Attack_TTP": "T1110 - Brute Force, T1078, T1557",
+                "Attack_Type": "Credential Access via Password Spraying",
                 "IOC": "Unusual login patterns or volume, especially from non-standard locations."
             },
             3: {
@@ -683,8 +793,8 @@ dcerpc_services = {
                         ""
                         "The NetrLogonSamLogoff method SHOULD update the user lastLogoff attribute for the SAM \n"
                         "accounts.",
-                "ATT&CK TTP": "T1485 - Data Destruction",
-                "Attack Type": "Denial of Service",
+                "Attack_TTP": "T1485 - Data Destruction",
+                "Attack_Type": "Denial of Service",
                 "IOC": "-Patterns where users are logged off en masse or at unusual times, which could indicate an \n"
                        "attempt to disrupt normal operations. \n"
                        "-Multiple logoff requests for the same user accounts in a short period, especially outside of \n"
@@ -701,8 +811,8 @@ dcerpc_services = {
                         ""
                         "The NetrServerReqChallenge method SHOULD receive a client challenge and return a server \n"
                         "challenge (SC).",
-                "ATT&CK TTP": "T1075 - Pass the Hash, T1557, T1558",
-                "Attack Type": "Credential Access via Zerologon",
+                "Attack_TTP": "T1075 - Pass the Hash, T1557, T1558",
+                "Attack_Type": "Credential Access via Zerologon",
                 "IOC": "Irregular traffic patterns or anomalous requests to domain controllers."
             },
             31: {
@@ -715,8 +825,8 @@ dcerpc_services = {
                         ""
                         "The NetrServerPasswordGet method SHOULD allow a BDC to get a machine account password \n"
                         "from the DC with the PDC role in the domain.",
-                "ATT&CK TTP": "T1003 - Credential Dumping, T1003, T1078",
-                "Attack Type": "Lateral Movement",
+                "Attack_TTP": "T1003 - Credential Dumping, T1003, T1078",
+                "Attack_Type": "Lateral Movement",
                 "IOC": "Unusual access to password-related information on the server."
             },
             7: {
@@ -730,8 +840,8 @@ dcerpc_services = {
                         "the SAM database, SAM built-in database, or LSA databases after a particular value of \n"
                         "the database serial number. It is used by BDCs to request database changes from the PDC \n"
                         "that are missing on the BDC.",
-                "ATT&CK TTP": "T1107 - File Deletion",
-                "Attack Type": "Defense Evasion by Deleting Evidence"
+                "Attack_TTP": "T1107 - File Deletion",
+                "Attack_Type": "Defense Evasion by Deleting Evidence"
             },
             26: {
                 "Method": "NetrServerAuthenticate3",
@@ -744,8 +854,8 @@ dcerpc_services = {
                         "The NetrServerAuthenticate3 method SHOULD mutually authenticate the client and the server \n"
                         "and establish the session key to be used for the secure channel message protection between \n"
                         "the client and the server. It is called after the NetrServerReqChallenge method.",
-                "ATT&CK TTP": "T1557 - Man-in-the-Middle, T1557, T1558",
-                "Attack Type": "Credential Access and Defense Evasion",
+                "Attack_TTP": "T1557 - Man-in-the-Middle, T1557, T1558",
+                "Attack_Type": "Credential Access and Defense Evasion",
                 "IOC": "Anomalies in authentication logs, such as unexpected spikes in activity."
             },
             42: {
@@ -761,8 +871,8 @@ dcerpc_services = {
                         "the current and previous account passwords from a domain controller. The account name \n"
                         "requested MUST be the name used when the secure channel was created, unless the method \n"
                         "is called on a PDC by a DC, in which case it can be any valid account name.",
-                "ATT&CK TTP": "T1482 - Domain Trust Discovery, T1003, T1078",
-                "Attack Type": "Discovery and Lateral Movement",
+                "Attack_TTP": "T1482 - Domain Trust Discovery, T1003, T1078",
+                "Attack_Type": "Discovery and Lateral Movement",
                 "IOC": "Access patterns to sensitive trust password information that deviate from the norm."
             },
             29: {
@@ -770,8 +880,8 @@ dcerpc_services = {
                 "Note": "Can be used for extensive domain reconnaissance, potentially aiding in credential-based \n"
                         "attacks like pass-the-hash. The NetrLogonGetDomainInfo method SHOULD return information that\n"
                         "describes the current domain to which the specified client belongs.",
-                "ATT&CK TTP": "T1087 - Account Discovery, T1087, T1016",
-                "Attack Type": "Discovery and Credential Access",
+                "Attack_TTP": "T1087 - Account Discovery, T1087, T1016",
+                "Attack_Type": "Discovery and Credential Access",
                 "IOC": "Unusual queries for domain information that could indicate reconnaissance activities."
             },
             30: {
@@ -784,8 +894,8 @@ dcerpc_services = {
                         "client. A domain member SHOULD use this function to periodically change its machine account \n"
                         "password. A PDC uses this function to periodically change the trust password for all \n"
                         "directly trusted domains.",
-                "ATT&CK TTP": "T1098 - Account Manipulation, T1557.001, T1558",
-                "Attack Type": "Persistence and Privilege Escalation",
+                "Attack_TTP": "T1098 - Account Manipulation, T1557.001, T1558",
+                "Attack_Type": "Persistence and Privilege Escalation",
                 "IOC": "Unauthorized modifications of passwords or security relationships on the server."
             },
             34: {
@@ -798,16 +908,16 @@ dcerpc_services = {
                         "requested capabilities (as defined in the Flags parameter) responds during this method call,\n"
                         "then that DC will have verified that the DC account database contains an account for the \n"
                         "AccountName specified. The server that receives this call is not required to be a DC.",
-                "ATT&CK TTP": "T1087 - Account Discovery, T1018, T1046",
-                "Attack Type": "Discovery for DCSync Attack",
+                "Attack_TTP": "T1087 - Account Discovery, T1018, T1046",
+                "Attack_Type": "Discovery for DCSync Attack",
                 "IOC": "Unusual network scanning activities, particularly targeted at domain controllers."
             },
             40: {
                 "Method": "DsrEnumerateDomainTrusts",
                 "Note": "The DsrEnumerateDomainTrusts method SHOULD return an enumerated list of domain trusts, \n"
                         "filtered by a set of flags, from the specified server.",
-                "ATT&CK TTP": "T1482, T1016",
-                "Attack Type": "",
+                "Attack_TTP": "T1482, T1016",
+                "Attack_Type": "",
                 "IOC": "Excessive enumeration of domain trusts, which could be a sign of an adversary mapping the network."
             },
             46: {
@@ -820,8 +930,8 @@ dcerpc_services = {
                         "account and additional trust data. The account name requested MUST be the name used when \n"
                         "the secure channel was created, unless the method is called on a PDC by a domain controller,\n"
                         "in which case it can be any valid account name.",
-                "ATT&CK TTP": "T1558.002 - Silver Ticket, T1482, T1201",
-                "Attack Type": "Credential Access and Persistence",
+                "Attack_TTP": "T1558.002 - Silver Ticket, T1482, T1201",
+                "Attack_Type": "Credential Access and Persistence",
                 "IOC": "Suspicious activities around domain trust relationships, possibly indicating efforts to map\n"
                        "trust policies."
             },
@@ -831,8 +941,8 @@ dcerpc_services = {
                         "with added flag manipulation risks. \n\n"
                         ""
                         "The NetrLogonSamLogonWithFlags method SHOULD handle logon requests for the SAM accounts.",
-                "ATT&CK TTP": "T1110 - Brute Force, T1078, T1557",
-                "Attack Type": "Credential Access via Password Spraying",
+                "Attack_TTP": "T1110 - Brute Force, T1078, T1557",
+                "Attack_Type": "Credential Access via Password Spraying",
                 "IOC": "Sudden changes in user privileges or access patterns."
             },
             39: {
@@ -844,8 +954,8 @@ dcerpc_services = {
                         "accepts an extra flags parameter and uses Secure RPC ([MS-RPCE] section 3.3.1.5.2) instead \n"
                         "of Netlogon authenticators. This method handles logon requests for the SAM accounts and \n"
                         "allows for generic pass-through authentication.",
-                "ATT&CK TTP": "T1110 - Brute Force, T1078, T1557",
-                "Attack Type": "Credential Access via Password Spraying",
+                "Attack_TTP": "T1110 - Brute Force, T1078, T1557",
+                "Attack_Type": "Credential Access via Password Spraying",
                 "IOC": "Multiple failed authentication attempts, suggesting brute force or password spraying attempts."
             }
         }
@@ -863,8 +973,8 @@ dcerpc_services = {
                         "The SamrEnumerateDomainsInSamServer method obtains a listing of all domains hosted by the \n"
                         "server side of this protocol. It's like asking for a complete list of all the departments in\n"
                         "a large company. ",
-                "ATT&CK TTP": "T1087 - Account Discovery",
-                "Attack Type": "Discovery",
+                "Attack_TTP": "T1087 - Account Discovery",
+                "Attack_Type": "Discovery",
                 "IOC": "Numerous or repeated queries to enumerate domain names in a network."
             },
             5: {
@@ -875,8 +985,8 @@ dcerpc_services = {
                         "Used to find the unique identifier (known as the Security Identifier, or SID) for a \n"
                         "specific domain based on the domain's name. This is akin to looking up a specific \n"
                         "department's internal code by its name.",
-                "ATT&CK TTP": "T1069 - Permission Groups Discovery",
-                "Attack Type": "Privilege Escalation",
+                "Attack_TTP": "T1069 - Permission Groups Discovery",
+                "Attack_Type": "Privilege Escalation",
                 "IOC": "Repeated queries to resolve domain names to SIDs."
             },
             17: {
@@ -885,8 +995,8 @@ dcerpc_services = {
                         "specific domain accounts.\n\n"
                         ""
                         "Translates a set of account names into a set of RIDs.",
-                "ATT&CK TTP": "T1087 - Account Discovery",
-                "Attack Type": "Credential Access",
+                "Attack_TTP": "T1087 - Account Discovery",
+                "Attack_Type": "Credential Access",
                 "IOC": "Frequent translation requests from usernames to RIDs."
             },
             13: {
@@ -895,8 +1005,8 @@ dcerpc_services = {
                         "targets for credential theft.\n\n"
                         ""
                         "Enumerates all users.",
-                "ATT&CK TTP": "T1087 - Account Discovery",
-                "Attack Type": "Credential Access",
+                "Attack_TTP": "T1087 - Account Discovery",
+                "Attack_Type": "Credential Access",
                 "IOC": "Multiple queries to list all user accounts in a domain."
             },
             7: {
@@ -905,8 +1015,8 @@ dcerpc_services = {
                         "domain object modifications.\n\n"
                         ""
                         "Obtains a handle to a domain object, given a SID.",
-                "ATT&CK TTP": "T1087 - Account Discovery",
-                "Attack Type": "Discovery",
+                "Attack_TTP": "T1087 - Account Discovery",
+                "Attack_Type": "Discovery",
                 "IOC": "Attempts to open multiple domain objects in quick succession."
             },
             8: {
@@ -915,8 +1025,8 @@ dcerpc_services = {
                         "attacks, like password spraying.\n\n"
                         ""
                         "Obtains attributes from a domain object.",
-                "ATT&CK TTP": "T1201 - Password Policy Discovery",
-                "Attack Type": "Credential Access",
+                "Attack_TTP": "T1201 - Password Policy Discovery",
+                "Attack_Type": "Credential Access",
                 "IOC": "Queries to access domain policies or attributes."
             },
             34: {
@@ -925,8 +1035,8 @@ dcerpc_services = {
                         "attributes for persistence or privilege escalation.\n\n"
                         ""
                         "Obtains a handle to a user, given a RID.",
-                "ATT&CK TTP": "T1087 - Account Discovery",
-                "Attack Type": "Persistence",
+                "Attack_TTP": "T1087 - Account Discovery",
+                "Attack_Type": "Persistence",
                 "IOC": "Repeated requests to obtain handles to various user accounts."
             },
             36: {
@@ -935,8 +1045,8 @@ dcerpc_services = {
                         "users in phishing or other campaigns.\n\n"
                         ""
                         "Obtains attributes from a user object.",
-                "ATT&CK TTP": "T1078 - Valid Accounts, T1087: Account Discovery",
-                "Attack Type": "Credential Access",
+                "Attack_TTP": "T1078 - Valid Accounts, T1087: Account Discovery",
+                "Attack_Type": "Credential Access",
                 "IOC": "Frequent requests for detailed user account information."
             },
             25: {
@@ -945,15 +1055,15 @@ dcerpc_services = {
                         "targeting privileged accounts for attacks.\n\n"
                         ""
                         "Reads the members of a group.",
-                "ATT&CK TTP": "T1069 - Permission Groups Discovery",
-                "Attack Type": "Privilege Escalation",
+                "Attack_TTP": "T1069 - Permission Groups Discovery",
+                "Attack_Type": "Privilege Escalation",
                 "IOC": "Queries to obtain group membership details, especially for administrative or sensitive groups."
             },
             38: {
                 "Method": "SamrChangePasswordUser",
                 "Note": "The SamrChangePasswordUser method changes the password of a user object.",
-                "ATT&CK TTP": "T1003: OS Credential Dumping",
-                "Attack Type": "Credential Dumping",
+                "Attack_TTP": "T1003: OS Credential Dumping",
+                "Attack_Type": "Credential Dumping",
                 "IOC": "Attempts to change user passwords, especially if targeting multiple accounts or \n"
                        "privileged users."
             }
@@ -975,8 +1085,8 @@ dcerpc_services = {
                         "authorized individuals.\n\n"
                         ""
                         "The NetrShareEnum method retrieves information about each shared resource on a server.",
-                "ATT&CK TTP": "T1135 - Network Share Discovery",
-                "Attack Type": "Discovery and Lateral Movement",
+                "Attack_TTP": "T1135 - Network Share Discovery",
+                "Attack_Type": "Discovery and Lateral Movement",
                 "IOC": "Unusual network share enumeration requests, especially from unexpected sources or at odd times."
             },
             16: {
@@ -988,8 +1098,8 @@ dcerpc_services = {
                         "the catalog, such as who can access a specific shared folder and what permissions they have.\n"
                         ""
                         "Retrieves information about a particular shared resource on the server from the ShareList.",
-                "ATT&CK TTP": "T1082 - System Information Discovery",
-                "Attack Type": "Discovery",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Discovery",
                 "IOC": "Specific queries for information on particular network shares, outside of regular \n"
                        "administrative activity."
             },
@@ -1005,8 +1115,8 @@ dcerpc_services = {
                         ""
                         "The NetrSessionEnum method MUST return information about sessions that are established on a \n"
                         "server or return an error code.",
-                "ATT&CK TTP": "T1049 - System Network Connections Discovery",
-                "Attack Type": "Discovery",
+                "Attack_TTP": "T1049 - System Network Connections Discovery",
+                "Attack_Type": "Discovery",
                 "IOC": "Excessive session enumeration requests which might indicate an attempt to map active \n"
                        "connections and user sessions."
             },
@@ -1016,8 +1126,8 @@ dcerpc_services = {
                         ""
                         "The NetrSessionDel method MUST end one or more network sessions between a server and a \n"
                         "client.",
-                "ATT&CK TTP": "T1070 - Indicator Removal on Host",
-                "Attack Type": "Defense Evasion",
+                "Attack_TTP": "T1070 - Indicator Removal on Host",
+                "Attack_Type": "Defense Evasion",
                 "IOC": "Unexpected termination of user sessions, potentially disrupting normal operations or hiding \n"
                        "unauthorized access."
             },
@@ -1027,8 +1137,8 @@ dcerpc_services = {
                         ""
                         "The NetrFileEnum method MUST return information about some or all open files on a server, \n"
                         "depending on the parameters specified, or return an error code.",
-                "ATT&CK TTP": "T1083 - File and Directory Discovery",
-                "Attack Type": "Discovery",
+                "Attack_TTP": "T1083 - File and Directory Discovery",
+                "Attack_Type": "Discovery",
                 "IOC": "Abnormal patterns of file access queries, which might indicate an adversary trying to locate \n"
                        "specific files or directories."
             },
@@ -1041,8 +1151,8 @@ dcerpc_services = {
                         "server MUST force an open resource instance (for example, file, device, or named pipe) on \n"
                         "the server to close. This message can be used when an error prevents closure by any other \n"
                         "means.",
-                "ATT&CK TTP": "T1489 - Service Stop",
-                "Attack Type": "Impact",
+                "Attack_TTP": "T1489 - Service Stop",
+                "Attack_Type": "Impact",
                 "IOC": "Unusual closing of files, especially those critical to system or application functionality, \n"
                        "which could disrupt services."
             },
@@ -1051,8 +1161,8 @@ dcerpc_services = {
                 "Note": "Exploitable by APTs to create network shares for data exfiltration or persistent access.\n\n"
                         ""
                         "The NetrShareAdd method shares a server resource.",
-                "ATT&CK TTP": "T1135 - Network Share Discovery",
-                "Attack Type": "Persistence and Lateral Movement",
+                "Attack_TTP": "T1135 - Network Share Discovery",
+                "Attack_Type": "Persistence and Lateral Movement",
                 "IOC": "Creation of new network shares that are not in line with standard IT practices or business \n"
                        "needs."
             },
@@ -1063,8 +1173,8 @@ dcerpc_services = {
                         "The NetrShareDel method deletes a share name from the ShareList, which disconnects all \n"
                         "connections to the shared resource. If the share is sticky, all information about the share \n"
                         "is also deleted from permanent storage.",
-                "ATT&CK TTP": "T1070 - Indicator Removal on Host",
-                "Attack Type": "Defense Evasion",
+                "Attack_TTP": "T1070 - Indicator Removal on Host",
+                "Attack_Type": "Defense Evasion",
                 "IOC": "Deletion of network shares, possibly in an effort to cover tracks after data exfiltration or \n"
                        "unauthorized access."
             },
@@ -1073,8 +1183,8 @@ dcerpc_services = {
                 "Note": "May be exploited to change share permissions, allowing unauthorized data access.\n\n"
                         ""
                         "The NetrShareSetInfo method sets the parameters of a shared resource in a ShareList.",
-                "ATT&CK TTP": "T1222 - File and Directory Permissions Modification",
-                "Attack Type": "Privilege Escalation",
+                "Attack_TTP": "T1222 - File and Directory Permissions Modification",
+                "Attack_Type": "Privilege Escalation",
                 "IOC": "Changes to network share permissions or settings, particularly those granting wider access or\n"
                        "reducing security controls."
             }
@@ -1088,8 +1198,8 @@ dcerpc_services = {
             2: {
                 "Method": "OpenHKLM",
                 "Note": "Provides access to system-wide settings and configurations through the HKLM hive.",
-                "ATT&CK TTP": "T1112 - Modify Registry",
-                "Attack Type": "Persistence, Privilege Escalation, and Configuration Tampering",
+                "Attack_TTP": "T1112 - Modify Registry",
+                "Attack_Type": "Persistence, Privilege Escalation, and Configuration Tampering",
                 "IOC": "Unauthorized registry changes in HKLM hive, unusual remote access to HKLM hive, unexpected \n"
                        "system-wide changes in configurations."
             },
@@ -1097,8 +1207,8 @@ dcerpc_services = {
                 "Method": "OpenHKU",
                 "Note": "Allows for changes to user profiles via the HKU hive, potentially for persistence or \n"
                         "configuration tampering.",
-                "ATT&CK TTP": "T1112 - Modify Registry",
-                "Attack Type": "Persistence and Privilege Escalation",
+                "Attack_TTP": "T1112 - Modify Registry",
+                "Attack_Type": "Persistence and Privilege Escalation",
                 "IOC": "Changes in user profiles that are unexplained or unauthorized, unusual access patterns to \n"
                        "HKU hive."
             },
@@ -1106,23 +1216,23 @@ dcerpc_services = {
                 "Method": "RegSetValue",
                 "Note": "Enables modification of registry keys and values, as seen in malware like Stuxnet for \n"
                         "propagation and system configuration changes.",
-                "ATT&CK TTP": "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
-                "Attack Type": "Persistence, Privilege Escalation, and System Compromise",
+                "Attack_TTP": "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+                "Attack_Type": "Persistence, Privilege Escalation, and System Compromise",
                 "IOC": "Creation of unusual or suspicious registry keys and values, particularly in startup or \n"
                        "run keys."
             },
             6: {
                 "Method": "RegCreateKey",
                 "Note": "Can be used to create new registry keys for storing data or establishing persistence.",
-                "ATT&CK TTP": "T1136 - Create Account",
-                "Attack Type": "Persistence via New Account Creation",
+                "Attack_TTP": "T1136 - Create Account",
+                "Attack_Type": "Persistence via New Account Creation",
                 "IOC": "Creation of new, unexpected registry keys, possibly with unusual names or in unusual locations."
             },
             8: {
                 "Method": "RegDeleteKey",
                 "Note": "Potential for removing evidence of presence or disrupting system/application functionality.",
-                "ATT&CK TTP": "T1485 - Data Destruction",
-                "Attack Type": "Defense Evasion by Removing Evidence",
+                "Attack_TTP": "T1485 - Data Destruction",
+                "Attack_Type": "Defense Evasion by Removing Evidence",
                 "IOC": "Deletion of registry keys that are critical for system or application functionality, unusual\n"
                        "patterns of registry key deletions."
             },
@@ -1130,8 +1240,8 @@ dcerpc_services = {
                 "Method": "RegEnumKey",
                 "Note": "Allows enumeration of subkeys, which can be used for reconnaissance of potential \n"
                         "exploitation targets.",
-                "ATT&CK TTP": "T1082 - System Information Discovery",
-                "Attack Type": "Discovery and Reconnaissance",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Discovery and Reconnaissance",
                 "IOC": "Unusual, systematic enumeration of registry keys, particularly sensitive system or \n"
                        "application keys."
             },
@@ -1139,8 +1249,8 @@ dcerpc_services = {
                 "Method": "RegEnumValue",
                 "Note": "Enables enumeration of registry values for scouting configuration settings or evidence \n"
                         "of other malware.",
-                "ATT&CK TTP": "T1012 - Query Registry",
-                "Attack Type": "Discovery and Information Gathering",
+                "Attack_TTP": "T1012 - Query Registry",
+                "Attack_Type": "Discovery and Information Gathering",
                 "IOC": "Systematic scanning or enumeration of registry values, especially if correlated with other \n"
                        "suspicious activities."
             }
@@ -1148,8 +1258,15 @@ dcerpc_services = {
     },
     "references": {
         "url1": "https://github.com/jsecurity101/MSRPC-to-ATTACK/tree/main",
-        "samr": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/e8205d2c-9ebb-4845-b927-0aca7cbc1f2c",
-        "drsuapi": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-drsr/58f33216-d9f1-43bf-a183-87e3c899c410",
-        "lsarpc": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lsad/86f5e73b-98c4-4234-89cb-d9ff5f327b73"
+        "samr": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/"
+                "e8205d2c-9ebb-4845-b927-0aca7cbc1f2c",
+        "drsuapi": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-drsr/"
+                   "58f33216-d9f1-43bf-a183-87e3c899c410",
+        "lsarpc": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lsad/"
+                  "86f5e73b-98c4-4234-89cb-d9ff5f327b73"
     }
 }
+
+
+if __name__ == '__main__':
+    pass
