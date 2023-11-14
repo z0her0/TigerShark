@@ -21,7 +21,7 @@ TigerShark is a Python script that provides a user-friendly interface for intera
 - `Verbose Information Processing`: Reads and processes verbose information based on user-selected protocols, offering detailed packet insights.
 
 ## Usage
-1. Run `TigerShark.py` and provide the path to a PCAP file when prompted.
+1. Run `tiger_shark.py` and provide the path to a PCAP file when prompted.
 2. Choose from a variety of options in the interactive menu to perform specific tasks or analyses on the PCAP file.
 
 ## Requirements
