@@ -1,4 +1,29 @@
-# make_colorful.py
+"""  # pylint: disable=line-too-long
+make_colorful.py
+
+This module provides classes for managing and representing color codes in terminal outputs. It includes both
+RGB color values (approximations of ANSI color codes) and custom text color codes for terminal output.
+
+Classes:
+    ColorRGB: Represents RGB color values, with predefined color constants approximating ANSI color codes.
+    ColorCustom: Manages custom text color codes for terminal output, randomly selecting a color for use.
+    Color: Represents text color codes for terminal output, including both built-in and custom color codes.
+
+This module is part of the TigerShark toolkit and is used for generating colored terminal outputs to enhance
+user interface experience. It allows for random and diverse color selections, enriching the visual aspects
+of CLI-based tools and applications.
+
+Usage:
+    This module is intended to be imported and used within other modules of the TigerShark toolkit to provide
+    colored output in terminal. It is not designed to be run as a standalone script.
+
+Example:
+    from make_colorful import Color, ColorRGB
+
+    print(Color.LIGHTGREEN + "This is a light green text!" + Color.END)
+    print(f"The RGB value for Magenta is: {ColorRGB.MAGENTA}")
+"""
+
 import random
 # Import the random module to generate random numbers, shuffle sequences randomly, and choose random items.
 # This is used to generate different menu option colors each time you use TigerShark
