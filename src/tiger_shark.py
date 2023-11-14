@@ -4,32 +4,18 @@ a network protocol analyzer. It provides various options for analyzing PCAP file
 """
 
 import os
-import random
 import subprocess
 import sys
 from typing import Dict, Callable, Union
+
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
+
 import make_banner_art
 from make_tshark_class import TShark
 from search_tshark_filters import valid_display_filters_tshark
-from make_colorful import Color
-
-
-class ColorRGB:
-    """
-    A utility class for generating random RGB colors.
-    """
-    @staticmethod
-    def random_color():
-        """
-        Generate a random RGB color tuple.
-
-        Returns:
-            tuple: A tuple representing an RGB color, each component ranging from 0 to 255.
-        """
-        return random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+from make_colorful import Color, ColorRandomRGB
 
 
 # Type alias for the action in menu options
@@ -61,12 +47,12 @@ def wait_for_menu() -> None:
 # pylint: disable=line-too-long
 def print_menu_options(menu_options: dict, menu_colors: dict) -> None:
     """
-        # Prints the menu options in a formatted table.
-        #
-        # Args:
-        #     menu_options (dict): A dictionary containing the menu options and their descriptions.
-        #     menu_colors (dict): A dictionary containing the color settings for each menu option.
-        # """
+    Prints the menu options in a formatted table.
+
+    Args:
+        menu_options (dict): A dictionary containing the menu options and their descriptions.
+        menu_colors (dict): A dictionary containing the color settings for each menu option.
+    """
     console = Console()
     table = Table(show_header=True)
     print(r"    ٩(●̮̮̃•̃)=/̵͇̿̿/'̿̿ ̿̿                              ̿̿ ̿̿ ̿̿\̵͇̿̿\=(•̃●̮̮̃)۶")
@@ -260,7 +246,7 @@ def main() -> None:
 
 
 # Define the dictionary of menu colors for each menu option
-menu_colors: Dict[str, tuple] = {str(i): ColorRGB.random_color() for i in range(1, 24)}
+menu_colors: Dict[str, tuple] = {str(i): ColorRandomRGB.random_color() for i in range(1, 24)}
 
 # Check if this script is the main script (it is) and call the main function
 if __name__ == '__main__':
