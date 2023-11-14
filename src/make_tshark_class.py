@@ -1,14 +1,32 @@
+"""  # pylint: disable=line-too-long
+This Python module provides a comprehensive interface to the TShark network protocol analyzer,
+enabling detailed analysis and reporting on network packet capture (pcap) files. It includes
+classes and methods for performing a variety of network analysis tasks, including enumerating
+hosts and users, following TCP and HTTP streams, detecting ARP poisoning, and more.
+
+The TShark class at the core of this module acts as a wrapper around TShark command-line
+utilities, offering Pythonic access to its rich feature set. It includes methods for extracting
+specific data from pcap files, such as WHOIS information, user agents, beacon-like traffic patterns,
+and expert diagnostics. Additionally, the module contains utilities for user input validation and
+colorful terminal output to enhance user interaction.
+
+Key Features:
+- Interface to interact with TShark for pcap file analysis.
+- Methods for extracting specific network protocol information.
+- Capabilities to enumerate hosts and users, follow streams, and detect security threats.
+- Utilities for user input validation and enhanced terminal output.
+"""
+
 import logging
 import os  # Operating system interfaces
 import subprocess  # Process creation and management
 from collections import Counter  # Container for counting hashable objects
+from typing import Optional, Dict, List, Tuple, Any, Union
 
 from rich.table import Table
 from rich.console import Console
-from typing import Optional, Dict, List, Tuple, Any
 
 from dcerpc_method_abuse_notes import get_dcerpc_info  # MSRPC to ATT&CK lookup table
-# Custom module imports
 from make_colorful import Color  # Terminal color output utility
 from make_helpers import (
     input_prompt,  # Standardized user input prompt
@@ -40,48 +58,8 @@ class TShark:
     # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ S༙྇t༙྇a༙྇t༙྇i༙྇c༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
 
 
-    @staticmethod
-    def _run_command(cmd: List[str]) -> str:
-        """
-        Runs a command in a subprocess and returns its output.
-        """
-        completed_process: subprocess.CompletedProcess = subprocess.run(cmd, stdout=subprocess.PIPE, check=False)
-        return completed_process.stdout.decode()
+    # pylint: disable=line-too-long
 
-    @staticmethod
-    def display_results(results: Dict[str, List[Tuple[str, int]]], fields: Dict[str, str]) -> None:
-        """
-        Displays the results of the tshark command processing in a formatted manner using rich.
-        Args:
-            results (Dict[str, List[Tuple[str, int]]]): The processed results from tshark commands.
-            fields (Dict[str, str]): The fields used for each protocol in the tshark command.
-        """
-        console = Console()
-        for protocol, data in results.items():
-            field = fields[protocol]
-            # Enhanced table with custom box and header style
-            table = Table(title=f"{field}: {protocol}")
-            table.add_column("Count", style="bold cyan", justify="right")
-            table.add_column(f"{protocol}", style="bold red", overflow="fold")
-            # Conditional row styling (example: bold rows with count > 100)
-            for host, count in data:
-                style = "bold" if count > 100 else ""
-                # table.add_row(str(count), host)
-                table.add_row(str(count), host, style=style)
-            console.print(table)
-
-    @staticmethod
-    def _process_output(output: str) -> List[Tuple[str, int]]:
-        """
-        Processes the output from a tshark command to sort, remove blank lines, count occurrences, and sort
-        based on counts.
-        Args:
-            output (str): The raw string output from a tshark command.
-        Returns:
-            List[Tuple[str, int]]: A list of tuples containing the item and its count, sorted by the count.
-        """
-        sorted_output = [line for line in output.strip().split('\n') if line.strip()]
-        return Counter(sorted_output).most_common()
 
     @staticmethod
     def get_dcerpc_abuse_info() -> None:
@@ -110,6 +88,73 @@ class TShark:
         except ValueError as e:
             print(f"Error occurred: {e}")
             method, note, attack_ttp, attack_type, ioc = None, None, None, None, None
+
+    @staticmethod
+    def _run_command(cmd: List[str]) -> str:
+        """
+        Runs a command in a subprocess and returns its output.
+        """
+        completed_process: subprocess.CompletedProcess = subprocess.run(cmd, stdout=subprocess.PIPE, check=False)
+        return completed_process.stdout.decode()
+
+    @staticmethod
+    def display_results(results: Dict[str, List[Tuple[str, int]]], fields: Dict[str, str]) -> None:
+        """
+        Displays the results of the tshark command processing in a formatted manner using rich.
+        Args:
+            results (Dict[str, List[Tuple[str, int]]]): The processed results from tshark commands.
+            fields (Dict[str, str]): The fields used for each protocol in the tshark command.
+        """
+        console = Console()
+        for protocol, data in results.items():
+            field = fields[protocol]
+            # Enhanced table with custom box and header style
+            table = Table(title=f"{field}: {protocol}")
+            table.add_column("Count", style="bold cyan", justify="right")
+            table.add_column(f"{protocol}", style="bold red", overflow="fold")
+            # Conditional row styling
+            for host, count in data:
+                style = "bold" if count > 100 else ""
+                # table.add_row(str(count), host)
+                table.add_row(str(count), host, style=style)
+            console.print(table)
+
+    @staticmethod
+    def _process_output(output: str) -> List[Tuple[str, int]]:
+        """
+        Processes the output from a tshark command to sort, remove blank lines, count occurrences, and sort
+        based on counts.
+        Args:
+            output (str): The raw string output from a tshark command.
+        Returns:
+            List[Tuple[str, int]]: A list of tuples containing the item and its count, sorted by the count.
+        """
+        sorted_output = [line for line in output.strip().split('\n') if line.strip()]
+        return Counter(sorted_output).most_common()
+
+    @staticmethod
+    def process_output(output, protocol):
+        """
+        Processes the output from a tshark command, organizing it by protocol.
+
+        This method takes the raw string output from a tshark command, splits it into lines,
+        cleans each line by removing leading and trailing whitespace and tabs, and then counts
+        the occurrences of each line. The results are sorted based on these counts in descending order.
+
+        Args:
+            output (str): The raw string output from a tshark command.
+            protocol (str): The protocol name associated with the output.
+
+        Returns:
+            dict: A dictionary where the key is the protocol name and the value is a list of tuples.
+                  Each tuple contains a line (str) and its count (int), sorted by the count in descending order.
+        """
+        # Split the output into lines
+        lines = output.strip().split('\n')
+        # Remove leading and trailing whitespace and tabs from each line
+        cleaned_lines = [line.strip().replace('\t', '') for line in lines if line.strip()]
+        sorted_counts = Counter(cleaned_lines).most_common()
+        return {protocol: sorted_counts}
 
 
     # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ S྇t྇a྇t྇i྇c྇ M྇e྇t྇h྇o྇d྇s྇
@@ -149,13 +194,65 @@ class TShark:
     # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ A༙྇u༙྇t༙྇o༙྇n༙྇o༙྇m༙྇o༙྇u༙྇s༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
 
 
-    def process_and_display_verbose_results(self):
-        verbose_results, verbose_fields = self.read_verbose()
-        self.display_results(verbose_results, verbose_fields)
+    def process_and_display_verbose_results(self) -> None:
+        """
+        Processes and displays verbose results from a TShark analysis.
 
-    def process_and_display_user_agents(self):
-        user_agent_results, user_agent_fields = self.user_agent()
-        self.display_results(user_agent_results, user_agent_fields)
+        This method attempts to read verbose results and fields and displays them.
+        If the unpacking of results encounters a ValueError, it catches the error
+        and prints an error message. If verbose results or fields are None, or if
+        the result from read_verbose is not a tuple or list, it displays a message
+        indicating missing or invalid data.
+        """
+        try:
+            # Attempt to read the verbose results and fields
+            result = self.read_verbose()
+
+            # Check if the result is a tuple or list with two elements
+            if isinstance(result, (tuple, list)) and len(result) == 2:
+                verbose_results, verbose_fields = result
+                # Check if verbose_results and verbose_fields are not None before using them
+                if verbose_results is not None and verbose_fields is not None:
+                    self.display_results(verbose_results, verbose_fields)
+                else:
+                    # Display message if data is missing
+                    print("Unable to display results due to missing data.")
+            else:
+                print("Invalid or unexpected data format from read_verbose.")
+
+        except ValueError as e:
+            # Catch and handle the ValueError, displaying the error message
+            print(f"Caught an error: {e}")
+
+    def process_and_display_user_agents(self) -> None:
+        """
+        Processes and displays user agent results from a TShark analysis.
+
+        This method attempts to read user agent results and fields and displays them.
+        If the unpacking of results encounters a ValueError, it catches the error
+        and prints an error message. If user agent results or fields are None, or if
+        the result from user_agent is not a tuple or list, it displays a message
+        indicating missing or invalid data.
+        """
+        try:
+            # Attempt to read the user agent results and fields
+            result = self.user_agent()
+
+            # Check if the result is a tuple or list with two elements
+            if isinstance(result, (tuple, list)) and len(result) == 2:
+                user_agent_results, user_agent_fields = result
+                # Check if user_agent_results and user_agent_fields are not None before using them
+                if user_agent_results is not None and user_agent_fields is not None:
+                    self.display_results(user_agent_results, user_agent_fields)
+                else:
+                    # Display message if data is missing
+                    print("Unable to display results due to missing data.")
+            else:
+                print("Invalid or unexpected data format from user_agent.")
+
+        except ValueError as e:
+            # Catch and handle the ValueError, displaying the error message
+            print(f"Caught an error: {e}")
 
     def host_enum(self) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]:
         """
@@ -256,11 +353,26 @@ class TShark:
                                       'arp.packet-storm-detected'])
 
     def user_agent(self) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]:
+        """
+        Extracts and counts occurrences of HTTP user agents from network traffic data.
+
+        This method executes a TShark command to capture the 'http.user_agent' fields from the pcap file.
+        It then processes this output to count the occurrences of each unique user agent, providing insights
+        into the different types of clients that have interacted with the network.
+
+        Returns:
+            Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]: A tuple containing two dictionaries.
+            The first dictionary maps a descriptive key to a list of tuples, where each tuple contains a user
+            agent string and its count. The second dictionary provides a mapping for field descriptions used in
+            the output.
+        """
         cmd = ['-T', 'fields', '-e', 'http.user_agent']
         output = self._run_tshark_command(cmd)
         user_agents = [ua for ua in output.strip().split('\n') if ua.strip()]
         user_agent_counts = Counter(user_agents).most_common()
-        formatted_results = {"HTTP User Agents": [(ua, count) for ua, count in user_agent_counts]}
+        # make_tshark_class.py:370:49: R1721: Unnecessary use of a comprehension, use list(user_agent_counts) instead. (unnecessary-comprehension)
+        # formatted_results = {"HTTP User Agents": [(ua, count) for ua, count in user_agent_counts]}
+        formatted_results = {"HTTP User Agents": list(user_agent_counts)}
         fields_dict = {"HTTP User Agents": "User Agent"}
         return formatted_results, fields_dict
 
@@ -373,6 +485,9 @@ class TShark:
         # If the user wants to show all packets
         elif get_proto == "yes":
             return 'All packets:' + self._run_tshark_command([])
+        else:
+            return "Invalid input. Please enter 'yes' or 'no'."
+
 
     def statistics(self) -> Optional[str]:
         """
@@ -401,7 +516,7 @@ class TShark:
             else:
                 print("Unsupported protocol")
 
-        def server_resp_times() -> None:
+        def _server_resp_times() -> None:
             ask_protocol = input(
                 f"{Color.GOLD}Which protocol would you like to see server response times for? "
                 f"(icmp/ldap/smb/smb2/srvsvc/drsuapi/lsarpc/netlogon/samr){Color.END}: ")
@@ -449,7 +564,7 @@ class TShark:
         # Mapping of statistics types to the corresponding function calls
         stats_functions: Dict[str, Any] = {
             'conv': conversations,
-            'srt': server_resp_times,
+            'srt': _server_resp_times,
             'tree': tree,
             'hosts': hosts
         }
@@ -457,7 +572,18 @@ class TShark:
         # Call the selected function or print an error if the choice is invalid
         return stats_functions.get(which_stats, lambda: "Unsupported protocol")()
 
-    def read_verbose(self) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]:
+    def read_verbose(self) -> Union[Tuple[Dict[Any, List[Tuple[Any, int]]], Dict[Any, Any]], str]:
+        """
+        Reads and processes verbose information based on a user-specified protocol in a TShark analysis.
+
+        This method prompts the user to select a protocol and processes the TShark output based on this protocol.
+        It returns a tuple of processed output and field dictionary if successful, or an error message string if
+        an exception occurs.
+
+        Returns:
+            Union[Tuple[Dict, Dict], str]: A tuple containing processed verbose results and fields if successful,
+                                           or an error message string in case of an exception.
+        """
         try:
             # Prompt the user to select a protocol to search within the pcap file.
             ask_protocol = input(f"{Color.CYAN}Choose a protocol to search (dns, eth, http, icmp, smb2, tls){Color.END}: ")
@@ -484,16 +610,8 @@ class TShark:
         except ValueError as err:
             # Handle the error
             logging.error(err)
-            print(f"An error occurred: {err}. Please enter a valid protocol.")
-
-    @staticmethod
-    def process_output(output, protocol):
-        # Split the output into lines
-        lines = output.strip().split('\n')
-        # Remove leading and trailing whitespace and tabs from each line
-        cleaned_lines = [line.strip().replace('\t', '') for line in lines if line.strip()]
-        sorted_counts = Counter(cleaned_lines).most_common()
-        return {protocol: sorted_counts}
+            # print(f"An error occurred: {err}. Please enter a valid protocol.")
+            return f"An error occurred: {err}. Please enter a valid protocol."
 
 
     # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ U྇s྇e྇r྇ I྇n྇p྇u྇t྇ M྇e྇t྇h྇o྇d྇s྇
