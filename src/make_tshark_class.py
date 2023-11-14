@@ -27,7 +27,7 @@ from rich.table import Table
 from rich.console import Console
 
 from dcerpc_method_abuse_notes import get_dcerpc_info  # MSRPC to ATT&CK lookup table
-from make_colorful import Color  # Terminal color output utility
+from make_colorful import Color, ColorRandomRGB  # Terminal color output utility
 from make_helpers import (
     input_prompt,  # Standardized user input prompt
     is_valid_interval,  # Interval validation
@@ -111,7 +111,7 @@ class TShark:
             # Enhanced table with custom box and header style
             table = Table(title=f"{field}: {protocol}")
             table.add_column("Count", style="bold cyan", justify="right")
-            table.add_column(f"{protocol}", style="bold red", overflow="fold")
+            table.add_column(f"{protocol}", style=f"rgb({ColorRandomRGB.random_color()[0]},{ColorRandomRGB.random_color()[1]},{ColorRandomRGB.random_color()[2]})", overflow="fold")
             # Conditional row styling
             for host, count in data:
                 style = "bold" if count > 100 else ""
