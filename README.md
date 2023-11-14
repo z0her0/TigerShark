@@ -2,25 +2,23 @@
 TigerShark is a Python script that provides a user-friendly interface for interacting with TShark, a network protocol analyzer. It allows you to perform various network analysis tasks, view statistics, and extract information from packet capture (PCAP) files. TigerShark simplifies the use of TShark's command-line capabilities and provides an easy-to-use menu-driven interface.
 
 ## Features
-- View detailed PCAP file information.
-- Analyze protocol hierarchy statistics.
-- Retrieve expert information about packets.
-- Search for specific protocols and display packet details.
-- Enumerate streams and analyze individual packets.
-- Follow TCP and HTTP streams.
-- Display packet contents and hex dumps.
-- Search for beacons.
-- Analyze web traffic and extract HTTP data.
-- Retrieve WHOIS information for IP addresses.
-- Find TCP streams by frame index.
-- Search for specific domain names in DNS traffic.
-- Detect failed connection attempts.
-- Extract user agent information.
-- Detect signs of ARP poisoning.
-- Apply custom display filters.
-- List valid Tshark display filters.
-- View various network statistics.
-- Search for DCERPC abuse information.
+- `DCERPC Service Abuse Analysis`: Provides detailed insights into potential abuses of specific DCERPC services and methods.
+- `Host Enumeration`: Enumerates and lists hosts involved in various network protocols, offering insights into network structure.
+- `User Enumeration`: Identifies and lists user accounts engaged in different network protocols, useful for understanding user activities.
+- `Protocol Hierarchy Statistics`: Generates input/output protocol hierarchy statistics from pcap files for network traffic analysis.
+- `Expert Diagnostics`: Extracts 'expert chat' diagnostic messages from pcap files, aiding in identifying network issues.
+- `Failed Connection Identification`: Detects and provides details on failed TCP connection attempts, helpful in troubleshooting network issues.
+- `WHOIS IP Lookup`: Performs WHOIS lookups for unique destination IP addresses found in network traffic, useful for identifying potential threats.
+- `ARP Poisoning Detection`: Searches for signs of ARP poisoning attacks, enhancing network security analysis.
+- `HTTP User Agent Analysis`: Extracts and counts occurrences of HTTP user agents, offering insights into client software used on the network.
+- `Web Traffic Extraction`: Retrieves web traffic information, useful for general malicious web activity.
+- `Beacon-Like Traffic Pattern Identification`: Identifies beacon-like traffic patterns, aiding in detecting regular communication intervals often used by malware.
+- `Custom Display Filter Application`: Applies user-specified TShark display filters to customize network traffic analysis.
+- `DNS Query Analysis`: Searches DNS queries or responses for specific domains, assisting in domain-specific network traffic investigation.
+- `TCP and HTTP Stream Analysis`: Follows and displays contents of specified TCP and HTTP streams, useful for detailed packet-level analysis.
+- `Packet Display Based on User Choice`: Offers options to display all network packets or those filtered by a specific protocol.
+- `Comprehensive Network Statistics`: Provides various network statistics such as conversations, server response times, and more, for a detailed understanding of network behavior.
+- `Verbose Information Processing`: Reads and processes verbose information based on user-selected protocols, offering detailed packet insights.
 
 ## Usage
 1. Run `TigerShark.py` and provide the path to a PCAP file when prompted.
