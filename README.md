@@ -27,14 +27,10 @@ TigerShark is a Python script that provides a user-friendly interface for intera
 
 ![input](images/input%20pcap.png)
 
-![banner](images/menu.png)
-
 2. Choose from a variety of options in the interactive menu to perform specific tasks or analyses on the PCAP file.
 
-![TigerShark Main Menu](images/menuoption.png)
-
 ## Requirements
-- Python 3.x
+- Python 3.9+
 - Mac or Linux.  Support for Windows is coming soon.
 - WireShark (installed to default location)
 
@@ -50,7 +46,7 @@ TigerShark is a Python script that provides a user-friendly interface for intera
    cd TigerShark
    ```
 
-3. Run the `TigerShark.py` script:
+3. Run the `tiger_shark.py` script:
    ```bash
-   python src/TigerShark.py
+   python src/tiger_shark.py
    ```
