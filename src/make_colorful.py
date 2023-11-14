@@ -1,27 +1,13 @@
 """  # pylint: disable=line-too-long
-make_colorful.py
-
-This module provides classes for managing and representing color codes in terminal outputs. It includes both
-RGB color values (approximations of ANSI color codes) and custom text color codes for terminal output.
+This module contains classes for color management in terminal applications. It provides classes for generating random RGB colors, representing RGB colors equivalent to ANSI codes, and managing custom text color codes for terminal output. The module is designed to enhance the visual appeal of CLI applications by allowing dynamic and colorful text displays.
 
 Classes:
-    ColorRGB: Represents RGB color values, with predefined color constants approximating ANSI color codes.
-    ColorCustom: Manages custom text color codes for terminal output, randomly selecting a color for use.
-    Color: Represents text color codes for terminal output, including both built-in and custom color codes.
+- ColorRandomRGB: Generates random RGB color tuples.
+- ColorRGB: Represents RGB colors corresponding to standard ANSI color codes.
+- ColorCustom: Manages a set of custom color codes for terminal text.
+- Color: Defines standard and custom ANSI color codes for terminal text.
 
-This module is part of the TigerShark toolkit and is used for generating colored terminal outputs to enhance
-user interface experience. It allows for random and diverse color selections, enriching the visual aspects
-of CLI-based tools and applications.
-
-Usage:
-    This module is intended to be imported and used within other modules of the TigerShark toolkit to provide
-    colored output in terminal. It is not designed to be run as a standalone script.
-
-Example:
-    from make_colorful import Color, ColorRGB
-
-    print(Color.LIGHTGREEN + "This is a light green text!" + Color.END)
-    print(f"The RGB value for Magenta is: {ColorRGB.MAGENTA}")
+The module is versatile, offering both predefined color sets and the capability to generate random colors, making it suitable for applications requiring dynamic color themes or specific color coding for text output.
 """
 
 import random
@@ -29,8 +15,28 @@ import random
 # This is used to generate different menu option colors each time you use TigerShark
 
 
+class ColorRandomRGB:
+    """
+    A utility class for generating random RGB colors.
+    """
+    @staticmethod
+    def random_color():
+        """
+        Generate a random RGB color tuple.
+
+        Returns:
+            tuple: A tuple representing an RGB color, each component ranging from 0 to 255.
+        """
+        return random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+
+
 class ColorRGB:
-    """Class to represent RGB color values equivalent to the ANSI color codes."""
+    """
+    Class to represent RGB color values equivalent to the ANSI color codes.
+
+    This class provides RGB representations of common ANSI colors as well as some custom colors.
+    It is useful for applications that need RGB values for color coding but want to maintain consistency with ANSI color schemes.
+    """
 
     # Builtin colors (approximations)
     PURPLE = (128, 0, 128)  # Equivalent to ANSI 'Purple'
@@ -73,7 +79,12 @@ class ColorRGB:
 
 
 class ColorCustom:
-    """Class to represent the text color codes used for terminal output."""
+    """
+    Class to represent the text color codes used for terminal output.
+
+    This class manages a set of custom color codes, allowing for varied and vibrant text outputs in terminal applications.
+    It randomly selects a color code upon instantiation, making each instance potentially unique in terms of color.
+    """
 
     COLORS = [
         "\033[95m", "\033[96m", "\033[36m", "\033[35m", "\033[34m",
@@ -93,7 +104,11 @@ class ColorCustom:
 
 
 class Color:
-    """Class to represent the text color codes used for terminal output."""
+    """
+    Class to represent the text color codes used for terminal output.
+
+    This class defines a range of color codes, including standard ANSI colors and custom colors, to be used for styling text in terminal applications. It provides an easy way to apply color coding to text output, enhancing readability and user experience.
+    """
 
     # Builtin colors
     PURPLE = "\033[95m"
