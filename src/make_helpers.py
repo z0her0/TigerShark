@@ -1,9 +1,26 @@
+"""  # pylint: disable=line-too-long
+This module provides utility functions and classes for working with TShark,
+a network protocol analyzer. It includes functionality to set the path for
+TShark based on the operating system, validate various types of user input
+(such as IP addresses, intervals, and numeric digits), and process the
+output of TShark commands.
+
+Key components include:
+- `set_tshark_path()`: Determines the correct path for TShark and Capinfos executables.
+- `is_valid_ipv4_address()`, `is_valid_interval()`, `is_valid_digit()`: Functions to validate user input.
+- `get_input_opnum()`, `input_prompt()`: Functions to prompt and validate user input.
+- `process_output()`: Processes the raw output from TShark commands, with special handling for HTTP and DNS protocols.
+
+These utilities are designed to assist in automating and simplifying the usage of TShark in network analysis tasks.
+"""
+
 import ipaddress
 import platform
 from typing import Callable, Optional, Tuple
 from collections import Counter
 
 
+# pylint: disable=line-too-long
 def set_tshark_path() -> Tuple[str, str]:
     """
     Set the paths for tshark and capinfos based on the host operating system.
@@ -91,8 +108,7 @@ def get_input_opnum() -> int:
         user_input = input("Please enter an operation number: ")
         if is_valid_digit(user_input):
             return int(user_input)
-        else:
-            print("Invalid input. Please enter a numeric value.")
+        print("Invalid input. Please enter a numeric value.")
 
 
 def input_prompt(prompt: str, validator: Optional[Callable[[str], bool]] = None) -> str:
@@ -142,17 +158,17 @@ def process_output(raw_output: str, protocol: str) -> list[tuple[str, int]]:
         defanged = []
         for line in cleaned_lines:
             # Apply replace to each string in the list
-            defanged.append(line.replace("http://", "hxxp://").replace("https://", "hxxp://").replace(".", "[.]"))
+            defanged.append(line.replace("http://", "hxxp://").replace("https://", "hxxp://").replace(".", "[.]"))  # pylint: disable=line-too-long
 
         # Count occurrences of each cleaned line and return the counts as a string
         sorted_counts = Counter(defanged).most_common()
         return sorted_counts
-    else:
-        # Count occurrences of each cleaned line
-        sorted_counts = Counter(cleaned_lines).most_common()
 
-        # Return the counts as a string
-        return sorted_counts
+    # Count occurrences of each cleaned line
+    sorted_counts = Counter(cleaned_lines).most_common()
+
+    # Return the counts as a string
+    return sorted_counts
 
 
 # The following block will only be executed if this module is run as the main script.
