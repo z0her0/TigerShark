@@ -24,9 +24,6 @@ TigerShark is a Python script that provides a user-friendly interface for intera
 
 ## Usage
 1. Run `TigerShark.py` and provide the path to a PCAP file when prompted.
-
-![input](images/input%20pcap.png)
-
 2. Choose from a variety of options in the interactive menu to perform specific tasks or analyses on the PCAP file.
 
 ## Requirements
