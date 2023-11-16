@@ -13,6 +13,7 @@ from rich.table import Table
 from rich.text import Text
 
 import make_banner_art
+from make_help import show_help
 from make_tshark_class import TShark
 from search_tshark_filters import valid_display_filters_tshark
 from make_colorful import Color, ColorRandomRGB
@@ -198,10 +199,14 @@ def main() -> None:
             "action": lambda: print(f"{TShark(pcap_file=ask_user_input).get_dcerpc_abuse_info()}")
         },
         "22": {
+            "description": "Help Menu",
+            "action": lambda: show_help()
+        },
+        "23": {
             "description": "Clear Screen",
             "action": lambda: (clear_screen(), None)[1]
         },
-        "23": {
+        "24": {
             "description": "Quit",
             "action": lambda: sys.exit("Exit program.")
         }
@@ -243,11 +248,11 @@ def main() -> None:
                 print("Error: The action is not callable.")
 
         else:
-            print(f"{Color.RED}Invalid selection. Please choose a number between 1 and 23.{Color.END}")
+            print(f"{Color.RED}Invalid selection. Please choose a number between 1 and 24.{Color.END}")
 
 
 # Define the dictionary of menu colors for each menu option
-menu_colors: Dict[str, tuple] = {str(i): ColorRandomRGB.random_color() for i in range(1, 24)}
+menu_colors: Dict[str, tuple] = {str(i): ColorRandomRGB.random_color() for i in range(1, 25)}
 
 # Check if this script is the main script (it is) and call the main function
 if __name__ == '__main__':
