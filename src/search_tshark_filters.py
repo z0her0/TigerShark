@@ -52,7 +52,7 @@ def valid_display_filters_tshark() -> None:
             "-G",
             "fields",
         ]
-        with subprocess.Popen(command, stdout=subprocess.PIPE) as process:
+        with subprocess.Popen(command, stdout=subprocess.PIPE, shell=False) as process:
             output, _ = process.communicate()
 
         # Process the output
