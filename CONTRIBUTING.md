@@ -1,1 +1,1 @@
-Just run it by me for now.
+Currently focused on improving the main menu and overall UX.  Contributions welcomed.
