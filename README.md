@@ -26,7 +26,7 @@ TigerShark is a Python script that provides a user-friendly interface for intera
 
 ## Requirements
 - Python 3.9+
-    - `rich` library installed
+    - see `requirements.txt`
 - Mac or Linux.  Support for Windows is coming soon.
 - WireShark (installed to default location)
 
