@@ -23,6 +23,7 @@ import subprocess  # Process creation and management
 from collections import Counter  # Container for counting hashable objects
 from typing import Optional, Dict, List, Tuple, Any, Union
 
+import matplotlib.pyplot as plt
 from rich.table import Table
 from rich.console import Console
 
@@ -376,19 +377,132 @@ class TShark:
 
     # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ U༙྇s༙྇e༙྇r༙྇ I༙྇n༙྇p༙྇u༙྇t༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
 
-    def find_beacons(self, ip_address: Optional[str] = None, interval_frequency: Optional[str] = None) -> Any:
+    def find_beacons(self, ip_address: Optional[str] = None, interval_frequency: Optional[str] = None) -> None:
         """
-        Identifies beacon-like traffic patterns for a specified IP address and interval frequency.
+        Identifies beacon-like traffic patterns for a specified IP address and interval frequency,
+        and plots the data using a line graph. It prompts the user for input if the IP address or interval frequency is not provided.
+
+        Parameters:
+        ip_address (Optional[str]): The IPv4 address to analyze for beacon-like patterns. If None, the user is prompted to enter an IP address.
+        interval_frequency (Optional[str]): The frequency, in seconds, at which to analyze the traffic patterns. If None, the user is prompted to enter an interval frequency.
+
+        Returns:
+        None: This method does not return anything. It displays a line graph showing the traffic patterns.
         """
         if ip_address is None:
-            ip_address = input_prompt(
-                "Enter the IPv4 address you wish to look for patterns to determine beacons: ", is_valid_ipv4_address)
+            ip_address = input("Enter the IPv4 address you wish to look for patterns to determine beacons: ")
+
+            while not is_valid_ipv4_address(ip_address):
+                ip_address = input("Invalid IP. Please enter a valid IPv4 address: ")
+
         if interval_frequency is None:
-            interval_frequency = input_prompt(
-                "Enter the interval frequency (in seconds): ",
-                is_valid_interval)
-        return self._run_tshark_command(['-qz',
-                                         f'io,stat,{interval_frequency},MAX(frame.time_relative)frame.time_relative,ip.addr=={ip_address},MIN(frame.time_relative)frame.time_relative'])
+            interval_frequency = input("Enter the interval frequency (in seconds): ")
+
+            while not is_valid_interval(interval_frequency):
+                interval_frequency = input("Invalid interval. Please enter a valid interval frequency in seconds: ")
+
+        # Run TShark command and capture output
+        tshark_output = self._run_tshark_command(
+            ['-qz',
+             f'io,stat,{interval_frequency},MAX(frame.time_relative)frame.time_relative,ip.addr=={ip_address},MIN(frame.time_relative)frame.time_relative']
+        )
+
+        print("TShark Output:", tshark_output)
+
+        # Process TShark output to extract data for plotting
+        times, frames, bytes_data = self._process_tshark_output(tshark_output)
+
+        # Calculate total duration based on the time intervals
+        total_duration = times[-1] - times[0] if times else 0
+
+        # Create figure and axis objects
+        fig, ax1 = plt.subplots(figsize=(12, 8))
+
+        # Plotting frames
+        frame_line, = ax1.plot(times, frames, marker='o', color='blue', label='Frame Count')
+
+        # Set x-axis label
+        ax1.set_xlabel(f"Time Intervals (s) - Total Duration: {total_duration} s", labelpad=15)
+
+        # Add additional text below the x-axis label for the chosen interval frequency
+        ax1.text(0.5, -0.15, f"Interval Frequency: {interval_frequency} s",
+                 transform=ax1.transAxes, ha='center', va='center', fontsize=10)
+
+        # Plotting bytes on a secondary y-axis
+        ax2 = ax1.twinx()
+        bytes_line, = ax2.plot(times, bytes_data, marker='x', color='red', label='Byte Count')
+
+        # Setting title
+        plt.title(f"Network Traffic Patterns for IP {ip_address}")
+
+        # Creating combined legend for both lines
+        lines = [frame_line, bytes_line]
+        labels = [line.get_label() for line in lines]
+        ax1.legend(lines, labels, loc='upper left')
+
+        # Explicitly adjust subplots to fit the figure area
+        fig.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.17)
+
+        # Show grid and plot
+        ax1.grid(True)
+        plt.show()
+
+    # @staticmethod
+    def _process_tshark_output(self, output: str):
+        """
+        Processes the output from the TShark command to extract time intervals, frame counts, and byte counts.
+
+        The function assumes the output is formatted in a table where each row represents a time interval
+        and the columns include the maximum and minimum frame times, the number of frames, and the number
+        of bytes.
+
+        Parameters:
+        output (str): The raw string output from the TShark command.
+
+        Returns:
+        tuple: A tuple containing three lists:
+            times (list of float): A list of interval start times extracted from the output.
+            frames (list of int): A list of frame counts corresponding to each time interval.
+            bytes_data (list of int): A list of byte counts corresponding to each time interval.
+        """
+        times = []  # List to store interval start times
+        frames = []  # List to store frame counts
+        bytes_data = []  # List to store byte counts
+
+        # Split the output into lines
+        lines = output.strip().split('\n')
+
+        # Flag to start reading the table data
+        start_reading = False
+
+        for line in lines:
+            # Start reading after the table header is detected
+            if line.startswith('| Interval'):
+                start_reading = True
+                continue
+
+            if start_reading and line.startswith('|'):
+                # Extract data from each line
+                # Line format: "|   0 <> 10  | 9.178748 | 0 | 0 | 0.000000 |"
+                parts = line.split('|')
+                if len(parts) >= 6:
+                    try:
+                        interval = parts[1].strip()  # "0 <> 10"
+                        frame_count = parts[3].strip()  # "0"
+                        byte_count = parts[4].strip()  # "0"
+
+                        # Extract the start of the interval
+                        interval_start = interval.split('<>')[0].strip()
+                        times.append(float(interval_start))
+
+                        # Convert frame and byte counts to integers
+                        frames.append(int(frame_count))
+                        bytes_data.append(int(byte_count))
+                    except ValueError:
+                        # Skip lines that can't be parsed
+                        continue
+
+        return times, frames, bytes_data
 
     def display_filter(self) -> str:
         """
