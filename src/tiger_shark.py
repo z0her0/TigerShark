@@ -47,13 +47,13 @@ def wait_for_menu() -> None:
 
 
 # pylint: disable=line-too-long
-def print_menu_options(menu_options: dict, menu_colors: dict) -> None:
+def print_menu_options(menu_options: dict, colors: dict) -> None:
     """
     Prints the menu options in a formatted table.
 
     Args:
         menu_options (dict): A dictionary containing the menu options and their descriptions.
-        menu_colors (dict): A dictionary containing the color settings for each menu option.
+        colors (dict): A dictionary containing the color settings for each menu option.
     """
     console = Console()
     table = Table(show_header=True)
@@ -64,12 +64,12 @@ def print_menu_options(menu_options: dict, menu_colors: dict) -> None:
     for i in range(0, len(keys), 2):
         key1 = keys[i]
         desc1 = menu_options[key1]["description"]
-        color1 = menu_colors[key1]
+        color1 = colors[key1]
         text1 = Text(f"{key1}. {desc1}", style=f"rgb({color1[0]},{color1[1]},{color1[2]})")
         if i + 1 < len(keys):
             key2 = keys[i + 1]
             desc2 = menu_options[key2]["description"]
-            color2 = menu_colors[key2]
+            color2 = colors[key2]
             text2 = Text(f"{key2}. {desc2}", style=f"rgb({color2[0]},{color2[1]},{color2[2]})")
         else:
             text2 = Text("")
@@ -220,7 +220,7 @@ def main() -> None:
     print(rf"{Color.LIGHTGREEN}                                 ~  ~  ~  ~~~ ~ ~  ~  ~ ~ ~ ~ ~ ~ ~ ~{Color.END}")
     print(rf"{Color.MAGENTA}                                       '·.¸¸.·♩♪♫', '♫♪♩·.¸¸.·'{Color.END}")
 
-    print(make_banner_art.banner)
+    print(make_banner_art.mascot)
 
     while True:
         wait_for_menu()
