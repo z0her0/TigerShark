@@ -94,7 +94,7 @@ class TShark:
         """
         Runs a command in a subprocess and returns its output.
         """
-        completed_process: subprocess.CompletedProcess = subprocess.run(cmd, stdout=subprocess.PIPE, check=False)
+        completed_process: subprocess.CompletedProcess = subprocess.run(cmd, stdout=subprocess.PIPE, shell=False, check=False)
         return completed_process.stdout.decode()
 
     @staticmethod
@@ -175,7 +175,7 @@ class TShark:
             fields_options = ['-e' + field.strip() for field in custom_fields.split(',')]
             cmd.extend(['-T', 'fields'] + fields_options)
         completed_process: subprocess.CompletedProcess = subprocess.run(cmd, stdout=subprocess.PIPE,
-                                                                        stderr=subprocess.PIPE, check=False)
+                                                                        stderr=subprocess.PIPE, shell=False, check=False)
         return completed_process.stdout.decode()
 
     def _process_protocol(self, display_filter: str, fields: List[str]) -> str:
