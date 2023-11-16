@@ -23,50 +23,48 @@ a list of related TShark display filters.
 """
 
 import subprocess
-# Import the 'subprocess' module, which allows you to spawn new processes, connect to their
-# input/output/error pipes, and obtain their return codes.
-
 from make_helpers import set_tshark_path
-# From the custom module 'make_helpers', import the function 'set_tshark_path'.
-# The function 'set_tshark_path' is used to configure the file path for the Tshark application,
-# which is a network protocol analyzer.
 
 
 def valid_display_filters_tshark() -> None:
     """
-    Prompts the user for a protocol and prints out valid tshark display filters
-    associated with that protocol, specifically those that contain string fields.
+    Repeatedly prompts the user to enter a network protocol and displays valid Tshark display filters 
+    associated with that protocol. The function exits when the user inputs 'exit'.
 
-    The function first retrieves the path to the tshark executable using the
-    `set_tshark_path()` function. It then runs tshark with the "-G fields"
-    argument to get a list of all display filters. The output is processed to
-    find and print display filters related to the user-specified protocol.
+    This function runs Tshark with the "-G fields" argument to retrieve a list of all available display filters.
+    It then filters this list to show only those filters related to the user-specified protocol, focusing on 
+    filters that contain string fields.
+
+    The user can continuously input protocols to search for their corresponding display filters 
+    before choosing to exit the program.
     """
-    # Prompt the user for the protocol
-    protocol = input("Enter the protocol (e.g., 'dns'): ")
-    tshark = f"{set_tshark_path()[0]}"
-    try:
-        # Run the tshark command
-        command = [
-            tshark,
-            "-G",
-            "fields",
-        ]
-        with subprocess.Popen(command, stdout=subprocess.PIPE, shell=False) as process:
-            output, _ = process.communicate()
+    while True:
+        # Prompt the user for the protocol
+        protocol = input("Enter the protocol (e.g., 'dns'), or 'exit' to quit: ")
+        if protocol.lower() == 'exit':
+            break
 
-        # Process the output
-        lines = output.decode("utf-8").splitlines()
-        for line in lines:
-            fields = line.split("\t")
-            if len(fields) >= 5 and fields[4] == protocol and "string" in line.lower():
-                print(f"{fields[2]:<40} : {fields[1]} [{fields[3]}]")
+        tshark = f"{set_tshark_path()[0]}"
+        try:
+            # Run the tshark command
+            command = [tshark, "-G", "fields"]
+            with subprocess.Popen(command, stdout=subprocess.PIPE, shell=False) as process:
+                output, _ = process.communicate()
 
-    except subprocess.SubprocessError as e:
-        print(f"A subprocess error occurred: {e}")
+            # Process the output
+            lines = output.decode("utf-8").splitlines()
+            for line in lines:
+                fields = line.split("\t")
+                if len(fields) >= 5 and fields[4] == protocol and "string" in line.lower():
+                    print(f"{fields[2]:<40} : {fields[1]} [{fields[3]}]")
 
-    except Exception as e:  # pylint: disable=broad-except
-        print(f"An unexpected error occurred: {e}")
+        except subprocess.SubprocessError as e:
+            print(f"A subprocess error occurred: {e}")
+
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+        print("\n")
 
 
 if __name__ == "__main__":
