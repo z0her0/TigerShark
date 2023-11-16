@@ -34,7 +34,7 @@ TigerShark is a Python script that provides a user-friendly interface for intera
 
 1. Clone the TigerShark repository to your local machine:
    ```bash
-   git clone https://github.com/RandomLegend3/TigerShark.git
+   git clone https://github.com/zer0hero-rl/TigerShark.git
    ```
 
 2. Navigate to the TigerShark directory:
