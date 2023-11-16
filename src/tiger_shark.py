@@ -4,7 +4,7 @@ a network protocol analyzer. It provides various options for analyzing PCAP file
 """
 
 import os
-import subprocess
+import ctypes
 import sys
 from typing import Dict, Callable, Union
 
@@ -27,14 +27,15 @@ MenuOptionsType = Dict[str, Dict[str, Union[str, ActionType]]]
 
 def clear_screen() -> None:
     """
-    Clears the console screen.  Built-in support for Windows.
+    Clears the console screen using alternative methods, instead of using shell commands.
     """
     # For Windows
     if os.name == 'nt':
-        _ = os.system('cls')
-    # For Mac and Linux(here, os.name is 'posix')
+        # We can use the ctypes library to call the Win32 API for clearing the console.
+        ctypes.windll.kernel32.SetConsoleCursorPosition(ctypes.windll.kernel32.GetStdHandle(-11), 0)
     else:
-        _ = os.system('clear')
+        # We can use an escape sequence to clear the terminal
+        print("\033c", end="")
 
 
 def wait_for_menu() -> None:
@@ -198,7 +199,7 @@ def main() -> None:
         },
         "22": {
             "description": "Clear Screen",
-            "action": lambda: (subprocess.call('clear'), None)[1]
+            "action": lambda: (clear_screen(), None)[1]
         },
         "23": {
             "description": "Quit",
