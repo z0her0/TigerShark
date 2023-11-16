@@ -27,12 +27,6 @@ from typing import Dict, TypedDict
 
 # pylint: disable=line-too-long
 
-# The `dcerpc_services` dictionary is a comprehensive map of several DCERPC services, their UUIDs, descriptions,
-# versions, and associated methods along with operation numbers (opnums). This data structure can be utilized to
-# identify and understand potential vulnerabilities or common attack patterns by APTs (Advanced Persistent Threats).
-# Each service in the dictionary details specific RPC methods that may be targeted by APTs, with a focus on methods
-# known to be exploited historically or which may pose potential security risks.
-
 
 class MethodDetails(TypedDict, total=False):
     """
