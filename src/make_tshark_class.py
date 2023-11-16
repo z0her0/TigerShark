@@ -54,12 +54,7 @@ class TShark:
         if not os.path.isfile(tshark):
             raise FileNotFoundError('Cannot find tshark in ' + tshark)
 
-
     # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ S༙྇t༙྇a༙྇t༙྇i༙྇c༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
-
-
-    # pylint: disable=line-too-long
-
 
     @staticmethod
     def get_dcerpc_abuse_info() -> None:
@@ -156,12 +151,9 @@ class TShark:
         sorted_counts = Counter(cleaned_lines).most_common()
         return {protocol: sorted_counts}
 
-
     # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ S྇t྇a྇t྇i྇c྇ M྇e྇t྇h྇o྇d྇s྇
 
-
     # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ T༙྇S༙྇h༙྇a༙྇r༙྇k༙྇ C༙྇o༙྇m༙྇m༙྇a༙྇n༙྇d༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
-
 
     def _run_tshark_command(self, options: List[str], display_filter: Optional[str] = None,
                             custom_fields: Optional[str] = None) -> str:
@@ -187,12 +179,9 @@ class TShark:
         output = self._run_tshark_command(options, display_filter=display_filter)
         return output
 
-
     # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ T྇S྇h྇a྇r྇k྇ C྇o྇m྇m྇a྇n྇d྇ M྇e྇t྇h྇o྇d྇s྇
 
-
     # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ A༙྇u༙྇t༙྇o༙྇n༙྇o༙྇m༙྇o༙྇u༙྇s༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
-
 
     def process_and_display_verbose_results(self) -> None:
         """
@@ -370,12 +359,9 @@ class TShark:
         output = self._run_tshark_command(cmd)
         user_agents = [ua for ua in output.strip().split('\n') if ua.strip()]
         user_agent_counts = Counter(user_agents).most_common()
-        # make_tshark_class.py:370:49: R1721: Unnecessary use of a comprehension, use list(user_agent_counts) instead. (unnecessary-comprehension)
-        # formatted_results = {"HTTP User Agents": [(ua, count) for ua, count in user_agent_counts]}
         formatted_results = {"HTTP User Agents": list(user_agent_counts)}
         fields_dict = {"HTTP User Agents": "User Agent"}
         return formatted_results, fields_dict
-
 
     def web_basic(self) -> str:
         """
@@ -388,9 +374,7 @@ class TShark:
 
     # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ A྇u྇t྇o྇n྇o྇m྇o྇u྇s྇ M྇e྇t྇h྇o྇d྇s྇
 
-
     # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ U༙྇s༙྇e༙྇r༙྇ I༙྇n༙྇p༙྇u༙྇t༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
-
 
     def find_beacons(self, ip_address: Optional[str] = None, interval_frequency: Optional[str] = None) -> Any:
         """
@@ -398,11 +382,10 @@ class TShark:
         """
         if ip_address is None:
             ip_address = input_prompt(
-                "Enter the IPv4 address you wish to look for patterns to determine beacons (Example valid input: "
-                "10.10.14.19): ", is_valid_ipv4_address)
+                "Enter the IPv4 address you wish to look for patterns to determine beacons: ", is_valid_ipv4_address)
         if interval_frequency is None:
             interval_frequency = input_prompt(
-                "Enter the interval frequency (Example: for 120 secs intervals, enter 120): ",
+                "Enter the interval frequency (in seconds): ",
                 is_valid_interval)
         return self._run_tshark_command(['-qz',
                                          f'io,stat,{interval_frequency},MAX(frame.time_relative)frame.time_relative,ip.addr=={ip_address},MIN(frame.time_relative)frame.time_relative'])
@@ -424,7 +407,6 @@ class TShark:
             how_many_pkts = input("How many packets do you want to see? ")
             options.extend(['-c', how_many_pkts])
         elif view_all_pkts.lower() == "y":
-            # If there is a need to add additional options when viewing all packets
             pass
 
         # Call _run_tshark_command with or without custom fields
@@ -441,12 +423,29 @@ class TShark:
             output = self._run_tshark_command(options)
             return output
 
-    def dns_hunt(self) -> str:
+    def dns_hunt(self) -> None:
         """
         Searches for DNS queries or responses involving a specific domain.
         """
-        ask_dns = input("Enter the domain you want to search for here in double quotes: ")
-        return self._run_tshark_command(['-Y', 'dns matches ' + f"{ask_dns}"])
+
+        while True:
+
+            try:
+                ask_dns = input('Enter the domain you want to search for, enclosed in double quotes (".onion", "wtfismyip.com"):\nOr type `exit` to quit: ')
+                if ask_dns.lower() == 'exit':
+                    break
+
+                result = self._run_tshark_command(['-Y', 'dns matches ' + ask_dns])
+
+                print(result)
+
+            except subprocess.SubprocessError as e:
+                print(f"A subprocess error occurred: {e}")
+
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
+
+            print("\n")
 
     def viewframe_getstream(self) -> str:
         """
@@ -469,108 +468,148 @@ class TShark:
         get_http_stream_number = input_prompt("Which HTTP stream index would you like to see? ", is_valid_digit)
         return self._run_tshark_command(['-qz', f'follow,http,ascii,{get_http_stream_number}'])
 
-    def show_packets(self) -> str:
+    def show_packets(self) -> None:
         """
-        Displays packets based on the user's choice of either all packets or a specific protocol.
+        Continuously prompts the user to display network packets.
+
+        This method allows the user to choose between displaying all packets or packets
+        of a specific protocol. The user can repeatedly make this choice, or choose to exit
+        the loop. If a specific protocol is chosen, only packets related to that protocol are displayed.
+        The method handles subprocess errors and unexpected exceptions during its execution.
         """
-        get_proto = input("Show all packets? (yes or no) ")
-        print('')
-        # If the user doesn't want to show all packets
-        if get_proto == "no":
-            which_proto = input("Which protocol would you like to see all packets for? ")
-            print('')
-            # Extract packets for the specified protocol
-            return 'All ' + which_proto + ' packets:\n\n' + self._run_tshark_command(['-Y', which_proto])
 
-        # If the user wants to show all packets
-        elif get_proto == "yes":
-            return 'All packets:' + self._run_tshark_command([])
-        else:
-            return "Invalid input. Please enter 'yes' or 'no'."
+        while True:
 
+            try:
+                get_proto = input("Show all packets? (yes or no, or 'exit' to quit) ")
+                print('')
 
-    def statistics(self) -> Optional[str]:
+                if get_proto.lower() == 'exit':
+                    break
+
+                # If the user doesn't want to show all packets
+                if get_proto.lower() == "no":
+                    which_proto = input("Which protocol would you like to see all packets for? ")
+                    print('')
+                    # Extract packets for the specified protocol
+                    print('All ' + which_proto + ' packets:\n\n' + self._run_tshark_command(['-Y', which_proto]))
+
+                # If the user wants to show all packets
+                elif get_proto.lower() == "yes":
+                    print('All packets:\n\n' + self._run_tshark_command([]))
+
+                else:
+                    print("Invalid input. Please enter 'yes' or 'no'.")
+
+            except subprocess.SubprocessError as e:
+                print(f"A subprocess error occurred: {e}")
+
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
+
+            print("\n")
+
+    def statistics(self) -> None:
         """
-        Displays various types of statistics like conversations, server response times, or tree statistics
-        based on the user's choice.
+        Continuously prompts the user to choose a type of network statistics to view, until they choose to exit.
+        Supported statistics include conversations, server response times, tree statistics, and host listings.
         """
-        which_stats = input(
-            f"{Color.LIGHTYELLOW}What type of statistics do you want to view? (conv/hosts/srt/tree): {Color.END}: ")
 
-        def conversations() -> None:
-            ask_protocol = input(
-                f"{Color.CYAN}Which protocol would you like to view conversations for? "
-                f"(bluetooth/eth/ip/tcp/usb/wlan){Color.END}: ")
-            # Dictionary mapping protocol names to TShark commands
-            protocol_commands: Dict[str, List[str]] = {
-                'bluetooth': ['conv,bluetooth'],
-                'eth': ['conv,eth'],
-                'ip': ['conv,ip'],
-                'tcp': ['conv,tcp'],
-                'usb': ['conv,usb'],
-                'wlan': ['conv,wlan']
-            }
-            if ask_protocol in protocol_commands:
-                tshark_command = ['-qz'] + protocol_commands[ask_protocol]
-                print(self._run_tshark_command(tshark_command))
-            else:
-                print("Unsupported protocol")
+        while True:
 
-        def _server_resp_times() -> None:
-            ask_protocol = input(
-                f"{Color.GOLD}Which protocol would you like to see server response times for? "
-                f"(icmp/ldap/smb/smb2/srvsvc/drsuapi/lsarpc/netlogon/samr){Color.END}: ")
-            protocol_commands: Dict[str, List[str]] = {
-                'icmp': ['icmp,srt'],
-                'ldap': ['ldap,srt'],
-                'smb': ['smb,srt'],
-                'smb2': ['smb2,srt'],
-                'drsuapi': ['dcerpc,srt,e3514235-4b06-11d1-ab04-00c04fc2dcd2,4.0'],
-                'lsarpc': ['dcerpc,srt,12345778-1234-abcd-ef00-0123456789ab,0.0'],
-                'netlogon': ['dcerpc,srt,12345678-1234-abcd-ef00-01234567cffb,1.0'],
-                'samr': ['dcerpc,srt,12345778-1234-ABCD-EF00-0123456789AC,1.0'],
-                'srvsvc': ['dcerpc,srt,4b324fc8-1670-01d3-1278-5a47bf6ee188,3.0']
-            }
-            if ask_protocol in protocol_commands:
-                tshark_command = ['-qz'] + protocol_commands[ask_protocol]
-                print(self._run_tshark_command(tshark_command))
-            else:
-                print("Unsupported protocol")
+            which_stats = input(
+                f"{Color.LIGHTYELLOW}What type of statistics do you want to view (conv/hosts/srt/tree)?\nEnter your choice or 'exit' to quit:  {Color.END}: ")
+            if which_stats.lower() == 'exit':
+                break
 
-        def tree() -> None:
-            ask_protocol = input(
-                f"{Color.LIGHTGREEN}Which protocol would you like to see tree statistics for? "
-                f"(dns/ip_hosts/http/http_req/http_srv/plen/ptype){Color.END}: ")
-            protocol_commands: Dict[str, List[str]] = {
-                'dns': ['dns,tree'],
-                'http_req': ['http_req,tree'],
-                'http_srv': ['http_srv,tree'],
-                'http': ['http,tree'],
-                'ip_hosts': ['ip_hosts,tree'],
-                'ip_srcdst': ['ip_srcdst,tree'],
-                'plen': ['plen,tree'],
-                'ptype': ['ptype,tree']
-            }
-            if ask_protocol in protocol_commands:
-                tshark_command = ['-qz'] + protocol_commands[ask_protocol]
-                print(self._run_tshark_command(tshark_command))
-            else:
-                print("Unsupported protocol")
+            try:
 
-        def hosts() -> None:
-            tshark_command = ['-qz', 'hosts,ip']
-            print(self._run_tshark_command(tshark_command))
+                def conversations() -> None:
+                    ask_protocol = input(
+                        f"{Color.CYAN}Which protocol would you like to view conversations for? "
+                        f"(bluetooth/eth/ip/tcp/usb/wlan){Color.END}: ")
+                    # Dictionary mapping protocol names to TShark commands
+                    protocol_commands: Dict[str, List[str]] = {
+                        'bluetooth': ['conv,bluetooth'],
+                        'eth': ['conv,eth'],
+                        'ip': ['conv,ip'],
+                        'tcp': ['conv,tcp'],
+                        'usb': ['conv,usb'],
+                        'wlan': ['conv,wlan']
+                    }
+                    if ask_protocol in protocol_commands:
+                        tshark_command = ['-qz'] + protocol_commands[ask_protocol]
+                        print(self._run_tshark_command(tshark_command))
+                    else:
+                        print("Unsupported protocol")
 
-        # Mapping of statistics types to the corresponding function calls
-        stats_functions: Dict[str, Any] = {
-            'conv': conversations,
-            'srt': _server_resp_times,
-            'tree': tree,
-            'hosts': hosts
-        }
+                def _server_resp_times() -> None:
+                    ask_protocol = input(
+                        f"{Color.GOLD}Which protocol would you like to see server response times for? "
+                        f"(icmp/ldap/smb/smb2/srvsvc/drsuapi/lsarpc/netlogon/samr){Color.END}: ")
+                    protocol_commands: Dict[str, List[str]] = {
+                        'icmp': ['icmp,srt'],
+                        'ldap': ['ldap,srt'],
+                        'smb': ['smb,srt'],
+                        'smb2': ['smb2,srt'],
+                        'drsuapi': ['dcerpc,srt,e3514235-4b06-11d1-ab04-00c04fc2dcd2,4.0'],
+                        'lsarpc': ['dcerpc,srt,12345778-1234-abcd-ef00-0123456789ab,0.0'],
+                        'netlogon': ['dcerpc,srt,12345678-1234-abcd-ef00-01234567cffb,1.0'],
+                        'samr': ['dcerpc,srt,12345778-1234-ABCD-EF00-0123456789AC,1.0'],
+                        'srvsvc': ['dcerpc,srt,4b324fc8-1670-01d3-1278-5a47bf6ee188,3.0']
+                    }
+                    if ask_protocol in protocol_commands:
+                        tshark_command = ['-qz'] + protocol_commands[ask_protocol]
+                        print(self._run_tshark_command(tshark_command))
+                    else:
+                        print("Unsupported protocol")
 
-        # Call the selected function or print an error if the choice is invalid
-        return stats_functions.get(which_stats, lambda: "Unsupported protocol")()
+                def tree() -> None:
+                    ask_protocol = input(
+                        f"{Color.LIGHTGREEN}Which protocol would you like to see tree statistics for? "
+                        f"(dns/ip_hosts/http/http_req/http_srv/plen/ptype){Color.END}: ")
+                    protocol_commands: Dict[str, List[str]] = {
+                        'dns': ['dns,tree'],
+                        'http_req': ['http_req,tree'],
+                        'http_srv': ['http_srv,tree'],
+                        'http': ['http,tree'],
+                        'ip_hosts': ['ip_hosts,tree'],
+                        'ip_srcdst': ['ip_srcdst,tree'],
+                        'plen': ['plen,tree'],
+                        'ptype': ['ptype,tree']
+                    }
+                    if ask_protocol in protocol_commands:
+                        tshark_command = ['-qz'] + protocol_commands[ask_protocol]
+                        print(self._run_tshark_command(tshark_command))
+                    else:
+                        print("Unsupported protocol")
+
+                def hosts() -> None:
+                    tshark_command = ['-qz', 'hosts,ip']
+                    print(self._run_tshark_command(tshark_command))
+
+                # Mapping of statistics types to the corresponding function calls
+                stats_functions: Dict[str, Any] = {
+                    'conv': conversations,
+                    'srt': _server_resp_times,
+                    'tree': tree,
+                    'hosts': hosts
+                }
+
+                func = stats_functions.get(which_stats)
+
+                if func:
+                    func()
+                else:
+                    print("Unsupported protocol")
+
+            except subprocess.SubprocessError as e:
+                print(f"A subprocess error occurred: {e}")
+
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
+
+            print("\n")
 
     def read_verbose(self) -> Union[Tuple[Dict[Any, List[Tuple[Any, int]]], Dict[Any, Any]], str]:
         """
@@ -613,7 +652,7 @@ class TShark:
             # print(f"An error occurred: {err}. Please enter a valid protocol.")
             return f"An error occurred: {err}. Please enter a valid protocol."
 
-
+    
     # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ U྇s྇e྇r྇ I྇n྇p྇u྇t྇ M྇e྇t྇h྇o྇d྇s྇
 
 
