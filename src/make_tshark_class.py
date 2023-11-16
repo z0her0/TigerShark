@@ -18,24 +18,24 @@ Key Features:
 """
 
 import logging
-import os  # Operating system interfaces
-import subprocess  # Process creation and management
-from collections import Counter  # Container for counting hashable objects
+import os                                                       # Operating system interfaces
+import subprocess                                               # Process creation and management
+from collections import Counter                                 # Container for counting hashable objects
 from typing import Optional, Dict, List, Tuple, Any, Union
 
 import matplotlib.pyplot as plt
 from rich.table import Table
 from rich.console import Console
 
-from dcerpc_method_abuse_notes import get_dcerpc_info  # MSRPC to ATT&CK lookup table
-from make_colorful import Color, ColorRandomRGB  # Terminal color output utility
+from dcerpc_method_abuse_notes import get_dcerpc_info           # MSRPC to ATT&CK lookup table
+from make_colorful import Color, ColorRandomRGB                 # Terminal color output utility
 from make_helpers import (
-    input_prompt,  # Standardized user input prompt
-    is_valid_interval,  # Interval validation
-    is_valid_digit,  # Digit validation
-    is_valid_ipv4_address,  # IPv4 address validation
-    set_tshark_path,  # Set the path to the tshark application
-    get_input_opnum,  # Get and validate user input
+    input_prompt,                                               # Standardized user input prompt
+    is_valid_interval,                                          # Interval validation
+    is_valid_digit,                                             # Digit validation
+    is_valid_ipv4_address,                                      # IPv4 address validation
+    set_tshark_path,                                            # Set the path to the tshark application
+    get_input_opnum,                                            # Get and validate user input
 )
 
 # tuple unpacking into the variables tshark and capinfo
@@ -380,11 +380,14 @@ class TShark:
     def find_beacons(self, ip_address: Optional[str] = None, interval_frequency: Optional[str] = None) -> None:
         """
         Identifies beacon-like traffic patterns for a specified IP address and interval frequency,
-        and plots the data using a line graph. It prompts the user for input if the IP address or interval frequency is not provided.
+        and plots the data using a line graph. It prompts the user for input if the IP address or 
+        interval frequency is not provided.
 
         Parameters:
-        ip_address (Optional[str]): The IPv4 address to analyze for beacon-like patterns. If None, the user is prompted to enter an IP address.
-        interval_frequency (Optional[str]): The frequency, in seconds, at which to analyze the traffic patterns. If None, the user is prompted to enter an interval frequency.
+        ip_address (Optional[str]): The IPv4 address to analyze for beacon-like patterns. If None, 
+        the user is prompted to enter an IP address.
+        interval_frequency (Optional[str]): The frequency, in seconds, at which to analyze the 
+        traffic patterns. If None, the user is prompted to enter an interval frequency.
 
         Returns:
         None: This method does not return anything. It displays a line graph showing the traffic patterns.
@@ -543,22 +546,16 @@ class TShark:
         """
 
         while True:
-
             try:
                 ask_dns = input('Enter the domain you want to search for, enclosed in double quotes (".onion", "wtfismyip.com"):\nOr type `exit` to quit: ')
                 if ask_dns.lower() == 'exit':
                     break
-
                 result = self._run_tshark_command(['-Y', 'dns matches ' + ask_dns])
-
                 print(result)
-
             except subprocess.SubprocessError as e:
                 print(f"A subprocess error occurred: {e}")
-
             except Exception as e:
                 print(f"An unexpected error occurred: {e}")
-
             print("\n")
 
     def viewframe_getstream(self) -> str:
@@ -743,11 +740,11 @@ class TShark:
 
             # Dictionary mapping protocol names to their corresponding field names and display filters.
             protocol_args = {
-                'eth': (['eth.addr.oui_resolved'], 'eth'),          # Ethernet protocol, filter on OUI addresses
-                'smb2': (['smb2.filename'], 'smb2.filename'),       # SMB2 protocol, filter on filenames
-                'dns': (['dns.qry.name'], 'dns'),                   # DNS protocol, filter on query names
+                'eth': (['eth.addr.oui_resolved'], 'eth'),                 # Ethernet protocol, filter on OUI addresses
+                'smb2': (['smb2.filename'], 'smb2.filename'),              # SMB2 protocol, filter on filenames
+                'dns': (['dns.qry.name'], 'dns'),                          # DNS protocol, filter on query names
                 'tls': (['tls.handshake.extensions_server_name'], 'tls'),  # TLS protocol, filter on server name
-                'http': (['http.request.full_uri'], 'http'),        # HTTP protocol, filter on requests
+                'http': (['http.request.full_uri'], 'http'),               # HTTP protocol, filter on requests
 
             }
             if ask_protocol in protocol_args:
