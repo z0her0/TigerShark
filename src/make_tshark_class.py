@@ -417,7 +417,11 @@ class TShark:
         total_duration = times[-1] - times[0] if times else 0
 
         # Create figure and axis objects
-        fig, ax1 = plt.subplots(figsize=(12, 8))
+        fig, ax1 = plt.subplots(figsize=(15, 8))
+
+        fig.patch.set_facecolor('lightgray')
+
+        ax1.set_facecolor('lightblue')
 
         # Plotting frames
         frame_line, = ax1.plot(times, frames, marker='o', color='blue', label='Frame Count')
@@ -432,6 +436,8 @@ class TShark:
         # Plotting bytes on a secondary y-axis
         ax2 = ax1.twinx()
         bytes_line, = ax2.plot(times, bytes_data, marker='x', color='red', label='Byte Count')
+
+        ax2.set_facecolor("lightblue")  # Ensure this matches ax1 for a consistent look
 
         # Setting title
         plt.title(f"Network Traffic Patterns for IP {ip_address}")
