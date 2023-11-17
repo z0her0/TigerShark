@@ -214,11 +214,6 @@ def main() -> None:
 
     clear_screen()
     print('')
-    print(rf"{Color.LIGHTRED}                                ___ _  _, __, __,  _, _,_  _, __, _,_{Color.END}")
-    print(rf"{Color.LIGHTYELLOW}                                 |  | / _ |_  |_) (_  |_| /_\ |_) |_/{Color.END}")
-    print(rf"{Color.LIGHTBLUE}                                 |  | \ / |   | \ , ) | | | | | \ | \{Color.END}")
-    print(rf"{Color.LIGHTGREEN}                                 ~  ~  ~  ~~~ ~ ~  ~  ~ ~ ~ ~ ~ ~ ~ ~{Color.END}")
-    print(rf"{Color.MAGENTA}                                       '·.¸¸.·♩♪♫', '♫♪♩·.¸¸.·'{Color.END}")
 
     print(make_banner_art.mascot)
 
