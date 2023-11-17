@@ -106,51 +106,64 @@ class ColorCustom:
 class Color:
     """
     Class to represent the text color codes used for terminal output.
-
     This class defines a range of color codes, including standard ANSI colors and custom colors, to be used for styling text in terminal applications. It provides an easy way to apply color coding to text output, enhancing readability and user experience.
     """
 
-    # Builtin colors
-    PURPLE = "\033[95m"
-    CYAN = "\033[96m"
-    DARKCYAN = "\033[36m"
-    MAGENTA = "\033[35m"
+    # Cool Blues and Warm Yellows
+    # Pair cool blues with warm yellows and golds for a classic complementary theme.
     BLUE = "\033[34m"
     LIGHTBLUE = "\033[94m"
-    GREEN = "\033[32m"
-    LIGHTGREEN = "\033[92m"
-    LIGHTYELLOW = "\033[93m"
+    SKY_BLUE = "\033[38;5;111m"
     YELLOW = "\033[33m"
+    LIGHTYELLOW = "\033[93m"
+    GOLD = "\033[38;5;220m"
+    MUSTARD = "\033[38;5;214m"
+
+    # Reds and Greens
+    # Reds and greens are directly opposite on the color wheel, making them natural complements.
     RED = "\033[31m"
     LIGHTRED = "\033[91m"
+    GREEN = "\033[32m"
+    LIGHTGREEN = "\033[92m"
+    OLIVE = "\033[38;5;58m"
+
+    # Purples and Greens
+    # Purples paired with greens can create a vibrant and eye-catching combination.
+    PURPLE = "\033[95m"
+    MAGENTA = "\033[35m"
+    VIOLET = "\033[38;5;92m"
+    LIME = "\033[38;5;154m"
+    MINT = "\033[38;5;120m"
+    SEAFOAM = "\033[38;5;122m"
+
+    # Pinks and Aquatic Tones
+    # Soft pinks with blues and greens create a fresh, spring-like theme.
+    PINK = "\033[38;5;200m"
+    ROSE = "\033[38;5;197m"
+    CYCLAMEN = "\033[38;5;207m"
+    CYAN = "\033[96m"
+    DARKCYAN = "\033[36m"
+    TEAL = "\033[38;5;23m"
+    TURQUOISE = "\033[38;5;45m"
+    AQUA = "\033[38;5;51m"
+
+    # Neutrals and Accents
+    # Combine grey and beige neutrals with brighter accent colors for versatility.
+    GREY = "\033[38;5;240m"
+    BEIGE = "\033[38;5;230m"
+    MAROON = "\033[38;5;88m"
+    NAVY = "\033[38;5;17m"
+    PLUM = "\033[38;5;96m"
+    LAVENDER = "\033[38;5;183m"
+    CORAL = "\033[38;5;203m"
+    ORANGE = "\033[38;5;208m"
+
+    # Special Attributes
+    # Maintain special attributes like bold and underline separately.
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
     END = "\033[0m"
 
-    # Custom colors
-    ORANGE = "\033[38;5;208m"
-    PINK = "\033[38;5;200m"
-    TEAL = "\033[38;5;23m"
-    GREY = "\033[38;5;240m"
-    LIME = "\033[38;5;154m"
-    AQUA = "\033[38;5;51m"
-    VIOLET = "\033[38;5;92m"
-    GOLD = "\033[38;5;220m"
-    INDIGO = "\033[38;5;54m"
-    ROSE = "\033[38;5;197m"
-    LAVENDER = "\033[38;5;183m"
-    MAROON = "\033[38;5;88m"
-    OLIVE = "\033[38;5;58m"
-    SKY_BLUE = "\033[38;5;111m"
-    CORAL = "\033[38;5;203m"
-    BEIGE = "\033[38;5;230m"
-    TURQUOISE = "\033[38;5;45m"
-    MINT = "\033[38;5;120m"
-    NAVY = "\033[38;5;17m"
-    PLUM = "\033[38;5;96m"
-    MUSTARD = "\033[38;5;214m"
-    CYCLAMEN = "\033[38;5;207m"
-    SEAFOAM = "\033[38;5;122m"
 
 
 # The following block will only be executed if this module is run as the main script.
