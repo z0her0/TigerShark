@@ -54,11 +54,11 @@ def print_menu_options(menu_options: dict, colors: dict, selected_option: int = 
     # def print_menu_options(menu_options: dict, colors: dict) -> None:
     """
     Prints the menu options in a formatted table.
-    
+
     Args:
         :param menu_options: A dictionary containing the menu options and their descriptions.
         :param colors: A dictionary containing the color settings for each menu option.
-        :param selected_option: 
+        :param selected_option:
     """
     console = Console()
     table = Table(show_header=True, header_style="bold green")
@@ -72,7 +72,7 @@ def print_menu_options(menu_options: dict, colors: dict, selected_option: int = 
         style = f"rgb({color[0]},{color[1]},{color[2]})"
         if selected_option and key == str(selected_option):
             # Highlight the selected option
-            style += " bold underline" 
+            style += " bold underline"
         # text = Text(f"{key}. {desc}", style=style)
         text = Text(f"{desc}", style=style)
         table.add_row(key, text)
@@ -208,19 +208,19 @@ def main() -> None:
     bindings = KeyBindings()
 
     # Use a list for mutability in closure
-    selected_option = [1] 
+    selected_option = [1]
 
     @bindings.add('up')
     def _(event):
         selected_option[0] = max(1, selected_option[0] - 1)
         # Refresh the menu
-        get_app().exit() 
+        get_app().exit()
 
     @bindings.add('down')
     def _(event):
         selected_option[0] = min(len(menu_options), selected_option[0] + 1)
         # Refresh the menu
-        get_app().exit() 
+        get_app().exit()
 
     @bindings.add('enter')
     def _(event):
