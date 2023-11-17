@@ -197,7 +197,6 @@ class TShark:
         try:
             # Attempt to read the verbose results and fields
             result = self.read_verbose()
-
             # Check if the result is a tuple or list with two elements
             if isinstance(result, (tuple, list)) and len(result) == 2:
                 verbose_results, verbose_fields = result
@@ -227,7 +226,6 @@ class TShark:
         try:
             # Attempt to read the user agent results and fields
             result = self.user_agent()
-
             # Check if the result is a tuple or list with two elements
             if isinstance(result, (tuple, list)) and len(result) == 2:
                 user_agent_results, user_agent_fields = result
@@ -380,13 +378,13 @@ class TShark:
     def find_beacons(self, ip_address: Optional[str] = None, interval_frequency: Optional[str] = None) -> None:
         """
         Identifies beacon-like traffic patterns for a specified IP address and interval frequency,
-        and plots the data using a line graph. It prompts the user for input if the IP address or 
+        and plots the data using a line graph. It prompts the user for input if the IP address or
         interval frequency is not provided.
 
         Parameters:
-        ip_address (Optional[str]): The IPv4 address to analyze for beacon-like patterns. If None, 
+        ip_address (Optional[str]): The IPv4 address to analyze for beacon-like patterns. If None,
         the user is prompted to enter an IP address.
-        interval_frequency (Optional[str]): The frequency, in seconds, at which to analyze the 
+        interval_frequency (Optional[str]): The frequency, in seconds, at which to analyze the
         traffic patterns. If None, the user is prompted to enter an interval frequency.
 
         Returns:
@@ -544,7 +542,6 @@ class TShark:
         """
         Searches for DNS queries or responses involving a specific domain.
         """
-
         while True:
             try:
                 ask_dns = input('Enter the domain you want to search for, enclosed in double quotes (".onion", "wtfismyip.com"):\nOr type `exit` to quit: ')
@@ -588,7 +585,6 @@ class TShark:
         the loop. If a specific protocol is chosen, only packets related to that protocol are displayed.
         The method handles subprocess errors and unexpected exceptions during its execution.
         """
-
         while True:
 
             try:
@@ -625,16 +621,12 @@ class TShark:
         Continuously prompts the user to choose a type of network statistics to view, until they choose to exit.
         Supported statistics include conversations, server response times, tree statistics, and host listings.
         """
-
         while True:
-
             which_stats = input(
-                f"{Color.LIGHTYELLOW}What type of statistics do you want to view (conv/hosts/srt/tree)?\nEnter your choice or 'exit' to quit:  {Color.END}: ")
+                f"{Color.LAVENDER}What type of statistics do you want to view (conv/hosts/srt/tree)?\nEnter your choice or 'exit' to quit:  {Color.END}: ")
             if which_stats.lower() == 'exit':
                 break
-
             try:
-
                 def conversations() -> None:
                     ask_protocol = input(
                         f"{Color.CYAN}Which protocol would you like to view conversations for? "
@@ -656,7 +648,7 @@ class TShark:
 
                 def _server_resp_times() -> None:
                     ask_protocol = input(
-                        f"{Color.GOLD}Which protocol would you like to see server response times for? "
+                        f"{Color.LAVENDER}Which protocol would you like to see server response times for? "
                         f"(icmp/ldap/smb/smb2/srvsvc/drsuapi/lsarpc/netlogon/samr){Color.END}: ")
                     protocol_commands: Dict[str, List[str]] = {
                         'icmp': ['icmp,srt'],
@@ -706,9 +698,7 @@ class TShark:
                     'tree': tree,
                     'hosts': hosts
                 }
-
                 func = stats_functions.get(which_stats)
-
                 if func:
                     func()
                 else:
@@ -740,11 +730,11 @@ class TShark:
 
             # Dictionary mapping protocol names to their corresponding field names and display filters.
             protocol_args = {
-                'eth': (['eth.addr.oui_resolved'], 'eth'),                 # Ethernet protocol, filter on OUI addresses
-                'smb2': (['smb2.filename'], 'smb2.filename'),              # SMB2 protocol, filter on filenames
-                'dns': (['dns.qry.name'], 'dns'),                          # DNS protocol, filter on query names
+                'eth': (['eth.addr.oui_resolved'], 'eth'),          # Ethernet protocol, filter on OUI addresses
+                'smb2': (['smb2.filename'], 'smb2.filename'),       # SMB2 protocol, filter on filenames
+                'dns': (['dns.qry.name'], 'dns'),                   # DNS protocol, filter on query names
                 'tls': (['tls.handshake.extensions_server_name'], 'tls'),  # TLS protocol, filter on server name
-                'http': (['http.request.full_uri'], 'http'),               # HTTP protocol, filter on requests
+                'http': (['http.request.full_uri'], 'http'),        # HTTP protocol, filter on requests
 
             }
             if ask_protocol in protocol_args:
