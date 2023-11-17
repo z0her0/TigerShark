@@ -11,6 +11,9 @@ from typing import Dict, Callable, Union
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
+from prompt_toolkit import prompt
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.application.current import get_app
 
 import make_banner_art
 from make_help import show_help
@@ -47,53 +50,42 @@ def wait_for_menu() -> None:
 
 
 # pylint: disable=line-too-long
-def print_menu_options(menu_options: dict, colors: dict) -> None:
+def print_menu_options(menu_options: dict, colors: dict, selected_option: int = None) -> None:
+    # def print_menu_options(menu_options: dict, colors: dict) -> None:
     """
     Prints the menu options in a formatted table.
-
+    
     Args:
-        menu_options (dict): A dictionary containing the menu options and their descriptions.
-        colors (dict): A dictionary containing the color settings for each menu option.
+        :param menu_options: A dictionary containing the menu options and their descriptions.
+        :param colors: A dictionary containing the color settings for each menu option.
+        :param selected_option: 
     """
     console = Console()
-    table = Table(show_header=True)
-    print(r"    ٩(●̮̮̃•̃)=/̵͇̿̿/'̿̿ ̿̿                              ̿̿ ̿̿ ̿̿\̵͇̿̿\=(•̃●̮̮̃)۶")
+    table = Table(show_header=True, header_style="bold green")
+    # print(r"    ٩(●̮̮̃•̃)=/̵͇̿̿/'̿̿ ̿̿                              ̿̿ ̿̿ ̿̿\̵͇̿̿\=(•̃●̮̮̃)۶")
     table.add_column("🎧♪┏(°.°)┛🎼", style="bold cyan", justify="left")
-    table.add_column("🎼┏(°.°)┛♪🎧", style="bold magenta", justify="right")
-    keys = list(menu_options.keys())
-    for i in range(0, len(keys), 2):
-        key1 = keys[i]
-        desc1 = menu_options[key1]["description"]
-        color1 = colors[key1]
-        text1 = Text(f"{key1}. {desc1}", style=f"rgb({color1[0]},{color1[1]},{color1[2]})")
-        if i + 1 < len(keys):
-            key2 = keys[i + 1]
-            desc2 = menu_options[key2]["description"]
-            color2 = colors[key2]
-            text2 = Text(f"{key2}. {desc2}", style=f"rgb({color2[0]},{color2[1]},{color2[2]})")
-        else:
-            text2 = Text("")
-        table.add_row(text1, text2)
+    table.add_column("🎼┏(°.°)┛♪🎧", style="bold violet", justify="right")
+    # table.add_column("🎼┏(°.°)┛♪🎧", style="dim", justify="right")
+    for key, value in menu_options.items():
+        desc = value["description"]
+        color = colors[key]
+        style = f"rgb({color[0]},{color[1]},{color[2]})"
+        if selected_option and key == str(selected_option):
+            # Highlight the selected option
+            style += " bold underline" 
+        # text = Text(f"{key}. {desc}", style=style)
+        text = Text(f"{desc}", style=style)
+        table.add_row(key, text)
     console.print(table)
+    console.print("\nUse the arrow keys to navigate and enter to select an option.", style="bold yellow")
 
 
 def main() -> None:
-    """
-    This is the main function that orchestrates the display and interaction of a colorful, music-themed
-    command-line interface (CLI) menu.
-
-    Upon calling, it:
-    - Clears the screen and prints a styled banner with different colors.
-    - Waits for user input to display the menu.
-    - Allows the user to select an option by entering the corresponding number.
-    - Calls the appropriate function associated with the chosen option.
-    - Handles invalid selections with an error message.
-    - Clears the screen and shows results after executing an option.
-    - Waits for the user to press enter to bring up the menu again.
-    """
     ask_user_input: str = input("Enter path to PCAP: ")
 
-    # Define a dictionary to store menu options and their corresponding actions
+    print(make_banner_art.mascot)
+
+    # Dictionary to store menu options and their corresponding actions
     menu_options: MenuOptionsType = {
         "1": {
             "description": "Get PCAP Info",
@@ -212,41 +204,53 @@ def main() -> None:
         }
     }
 
-    clear_screen()
-    print('')
+    # Define key bindings for arrow key navigation
+    bindings = KeyBindings()
 
-    print(make_banner_art.mascot)
+    # Use a list for mutability in closure
+    selected_option = [1] 
+
+    @bindings.add('up')
+    def _(event):
+        selected_option[0] = max(1, selected_option[0] - 1)
+        # Refresh the menu
+        get_app().exit() 
+
+    @bindings.add('down')
+    def _(event):
+        selected_option[0] = min(len(menu_options), selected_option[0] + 1)
+        # Refresh the menu
+        get_app().exit() 
+
+    @bindings.add('enter')
+    def _(event):
+        get_app().exit(result=selected_option[0])
 
     while True:
-        wait_for_menu()
         clear_screen()
         print("")
         print(f"{Color.LIGHTYELLOW}((*´_●｀☆ﾟ+.•°•.•°• 🎧♪┏(°.°)┛🎼 Wh47 w0u1d y0u 1!k3 70 d0 ? 🎼┏(°.°)┛♪🎧 •°•.•°•.+ﾟ☆´●_｀*)){Color.END}")
         print(f'{Color.MAROON}_____________________________________________________________________________________'
               f'_______{Color.END}')
 
-        print_menu_options(menu_options, menu_colors)
+        print_menu_options(menu_options, menu_colors, selected_option[0])
 
-        print("")
-        user_choice = input('> ENTER NUMBER HERE (◦′ᆺ‵◦) ♬° ✧❥✧¸.•*¨*✧♡✧ ✧♡✧*¨*•.❥ : ')
+        action_key = str(prompt('> Use arrow keys (◦′ᆺ‵◦) ♬° ✧❥✧¸.•*¨*✧♡✧ ✧♡✧*¨*•.❥ to navigate and enter to select an option: ',
+                                key_bindings=bindings, refresh_interval=0.5))
 
-        if user_choice in menu_options:
+        if action_key in menu_options:
             clear_screen()
-            print("\n")
-
-            action = menu_options[user_choice]["action"]
-
-            # Now calling the action if it's callable
+            action = menu_options[action_key]["action"]
             if callable(action):
                 action()
             else:
                 print("Error: The action is not callable.")
-
+            wait_for_menu()
         else:
             print(f"{Color.RED}Invalid selection. Please choose a number between 1 and 24.{Color.END}")
 
 
-# Define the dictionary of menu colors for each menu option
+# Dictionary of menu colors for each menu option
 menu_colors: Dict[str, tuple] = {str(i): ColorRandomRGB.random_color() for i in range(1, 25)}
 
 # Check if this script is the main script (it is) and call the main function
