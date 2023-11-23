@@ -40,8 +40,26 @@ from make_helpers import (
     get_input_opnum,                                            # Get and validate user input
 )
 
+
 # tuple unpacking into the variables tshark and capinfo
 tshark, capinfo = set_tshark_path()
+
+
+class ColorfulFormatter(logging.Formatter):
+    """Custom formatter to add colors to log levels."""
+    COLOR_CODES = {
+        logging.DEBUG: Color.BLUE,
+        logging.INFO: Color.GREEN,
+        logging.WARNING: Color.YELLOW,
+        logging.ERROR: Color.RED,
+        logging.CRITICAL: Color.MAROON
+    }
+    RESET_CODE = Color.END
+    
+    def format(self, record):
+        color_code = self.COLOR_CODES.get(record.levelno)
+        message = super().format(record)
+        return f"{color_code}{message}{self.RESET_CODE}" if color_code else message
 
 
 class TShark:
@@ -86,7 +104,7 @@ class TShark:
             # Console handler
             if not suppress_output:
                 c_handler = logging.StreamHandler(sys.stdout)
-                c_handler.setFormatter(formatter)
+                c_handler.setFormatter(ColorfulFormatter(log_format or '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
                 logger.addHandler(c_handler)
             # File handler with rotation
             if log_file:
