@@ -1,6 +1,17 @@
 """  # pylint: disable=line-too-long
-This module defines a colorful, music-themed command-line interface (CLI) for interacting with TShark,
-a network protocol analyzer. It provides various options for analyzing PCAP files and displaying information.
+This module provides an interactive menu-driven interface for analyzing PCAP files using TShark, a network protocol analyzer.
+It allows users to perform various operations such as getting PCAP information, viewing protocol statistics, following streams,
+enumerating hosts and users, and more. Rich library is used to create a colorful terminal interface, enhancing user experience.
+
+Functions:
+    clear_screen(): Clears the console screen based on the operating system.
+    wait_for_menu(): Waits for the user to press Enter to continue.
+    print_menu_options(menu_options, colors): Prints the available menu options in a table format.
+    main(): The main function that initiates the menu loop and processes user input to perform actions.
+
+The program uses a command-line interface and expects the user to interact by entering the path to a PCAP file and selecting
+options from the presented menu. The TShark class methods are invoked based on the user's choices to analyze the PCAP data
+and provide results back to the user.
 """
 
 import os
@@ -11,9 +22,6 @@ from typing import Dict, Callable, Union
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-from prompt_toolkit import prompt
-from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.application.current import get_app
 
 import make_banner_art
 from make_help import show_help
@@ -49,41 +57,48 @@ def wait_for_menu() -> None:
     input("\nPress Enter to display the menu... ")
 
 
-# pylint: disable=line-too-long
-def print_menu_options(menu_options: dict, colors: dict, selected_option: int = None) -> None:
-    # def print_menu_options(menu_options: dict, colors: dict) -> None:
+def print_menu_options(menu_options: dict, colors: dict) -> None:
     """
     Prints the menu options in a formatted table.
 
     Args:
-        :param menu_options: A dictionary containing the menu options and their descriptions.
-        :param colors: A dictionary containing the color settings for each menu option.
-        :param selected_option:
+        menu_options (dict): A dictionary containing the menu options and their descriptions.
+        colors (dict): A dictionary containing the color settings for each menu option.
     """
     console = Console()
-    table = Table(show_header=True, header_style="bold green")
-    # print(r"    ٩(●̮̮̃•̃)=/̵͇̿̿/'̿̿ ̿̿                              ̿̿ ̿̿ ̿̿\̵͇̿̿\=(•̃●̮̮̃)۶")
+    table = Table(show_header=True)
+    print(r"    ٩(●̮̮̃•̃)=/̵͇̿̿/'̿̿ ̿̿                              ̿̿ ̿̿ ̿̿\̵͇̿̿\=(•̃●̮̮̃)۶")
     table.add_column("🎧♪┏(°.°)┛🎼", style="bold cyan", justify="left")
-    table.add_column("🎼┏(°.°)┛♪🎧", style="bold violet", justify="right")
-    # table.add_column("🎼┏(°.°)┛♪🎧", style="dim", justify="right")
-    for key, value in menu_options.items():
-        desc = value["description"]
-        color = colors[key]
-        style = f"rgb({color[0]},{color[1]},{color[2]})"
-        if selected_option and key == str(selected_option):
-            # Highlight the selected option
-            style += " bold underline"
-        # text = Text(f"{key}. {desc}", style=style)
-        text = Text(f"{desc}", style=style)
-        table.add_row(key, text)
+    table.add_column("🎼┏(°.°)┛♪🎧", style="bold magenta", justify="right")
+    keys = list(menu_options.keys())
+    for i in range(0, len(keys), 2):
+        key1 = keys[i]
+        desc1 = menu_options[key1]["description"]
+        color1 = colors[key1]
+        text1 = Text(f"{key1}. {desc1}", style=f"rgb({color1[0]},{color1[1]},{color1[2]})")
+        if i + 1 < len(keys):
+            key2 = keys[i + 1]
+            desc2 = menu_options[key2]["description"]
+            color2 = colors[key2]
+            text2 = Text(f"{key2}. {desc2}", style=f"rgb({color2[0]},{color2[1]},{color2[2]})")
+        else:
+            text2 = Text("")
+        table.add_row(text1, text2)
     console.print(table)
-    console.print("\nUse the arrow keys to navigate and enter to select an option.", style="bold yellow")
 
 
 def main() -> None:
+    """
+    Main function to drive the program which interacts with the user to perform operations on PCAP files.
+    
+    The function presents a menu to the user, allowing them to choose from various actions related to PCAP analysis.
+    These actions include getting PCAP information, viewing protocol hierarchy statistics, expert info, searching
+    protocols, enumerating hostnames and users, following TCP/HTTP streams, displaying packets, and more.
+    
+    Each menu option is associated with an action that when chosen, calls a function from the TShark class with the
+    provided PCAP file path.
+    """
     ask_user_input: str = input("Enter path to PCAP: ")
-
-    print(make_banner_art.mascot)
 
     # Dictionary to store menu options and their corresponding actions
     menu_options: MenuOptionsType = {
@@ -203,49 +218,34 @@ def main() -> None:
             "action": lambda: sys.exit("Exit program.")
         }
     }
-
-    # Define key bindings for arrow key navigation
-    bindings = KeyBindings()
-
-    # Use a list for mutability in closure
-    selected_option = [1]
-
-    @bindings.add('up')
-    def _(event):
-        selected_option[0] = max(1, selected_option[0] - 1)
-        # Refresh the menu
-        get_app().exit()
-
-    @bindings.add('down')
-    def _(event):
-        selected_option[0] = min(len(menu_options), selected_option[0] + 1)
-        # Refresh the menu
-        get_app().exit()
-
-    @bindings.add('enter')
-    def _(event):
-        get_app().exit(result=selected_option[0])
+    
+    clear_screen()
+    print(make_banner_art.mascot)
 
     while True:
+        wait_for_menu()
         clear_screen()
         print("")
         print(f"{Color.LIGHTYELLOW}((*´_●｀☆ﾟ+.•°•.•°• 🎧♪┏(°.°)┛🎼 Wh47 w0u1d y0u 1!k3 70 d0 ? 🎼┏(°.°)┛♪🎧 •°•.•°•.+ﾟ☆´●_｀*)){Color.END}")
         print(f'{Color.MAROON}_____________________________________________________________________________________'
               f'_______{Color.END}')
 
-        print_menu_options(menu_options, menu_colors, selected_option[0])
+        print_menu_options(menu_options, menu_colors)
 
-        action_key = str(prompt('> Use arrow keys (◦′ᆺ‵◦) ♬° ✧❥✧¸.•*¨*✧♡✧ ✧♡✧*¨*•.❥ to navigate and enter to select an option: ',
-                                key_bindings=bindings, refresh_interval=0.5))
+        print("")
+        user_choice = input('> ENTER NUMBER HERE (◦′ᆺ‵◦) ♬° ✧❥✧¸.•*¨*✧♡✧ ✧♡✧*¨*•.❥ : ')
 
-        if action_key in menu_options:
+        if user_choice in menu_options:
             clear_screen()
-            action = menu_options[action_key]["action"]
+            print("\n")
+
+            action = menu_options[user_choice]["action"]
+
             if callable(action):
                 action()
             else:
                 print("Error: The action is not callable.")
-            wait_for_menu()
+
         else:
             print(f"{Color.RED}Invalid selection. Please choose a number between 1 and 24.{Color.END}")
 
