@@ -105,7 +105,7 @@ def main() -> None:
         "1": {
             "description": "Get PCAP Info",
             "action": lambda: print(
-                f"{Color.LIGHTBLUE}Capture File Information{Color.END}:\n"
+                f"\n{Color.LIGHTBLUE}Capture File Information{Color.END}:\n"
                 f"{TShark(pcap_file=ask_user_input).pcap_info()}")
         },
         "2": {
@@ -115,7 +115,7 @@ def main() -> None:
         "3": {
             "description": "Get Expert Info",
             "action": lambda: print(
-                f"{Color.LIGHTYELLOW}Expert Info{Color.END}:\n{TShark(pcap_file=ask_user_input).expert_chat()}")
+                f"\n{Color.LIGHTYELLOW}Expert Info{Color.END}:\n{TShark(pcap_file=ask_user_input).expert_chat()}")
         },
         "4": {
             "description": "Search Protocol",
@@ -134,12 +134,12 @@ def main() -> None:
         "7": {
             "description": "Follow TCP Stream",
             "action": lambda: print(
-                f"{Color.MAGENTA}Follow TCP Stream{Color.END}:\n{TShark(pcap_file=ask_user_input).tcp_stream()}")
+                f"{TShark(pcap_file=ask_user_input).tcp_stream()}")
         },
         "8": {
             "description": "Follow HTTP Stream",
             "action": lambda: print(
-                f"{Color.MAGENTA}Follow HTTP Stream{Color.END}:\n{TShark(pcap_file=ask_user_input).http_stream()}")
+                f"{TShark(pcap_file=ask_user_input).http_stream()}")
         },
         "9": {
             "description": "Show Packets",
@@ -158,7 +158,7 @@ def main() -> None:
         },
         "12": {
             "description": "Get WHOIS Data",
-            "action": lambda: TShark(pcap_file=ask_user_input).whois_ip()
+            "action": lambda: f"\n{TShark(pcap_file=ask_user_input).whois_ip()}"
         },
         "13": {
             "description": "Find TCP Stream Index In Frame",
