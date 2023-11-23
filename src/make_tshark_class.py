@@ -195,22 +195,16 @@ class TShark:
         indicating missing or invalid data.
         """
         try:
-            # Attempt to read the verbose results and fields
             result = self.read_verbose()
-            # Check if the result is a tuple or list with two elements
             if isinstance(result, (tuple, list)) and len(result) == 2:
                 verbose_results, verbose_fields = result
-                # Check if verbose_results and verbose_fields are not None before using them
                 if verbose_results is not None and verbose_fields is not None:
                     self.display_results(verbose_results, verbose_fields)
                 else:
-                    # Display message if data is missing
                     print("Unable to display results due to missing data.")
             else:
                 print("Invalid or unexpected data format from read_verbose.")
-
         except ValueError as e:
-            # Catch and handle the ValueError, displaying the error message
             print(f"Caught an error: {e}")
 
     def process_and_display_user_agents(self) -> None:
@@ -224,7 +218,6 @@ class TShark:
         indicating missing or invalid data.
         """
         try:
-            # Attempt to read the user agent results and fields
             result = self.user_agent()
             # Check if the result is a tuple or list with two elements
             if isinstance(result, (tuple, list)) and len(result) == 2:
@@ -233,13 +226,10 @@ class TShark:
                 if user_agent_results is not None and user_agent_fields is not None:
                     self.display_results(user_agent_results, user_agent_fields)
                 else:
-                    # Display message if data is missing
                     print("Unable to display results due to missing data.")
             else:
                 print("Invalid or unexpected data format from user_agent.")
-
         except ValueError as e:
-            # Catch and handle the ValueError, displaying the error message
             print(f"Caught an error: {e}")
 
     def host_enum(self) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]:
@@ -318,13 +308,9 @@ class TShark:
         """
         Retrieves WHOIS information for unique destination IP addresses found in the pcap file.
         """
-        # Use tshark to extract destination IP addresses from the pcap file
         check_tshark_output = self._run_tshark_command(['-T', 'fields', '-e', 'ip.dst'])
-        # Split the tshark output into a list of IP addresses
         tshark_dest_ips = check_tshark_output.strip().splitlines()
-        # Create a set of unique IP addresses, filtering out empty strings
         unique_ips = set(filter(None, tshark_dest_ips))
-        # Perform a WHOIS lookup for each unique IP address and print the results
         for ip in unique_ips:
             # If this hangs, try running this command: `sudo vim /etc/resolv.conf`.  Comment out the current
             # nameserver line.  Add two lines: `nameserver 8.8.8.8`\n`nameserver 8.8.4.4`. Save and exit.
@@ -392,64 +378,44 @@ class TShark:
         """
         if ip_address is None:
             ip_address = input("Enter the IPv4 address you wish to look for patterns to determine beacons: ")
-
             while not is_valid_ipv4_address(ip_address):
                 ip_address = input("Invalid IP. Please enter a valid IPv4 address: ")
-
         if interval_frequency is None:
             interval_frequency = input("Enter the interval frequency (in seconds): ")
-
             while not is_valid_interval(interval_frequency):
                 interval_frequency = input("Invalid interval. Please enter a valid interval frequency in seconds: ")
-
-        # Run TShark command and capture output
         tshark_output = self._run_tshark_command(
             ['-qz',
              f'io,stat,{interval_frequency},MAX(frame.time_relative)frame.time_relative,ip.addr=={ip_address},MIN(frame.time_relative)frame.time_relative']
         )
-
         print("TShark Output:", tshark_output)
-
         # Process TShark output to extract data for plotting
         times, frames, bytes_data = self._process_tshark_output(tshark_output)
-
         # Calculate total duration based on the time intervals
         total_duration = times[-1] - times[0] if times else 0
-
         # Create figure and axis objects
         fig, ax1 = plt.subplots(figsize=(15, 8))
-
         fig.patch.set_facecolor('lightgray')
-
         ax1.set_facecolor('lightblue')
-
         # Plotting frames
         frame_line, = ax1.plot(times, frames, marker='o', color='blue', label='Frame Count')
-
         # Set x-axis label
         ax1.set_xlabel(f"Time Intervals (s) - Total Duration: {total_duration} s", labelpad=15)
-
         # Add additional text below the x-axis label for the chosen interval frequency
-        ax1.text(0.5, -0.15, f"Interval Frequency: {interval_frequency} s",
-                 transform=ax1.transAxes, ha='center', va='center', fontsize=10)
-
+        ax1.text(0.5, -0.15, f"Interval Frequency: {interval_frequency} s",transform=ax1.transAxes, ha='center', va='center', fontsize=10)
         # Plotting bytes on a secondary y-axis
         ax2 = ax1.twinx()
         bytes_line, = ax2.plot(times, bytes_data, marker='x', color='red', label='Byte Count')
-
-        ax2.set_facecolor("lightblue")  # Ensure this matches ax1 for a consistent look
-
+        # Ensure this matches ax1 for a consistent look
+        ax2.set_facecolor("lightblue")
         # Setting title
         plt.title(f"Network Traffic Patterns for IP {ip_address}")
-
         # Creating combined legend for both lines
         lines = [frame_line, bytes_line]
         labels = [line.get_label() for line in lines]
         ax1.legend(lines, labels, loc='upper left')
-
         # Explicitly adjust subplots to fit the figure area
         fig.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.17)
-
         # Show grid and plot
         ax1.grid(True)
         plt.show()
@@ -472,36 +438,29 @@ class TShark:
             frames (list of int): A list of frame counts corresponding to each time interval.
             bytes_data (list of int): A list of byte counts corresponding to each time interval.
         """
-        times = []  # List to store interval start times
-        frames = []  # List to store frame counts
-        bytes_data = []  # List to store byte counts
-
+        times = []
+        frames = []
+        bytes_data = []
         # Split the output into lines
         lines = output.strip().split('\n')
-
         # Flag to start reading the table data
         start_reading = False
-
         for line in lines:
             # Start reading after the table header is detected
             if line.startswith('| Interval'):
                 start_reading = True
                 continue
-
             if start_reading and line.startswith('|'):
                 # Extract data from each line
-                # Line format: "|   0 <> 10  | 9.178748 | 0 | 0 | 0.000000 |"
                 parts = line.split('|')
                 if len(parts) >= 6:
                     try:
-                        interval = parts[1].strip()  # "0 <> 10"
-                        frame_count = parts[3].strip()  # "0"
-                        byte_count = parts[4].strip()  # "0"
-
+                        interval = parts[1].strip() 
+                        frame_count = parts[3].strip() 
+                        byte_count = parts[4].strip() 
                         # Extract the start of the interval
                         interval_start = interval.split('<>')[0].strip()
                         times.append(float(interval_start))
-
                         # Convert frame and byte counts to integers
                         frames.append(int(frame_count))
                         bytes_data.append(int(byte_count))
@@ -592,34 +551,23 @@ class TShark:
         The method handles subprocess errors and unexpected exceptions during its execution.
         """
         while True:
-
             try:
                 get_proto = input("Show all packets? (yes or no, or 'exit' to quit) ")
                 print('')
-
                 if get_proto.lower() == 'exit':
                     break
-
-                # If the user doesn't want to show all packets
                 if get_proto.lower() == "no":
                     which_proto = input("Which protocol would you like to see all packets for? ")
                     print('')
-                    # Extract packets for the specified protocol
                     print('All ' + which_proto + ' packets:\n\n' + self._run_tshark_command(['-Y', which_proto]))
-
-                # If the user wants to show all packets
                 elif get_proto.lower() == "yes":
                     print('All packets:\n\n' + self._run_tshark_command([]))
-
                 else:
                     print("Invalid input. Please enter 'yes' or 'no'.")
-
             except subprocess.SubprocessError as e:
                 print(f"A subprocess error occurred: {e}")
-
             except Exception as e:
                 print(f"An unexpected error occurred: {e}")
-
             print("\n")
 
     def statistics(self) -> None:
@@ -709,13 +657,10 @@ class TShark:
                     func()
                 else:
                     print("Unsupported protocol")
-
             except subprocess.SubprocessError as e:
                 print(f"A subprocess error occurred: {e}")
-
             except Exception as e:
                 print(f"An unexpected error occurred: {e}")
-
             print("\n")
 
     def read_verbose(self) -> Union[Tuple[Dict[Any, List[Tuple[Any, int]]], Dict[Any, Any]], str]:
@@ -754,9 +699,7 @@ class TShark:
                 raise ValueError(f"Unknown protocol: {ask_protocol}")
 
         except ValueError as err:
-            # Handle the error
             logging.error(err)
-            # print(f"An error occurred: {err}. Please enter a valid protocol.")
             return f"An error occurred: {err}. Please enter a valid protocol."
 
     
