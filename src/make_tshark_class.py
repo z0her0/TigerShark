@@ -55,7 +55,7 @@ class ColorfulFormatter(logging.Formatter):
         logging.CRITICAL: Color.MAROON
     }
     RESET_CODE = Color.END
-    
+
     def format(self, record):
         color_code = self.COLOR_CODES.get(record.levelno)
         message = super().format(record)
@@ -389,7 +389,7 @@ class TShark:
         Retrieves and prints abuse information for a specified DCERPC service and method.
         """
         self.logger.info("Retrieving DCERPC abuse information")
-        service_name_input = input("Enter the service (e.g., samr, drsuapi, netlogon, lsarpc, srvsvc): ")
+        service_name_input = input("Enter the service (e.g., samr, drsuapi, netlogon, lsarpc, srvsvc, svcctl): ")
         opnum_input = get_input_opnum()
         try:
             method, note, attack_ttp, attack_type, ioc = get_dcerpc_info(service_name_input, opnum_input)
@@ -398,7 +398,7 @@ class TShark:
                 print("")
                 print(f"{Color.UNDERLINE}Function{Color.END}: {method}")
                 print("")
-                print(f"{Color.UNDERLINE}ATT&CK TTP{Color.END}: {attack_ttp}")
+                print(f"{Color.UNDERLINE}Attack TTP{Color.END}: {attack_ttp}")
                 print("")
                 print(f"{Color.UNDERLINE}Attack Type{Color.END}: {attack_type}")
                 print("")
@@ -883,15 +883,15 @@ class TShark:
 
         # Dictionary mapping protocol names to their corresponding field names and display filters.
         protocol_args = {
-            'eth': (['eth.addr.oui_resolved'], 'eth'),  # Ethernet protocol, filter on OUI addresses
-            'smb2': (['smb2.filename'], 'smb2.filename'),  # SMB2 protocol, filter on filenames
-            'dns': (['dns.qry.name'], 'dns'),  # DNS protocol, filter on query names
-            'tls': (['tls.handshake.extensions_server_name'], 'tls'),  # TLS protocol, filter on server name
-            'http': (['http.request.full_uri'], 'http'),  # HTTP protocol, filter on requests
+            'eth': (['eth.addr.oui_resolved'], 'eth'),                  # Ethernet protocol, filter on OUI addresses
+            'smb2': (['smb2.filename'], 'smb2.filename'),               # SMB2 protocol, filter on filenames
+            'dns': (['dns.qry.name'], 'dns'),                           # DNS protocol, filter on query names
+            'tls': (['tls.handshake.extensions_server_name'], 'tls'),   # TLS protocol, filter on server name
+            'http': (['http.request.full_uri'], 'http'),                # HTTP protocol, filter on requests
         }
         try:
             # Prompt the user to select a protocol to search within the pcap file.
-            ask_protocol = input(f"{Color.CYAN}Choose a protocol to search (dns, eth, http, icmp, smb2, tls){Color.END}: ")
+            ask_protocol = input(f"{Color.CYAN}Choose a protocol to search (dns, eth, http, smb2, tls){Color.END}: ")
 
             if ask_protocol in protocol_args:
                 fields, display_filter = protocol_args[ask_protocol]
