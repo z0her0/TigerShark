@@ -151,7 +151,7 @@ dcerpc_services = {
     "svcctl": {
         "UUID": "367abb81-9844-35f1-ad32-98f038001003",
         "Protocol": "MS-SCMR (Service Control Manager Remote Protocol) interface",
-        "Version": "1.0",
+        "Version": "1.0",    # 5.0?
         "Methods": {
             1: {
                 "Method": "RControlService",
