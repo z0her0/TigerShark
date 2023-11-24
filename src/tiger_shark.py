@@ -188,32 +188,36 @@ def main() -> None:
                 f"{TShark(pcap_file=ask_user_input).arp_thunt()}")
         },
         "18": {
+            "description": "Detect Spambot Activity",
+            "action": lambda: print(f"{TShark(pcap_file=ask_user_input).spambot()}")
+        },
+        "19": {
             "description": "Use Any Display Filter",
             "action": lambda: print(
                 f"{Color.MAGENTA}Use Any Display Filter{Color.END}:\n"
                 f"{TShark(pcap_file=ask_user_input).display_filter()}")
         },
-        "19": {
+        "20": {
             "description": "Search For Valid Tshark Display Filters",
             "action": lambda: valid_display_filters_tshark()
         },
-        "20": {
+        "21": {
             "description": "View Statistics",
             "action": lambda: print(f"{TShark(pcap_file=ask_user_input).statistics()}")
         },
-        "21": {
+        "22": {
             "description": "Lookup DCERPC Service Method Abuse Info",
             "action": lambda: print(f"{TShark(pcap_file=ask_user_input).get_dcerpc_abuse_info()}")
         },
-        "22": {
+        "23": {
             "description": "Help Menu",
             "action": lambda: show_help()
         },
-        "23": {
+        "24": {
             "description": "Clear Screen",
             "action": lambda: (clear_screen(), None)[1]
         },
-        "24": {
+        "25": {
             "description": "Quit",
             "action": lambda: sys.exit("Exit program.")
         }
@@ -247,11 +251,11 @@ def main() -> None:
                 print("Error: The action is not callable.")
 
         else:
-            print(f"{Color.RED}Invalid selection. Please choose a number between 1 and 24.{Color.END}")
+            print(f"{Color.RED}Invalid selection. Please choose a number between 1 and 25.{Color.END}")
 
 
 # Dictionary of menu colors for each menu option
-menu_colors: Dict[str, tuple] = {str(i): ColorRandomRGB.random_color() for i in range(1, 25)}
+menu_colors: Dict[str, tuple] = {str(i): ColorRandomRGB.random_color() for i in range(1, 26)}
 
 # Check if this script is the main script (it is) and call the main function
 if __name__ == '__main__':
