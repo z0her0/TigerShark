@@ -75,6 +75,7 @@ class SummaryDetail(TypedDict):
         ms_lsad (str): Details specific to the MS-LSAD protocol.
         ms_srvs (str): Details specific to the MS-SRVS protocol.
         ms_samr (str): Details specific to the MS-SAMR protocol.
+        ms_scmr (str): Details specific to the MS-SCMR protocol.
     """
     overview: str
     dcerpc: str
@@ -83,6 +84,7 @@ class SummaryDetail(TypedDict):
     ms_lsad: str
     ms_srvs: str
     ms_samr: str
+    ms_scmr: str
 
 
 class DcerpcData(TypedDict, total=False):
@@ -91,6 +93,7 @@ class DcerpcData(TypedDict, total=False):
 
     Attributes:
         summary (SummaryDetail): A summary of the DCERPC data.
+        svcctl (ServiceInfo): Information about the SVCCTL service.
         drsuapi (ServiceInfo): Information about the DRSUAPI service.
         lsarpc (ServiceInfo): Information about the LSARPC service.
         netlogon (ServiceInfo): Information about the NETLOGON service.
@@ -105,6 +108,7 @@ class DcerpcData(TypedDict, total=False):
     netlogon: ServiceInfo
     samr: ServiceInfo
     srvsvc: ServiceInfo
+    svcctl: ServiceInfo
     winreg: ServiceInfo
     references: Dict[str, str]
 
@@ -133,7 +137,297 @@ dcerpc_services = {
                    "a housing complex.\n\n",
         "ms_samr": "Security Account Manager Remote Protocol. This is like the human resources department \n"
                    "that manages employee records. It handles the details of security accounts, like users \n"
-                   "and their passwords.\n\n"
+                   "and their passwords.\n\n",
+        "ms_scmr": "Service Control Manager Remote Protocol. The Service Control Manager is a persistent process \n"
+                   "that starts when a system is booted and serves as the middleman between other processes and \n"
+                   "Windows services. It transmits requests to start and stop services and handles the installation \n"
+                   "of new services or removal of old ones. While running, the SCM maintains a current list of \n"
+                   "installed services in memory. A backup of this database is maintained in the registry at \n"
+                   "HKLM\\SYSTEM\\CurrentControlSet\\Services. When a new service is installed, the SCM creates the \n"
+                   "relevant entry in the registry. When the system boots, this registry hive is enumerated and \n"
+                   "pulled into the memory of the SCM. You can also manually create a registry entry for a \n"
+                   "new service. During a system’s reboot, that service is loaded and recognized by the SCM."
+    },
+    "svcctl": {
+        "UUID": "367abb81-9844-35f1-ad32-98f038001003",
+        "Protocol": "MS-SCMR (Service Control Manager Remote Protocol) interface",
+        "Version": "1.0",
+        "Methods": {
+            1: {
+                "Method": "RControlService",
+                "Note": "This method allows control over a service, including starting, stopping, pausing, or \n"
+                        "continuing the service. An attacker could stop critical security services or start \n"
+                        "malicious ones.",
+                "Attack_TTP": "T1569.002 - System Services: Service Execution",
+                "Attack_Type": "Execution or Interruption of System Services",
+                "IOC": "Unexpected state changes in services, especially those related to security or critical \n"
+                       "system functions."
+            },
+            2: {
+                "Method": "RDeleteService",
+                "Note": "This method can delete a service. Malicious actors could use it to disable security \n"
+                        "services or other critical system components.",
+                "Attack_TTP": "T1489 - Service Stop",
+                "Attack_Type": "Disruption of System Services",
+                "IOC": "Deletion of standard or critical services, unexplained disappearance of services."
+            },
+            4: {
+                "Method": "RQueryServiceObjectSecurity",
+                "Note": "This method queries the security descriptor of a service object. While not inherently \n"
+                        "malicious, it could be used for reconnaissance to identify weakly secured services \n"
+                        "for subsequent attacks.",
+                "Attack_TTP": "T1592 - Gather Victim Network Information",
+                "Attack_Type": "Reconnaissance",
+                "IOC": "Unusual access patterns or queries to the service security descriptor, especially from \n"
+                       "non-administrative users."
+            },
+            5: {
+                "Method": "RSetServiceObjectSecurity",
+                "Note": "This method sets the security descriptor of a service object. Modifying the \n"
+                        "security settings of a service could weaken the system's defenses or allow \n"
+                        "unauthorized access.",
+                "Attack_TTP": "T1222.002 - File and Directory Permissions Modification: Windows File and \n"
+                              "Directory Permissions Modification",
+                "Attack_Type": "Privilege Escalation or Persistence",
+                "IOC": "Changes in service permissions that don't align with policy updates or known \n"
+                       "administrative actions."
+            },
+            6: {
+                "Method": "RQueryServiceStatus",
+                "Note": "This method queries the current status of a service. Knowledge of service status can \n"
+                        "be used for timing attacks or understanding the security posture.",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Reconnaissance",
+                "IOC": "Repeated or unusual patterns of service status requests indicating potential surveillance or reconnaissance."
+            },
+            7: {
+                "Method": "RSetServiceStatus",
+                "Note": "This allows setting the status of a service. It could potentially be abused to disrupt services or create false flags within a system.",
+                "Attack_TTP": "T1490 - Inhibit System Recovery",
+                "Attack_Type": "Impact",
+                "IOC": "Unauthorized or anomalous attempts to modify service states, particularly in critical system services."
+            },
+            11: {
+                "Method": "RChangeServiceConfigW",
+                "Note": "This method changes a service's configuration parameters in the SCM database.",
+                "Attack_TTP": "T1562.004 - Impair Defenses: Disable or Modify System Firewall",
+                "Attack_Type": "System Defense Evasion",
+                "IOC": "Alterations in service configurations, especially those affecting security features \n"
+                       "or behavior."
+            },
+            12: {
+                "Method": "RCreateServiceW",
+                "Note": "This method creates the service record in the SCM database.",
+                "Attack_TTP": "T1543.003 - Service Creation",
+                "Attack_Type": "Create or Modify System Process: Windows Service",
+                "IOC": "Suspicious program execution through services may show up as outlier processes that \n"
+                       "have not been seen before when compared against historical data. Look for abnormal \n"
+                       "process call trees from known services and for execution of other commands that could \n"
+                       "relate to Discovery or other adversary techniques."
+            },
+            13: {
+                "Method": "REnumDependentServicesW",
+                "Note": "Enumerates the services that depend on a specified service. It can be used to understand service dependencies for potential disruption or escalation attacks.",
+                "Attack_TTP": "T1499 - Endpoint Denial of Service",
+                "Attack_Type": "Service Disruption",
+                "IOC": "Unusual patterns of querying dependent services."
+            },
+            14: {
+                "Method": "REnumServicesStatusW",
+                "Note": "Enumerates services and their status in wide-character format. This method is used to \n"
+                        "list services and their current status. It's often used for legitimate administrative \n"
+                        "purposes but can be used by attackers for reconnaissance to identify potential targets \n"
+                        "or learn about the security posture of a system.",
+                "Attack_TTP": "Reconnaissance",
+                "Attack_Type": "Information Gathering",
+                "IOC": "Unusual or frequent queries to SCM"
+            },
+            15: {
+                "Method": "ROpenSCManagerW",
+                "Note": "This method establishes a connection to server and opens the SCM database on the \n"
+                        "specified server.",
+                "Attack_TTP": "T1608.002 - Stage Capabilities: Upload Malware",
+                "Attack_Type": "Initial Access or Persistence",
+                "IOC": "Unusual or unauthorized connections to the Service Control Manager, especially from \n"
+                       "remote systems."
+            },
+            16: {
+                "Method": "ROpenServiceW",
+                "Note": "Opens an existing service for management in wide-character format.",
+                "Attack_TTP": "Initial Access",
+                "Attack_Type": "Service Manipulation",
+                "IOC": "Unexpected service access or modification"
+            },
+            17: {
+                "Method": "RQueryServiceConfigW",
+                "Note": "This method retrieves the configuration parameters of a specific service. It can be used to gather information for tailoring attacks to specific service configurations.",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Reconnaissance",
+                "IOC": "Repeated queries to service configurations, especially sensitive or critical services."
+            },
+            19: {
+                "Method": "RStartServiceW",
+                "Note": "This method starts a specified service.",
+                "Attack_TTP": "T1569.002 - System Services: Service Execution",
+                "Attack_Type": "Execution of System Services",
+                "IOC": "Starting of unknown or rarely used services, especially those with no prior history."
+            },
+            23: {
+                "Method": "RChangeServiceConfigA",
+                "Note": "This method changes a service's configuration parameters in the SCM database.",
+                "Attack_TTP": "T1562.001 - Impair Defenses: Disable or Modify Tools",
+                "Attack_Type": "System Defense Evasion",
+                "IOC": "Configuration changes in services, particularly those affecting monitoring tools or \n"
+                       "security services."
+            },
+            24: {
+                "Method": "RCreateServiceA",
+                "Note": "This method creates the service record in the SCM database.",
+                "Attack_TTP": "T1543.003 - Service Creation",
+                "Attack_Type": "Create or Modify System Process: Windows Service",
+                "IOC": "Creation of new services, especially with unusual or suspicious properties, names, or \n"
+                       "executable paths."
+            },
+            25: {
+                "Method": "REnumDependentServicesA",
+                "Note": "Similar to REnumDependentServicesW, but for ASCII character set. It can be used for the same purposes of understanding dependencies for targeted service disruption.",
+                "Attack_TTP": "T1499 - Endpoint Denial of Service",
+                "Attack_Type": "Service Disruption",
+                "IOC": "Multiple service dependency checks in a short timeframe."
+            },
+            26: {
+                "Method": "REnumServicesStatusA",
+                "Note": "Enumerates the status of services using ASCII character set. Useful for attackers to monitor the state of services for exploitation opportunities.",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Reconnaissance",
+                "IOC": "Frequent service status checks, especially outside of maintenance windows."
+            },
+            27: {
+                "Method": "ROpenSCManagerA",
+                "Note": "This method opens a connection to the SCM from the client and then opens the specified \n"
+                        "SCM database.",
+                "Attack_TTP": "T1608.002 - Stage Capabilities: Upload Malware",
+                "Attack_Type": "Initial Access or Persistence",
+                "IOC": "Attempts to access or manipulate the Service Control Manager from unauthorized or \n"
+                       "unexpected sources."
+            },
+            28: {
+                "Method": "ROpenServiceA",
+                "Note": "Opens an existing service for management in ANSI format.",
+                "Attack_TTP": "Initial Access",
+                "Attack_Type": "Service Manipulation",
+                "IOC": "Unexpected service access or modification"
+            },
+            29: {
+                "Method": "RQueryServiceConfigA",
+                "Note": "Retrieves the configuration of a specified service using ASCII characters. Potential use in pre-attack reconnaissance to understand service settings and vulnerabilities.",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Reconnaissance",
+                "IOC": "Abnormal patterns of querying service configurations."
+            },
+            31: {
+                "Method": "RStartServiceA",
+                "Note": "This method starts a specified service.",
+                "Attack_TTP": "T1569.002 - System Services: Service Execution",
+                "Attack_Type": "Execution of System Services",
+                "IOC": "Activation of services under unusual circumstances or from unexpected sources."
+            },
+            36: {
+                "Method": "RChangeServiceConfig2A",
+                "Note": "This method allows modification of service configurations.",
+                "Attack_TTP": "T1543.003 - Create or Modify System Process: Windows Service",
+                "Attack_Type": "Service Configuration Tampering",
+                "IOC": "Unexpected changes in service configurations or binary paths."
+            },
+            37: {
+                "Method": "RChangeServiceConfig2W",
+                "Note": "Similar to RChangeServiceConfig2A, it modifies service configurations.",
+                "Attack_TTP": "T1543.003 - Create or Modify System Process: Windows Service",
+                "Attack_Type": "Service Configuration Tampering",
+                "IOC": "Modifications in service parameters or executable paths not conforming to standard updates."
+            },
+            38: {
+                "Method": "RQueryServiceConfig2A",
+                "Note": "Provides extended information about the configuration of a service. It can be exploited for detailed reconnaissance and attack planning.",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Reconnaissance",
+                "IOC": "Consistent querying of detailed service configurations."
+            },
+            39: {
+                "Method": "RQueryServiceConfig2W",
+                "Note": "Similar to RQueryServiceConfig2A, but for wide character sets. Used for in-depth reconnaissance of service configurations.",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Reconnaissance",
+                "IOC": "Repeated queries for detailed service configurations."
+            },
+            40: {
+                "Method": "RQueryServiceStatusEx",
+                "Note": "This method, used to query the status of a service, can be part of reconnaissance activities to determine the state of services on a target machine, useful for planning further attacks.",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Reconnaissance",
+                "IOC": "Frequent queries to service status without administrative context."
+            },
+            41: {
+                "Method": "REnumServicesStatusExA",
+                "Note": "Extended enumeration of services and their status using ASCII character set. Can be utilized for broad surveillance of service states.",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Reconnaissance",
+                "IOC": "Extensive surveillance-like queries to multiple service statuses."
+            },
+            42: {
+                "Method": "REnumServicesStatusExW",
+                "Note": "Enumerates the status of services, providing details on each.",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Reconnaissance",
+                "IOC": "Bulk enumeration of service statuses, especially from non-administrative users."
+            },
+            44: {
+                "Method": "RCreateServiceWOW64A",
+                "Note": "Allows creation of new services on a 64-bit system from a 32-bit process.",
+                "Attack_TTP": "T1543.003 - Create or Modify System Process: Windows Service",
+                "Attack_Type": "Service Creation",
+                "IOC": "Creation of new services, particularly with unusual names or paths."
+            },
+            45: {
+                "Method": "RCreateServiceWOW64W",
+                "Note": "Similar to RCreateServiceWOW64A, it creates new services in a WOW64 context.",
+                "Attack_TTP": "T1543.003 - Create or Modify System Process: Windows Service",
+                "Attack_Type": "Service Creation",
+                "IOC": "Unusual service creation, especially with non-standard binary paths or names."
+            },
+            47: {
+                "Method": "RNotifyServiceStatusChange",
+                "Note": "This method could potentially be used to monitor changes in service status, which \n"
+                        "might be useful for attackers to understand security measures or trigger other \n"
+                        "actions based on service state changes.",
+                "Attack_TTP": "T1550.003 - Use Alternate Authentication Material: Pass the Ticket",
+                "Attack_Type": "Monitoring",
+                "IOC": "Unusual patterns of service status monitoring, especially from non-system accounts."
+            },
+            50: {
+                "Method": "RControlServiceExA",
+                "Note": "Allows for the control of a service, such as starting, stopping, or modifying its behavior.",
+                "Attack_TTP": "T1569.002 - System Services: Service Execution",
+                "Attack_Type": "Service Manipulation",
+                "IOC": "Unexpected service state changes or control commands from unauthorized sources."
+            },
+            60: {
+                "Method": "RCreateWowService",
+                "Note": "This method, likely involved in creating services, can be particularly attractive for \n"
+                        "APTs to install malicious services or gain persistence on a target system.",
+                "Attack_TTP": "T1059.001 - Command and Scripting Interpreter: PowerShell",
+                "Attack_Type": "Persistence",
+                "IOC": "Creation of new, unexpected services, especially with administrative privileges."
+            },
+            64: {
+                "Method": "ROpenSCManager2",
+                "Note": "Opening the Service Control Manager with enhanced capabilities might provide \n"
+                        "avenues for broader access or control over service management functions.",
+                "Attack_TTP": "T1134 - Access Token Manipulation",
+                "Attack_Type": "Privilege Escalation",
+                "IOC": "Unusual access patterns to the Service Control Manager, especially by non-admin users."
+            }
+        }
     },
     "drsuapi": {
         "UUID": "e3514235-4b06-11d1-ab04-00c04fc2dcd2",
@@ -1257,7 +1551,8 @@ dcerpc_services = {
         "drsuapi": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-drsr/"
                    "58f33216-d9f1-43bf-a183-87e3c899c410",
         "lsarpc": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lsad/"
-                  "86f5e73b-98c4-4234-89cb-d9ff5f327b73"
+                  "86f5e73b-98c4-4234-89cb-d9ff5f327b73",
+        "svcctl": "https://posts.specterops.io/utilizing-rpc-telemetry-7af9ea08a1d5"
     }
 }
 
