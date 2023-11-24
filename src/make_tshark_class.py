@@ -150,9 +150,11 @@ class TShark:
             self.logger.error(f"Command execution failed: {e}", exc_info=True)
 
     def _run_tshark_command(self, options: List[str], display_filter: Optional[str] = None,
-                            custom_fields: Optional[str] = None) -> str:
+                            custom_fields: Optional[str] = None, profile_name: Optional[str] = 'THunt') -> str:
         try:
             cmd = [tshark, '-r', self.pcap_file] + options
+            if profile_name:
+                cmd.extend(['-C', profile_name])
             if display_filter:
                 cmd.extend(['-Y', display_filter])
             if custom_fields:
@@ -202,6 +204,31 @@ class TShark:
     # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ Utility྇ M྇e྇t྇h྇o྇d྇s྇
 
     # B༙྇E༙྇G༙྇I༙྇N༙྇ S༙྇E༙྇C༙྇T༙྇I༙྇O༙྇N༙྇:༙྇ Data Extraction༙྇ M༙྇e༙྇t༙྇h༙྇o༙྇d༙྇s༙྇
+
+    def spambot(self) -> str:
+        """
+        Executes a tshark command to check for TLS handshake attempts on email ports which can be indicative of
+        spamming activity.
+
+        The method constructs and executes a tshark command that filters for TLS handshakes (`tls.handshake.type eq 1`)
+        on common email ports (25, 465, 587) used for sending emails. This can help identify potential spambot activity
+        as these handshakes are indicative of email sending attempts.
+
+        Returns:
+            str: The output from the tshark command, which contains information about the detected TLS handshakes.
+                 It will return an empty string if an exception occurs.
+
+        Raises:
+            Exception: If there's an issue executing the tshark command, an exception will be logged with the error message.
+        """
+        try:
+            self.logger.info("Running spambot method.")
+            spambot_info = self._run_tshark_command(['-Y', 'tls.handshake.type eq 1 and (tcp.port eq 25 or tcp.port eq 465 or tcp.port eq 587)'])
+
+            return spambot_info
+
+        except Exception as e:
+            self.logger.error(f"Error in spambot method: {e}", exc_info=True)
 
     def host_enum(self) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]:
         """
@@ -885,8 +912,8 @@ class TShark:
         protocol_args = {
             'eth': (['eth.addr.oui_resolved'], 'eth'),                  # Ethernet protocol, filter on OUI addresses
             'smb2': (['smb2.filename'], 'smb2.filename'),               # SMB2 protocol, filter on filenames
-            'dns': (['dns.qry.name'], 'dns'),                           # DNS protocol, filter on query names
-            'tls': (['tls.handshake.extensions_server_name'], 'tls'),   # TLS protocol, filter on server name
+            'dns': (['dns.qry.name'], 'dns and !(dns.qry.name matches "microsoft.com*") && !(dns.qry.name matches "msedge.net*") && !(dns.qry.name matches "microsoftonline.com*") && !(dns.qry.name matches "msftncsi.com*") && !(dns.qry.name matches "windows.com*")'),                           # DNS protocol, filter on query names
+            'tls': (['tls.handshake.extensions_server_name'], 'tls and !(tls.handshake.extensions_server_name matches "microsoft.com*") && !(tls.handshake.extensions_server_name matches "msedge.net*") && !(tls.handshake.extensions_server_name matches "microsoftonline.com*")'),   # TLS protocol, filter on server name
             'http': (['http.request.full_uri'], 'http'),                # HTTP protocol, filter on requests
         }
         try:
