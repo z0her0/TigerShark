@@ -149,12 +149,46 @@ class TShark:
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Command execution failed: {e}", exc_info=True)
 
+    @staticmethod
+    def profile_exists(profile_name: str) -> bool:
+        """
+        This method checks for the existence of a directory corresponding to the given profile name 
+        in the user's personal Wireshark profiles path.
+
+        Args:
+            profile_name (str): The name of the Wireshark profile to check.
+
+        Returns:
+            bool: True if the profile directory exists, False otherwise.
+        """
+        wireshark_profiles_path = os.path.expanduser('~/.config/wireshark/profiles')
+        profile_path = os.path.join(wireshark_profiles_path, profile_name)
+        return os.path.isdir(profile_path)
+
     def _run_tshark_command(self, options: List[str], display_filter: Optional[str] = None,
                             custom_fields: Optional[str] = None, profile_name: Optional[str] = 'THunt') -> str:
+        """
+        Execute a tshark command with the specified options, display filter, custom fields, and profile.
+
+        This method constructs and executes a tshark command based on the provided arguments. If the specified
+        profile does not exist, it falls back to the default profile and logs a warning.
+
+        Args:
+            options (List[str]): Command-line options for tshark.
+            display_filter (Optional[str]): Display filter string for tshark.
+            custom_fields (Optional[str]): Custom fields to be included in the tshark output.
+            profile_name (Optional[str]): Name of the Wireshark profile to use (defaults to 'THunt').
+
+        Returns:
+            str: The standard output from the tshark command, or an empty string if an error occurs.
+        """
         try:
             cmd = [tshark, '-r', self.pcap_file] + options
             if profile_name:
-                cmd.extend(['-C', profile_name])
+                if self.profile_exists(profile_name):
+                    cmd.extend(['-C', profile_name])
+                else:
+                    self.logger.warning(f"Profile {profile_name} does not exist. Using default profile.")
             if display_filter:
                 cmd.extend(['-Y', display_filter])
             if custom_fields:
@@ -164,6 +198,10 @@ class TShark:
             self.logger.debug(f"Running tshark command: {' '.join(cmd)}")
             completed_process = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False,
                                                check=False)
+            if completed_process.returncode != 0:
+                self.logger.error(f"TShark command execution failed with error: {completed_process.stderr.decode()}")
+                return ""
+
             self.logger.info("TShark command executed successfully")
             return completed_process.stdout.decode()
 
