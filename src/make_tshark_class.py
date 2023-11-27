@@ -152,7 +152,7 @@ class TShark:
     @staticmethod
     def profile_exists(profile_name: str) -> bool:
         """
-        This method checks for the existence of a directory corresponding to the given profile name 
+        This method checks for the existence of a directory corresponding to the given profile name
         in the user's personal Wireshark profiles path.
 
         Args:
@@ -276,6 +276,7 @@ class TShark:
                                                                     fields used for each protocol.
         """
         protocols = {
+            'frame': ['frame matches "DESKTOP-*"', 'frame'],
             'dhcp': ['dhcp', 'dhcp.option.hostname'],
             'nbns': ['nbns', 'nbns.name'],
             'kerberos': ['kerberos.CNameString and (kerberos.CNameString contains "$")', 'kerberos.CNameString'],
@@ -370,17 +371,29 @@ class TShark:
 
     def whois_ip(self) -> None:
         """
-        Retrieves WHOIS information for unique destination IP addresses found in the pcap file.
+        Retrieves WHOIS information for unique destination IP addresses found in the pcap file
+        and lists IPs belonging to specified Autonomous Systems at the end.
         """
+        excluded_as_names = ["MICROSOFT-CORP-MSN-AS-BLOCK", "NA", "AKAMAI-AS, US", "GOOGLE, US", "CLOUDFLARENET, US",
+                             "AMAZON-02, US"]
+        excluded_ips = []
+
         self.logger.info("Retrieving WHOIS information using the whois_ip method.")
         try:
             check_tshark_output = self._run_tshark_command(['-T', 'fields', '-e', 'ip.dst'])
             tshark_dest_ips = check_tshark_output.strip().splitlines()
             unique_ips = set(filter(None, tshark_dest_ips))
+
             for ip in unique_ips:
                 whois_info = self.run_command(['whois', '-h', 'whois.cymru.com', ip])
-                print(whois_info)
+
+                if any(excluded_as in whois_info for excluded_as in excluded_as_names):
+                    excluded_ips.append(ip)
+                else:
+                    print(whois_info)
+
             self.logger.info("WHOIS information retrieved for IPs successfully.")
+
         except Exception as e:
             self.logger.error(f"Error retrieving WHOIS information: {e}", exc_info=True)
 
