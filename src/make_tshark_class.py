@@ -522,19 +522,27 @@ class TShark:
 
     def find_beacons(self, ip_address: Optional[str] = None, interval_frequency: Optional[str] = None) -> None:
         """
-        Identifies beacon-like traffic patterns for a specified IP address and interval frequency,
-        and plots the data using a line graph. It prompts the user for input if the IP address or
-        interval frequency is not provided.
+        Identifies beacon-like traffic patterns for a given IP address and interval frequency.
+
+        Utilizes TShark for network traffic analysis and matplotlib for visualizing the patterns. Prompts for user
+        input if ip_address or interval_frequency are not provided.
 
         Parameters:
-        ip_address (Optional[str]): The IPv4 address to analyze for beacon-like patterns. If None,
-        the user is prompted to enter an IP address.
-        interval_frequency (Optional[str]): The frequency, in seconds, at which to analyze the
-        traffic patterns. If None, the user is prompted to enter an interval frequency.
+        ip_address (Optional[str]): The IPv4 address for analysis. If None, prompts for input.
+        interval_frequency (Optional[str]): Interval frequency in seconds for traffic pattern analysis. If None,
+        prompts for input.
 
         Returns:
-        None: This method does not return anything. It displays a line graph showing the traffic patterns.
+        None: Outputs a matplotlib plot of the traffic analysis and logs the process.
+
+        Raises:
+        ValueError: On invalid input for IP address or interval frequency.
+        Exception: On issues executing TShark command or processing its output.
+
+        Note:
+        This function requires matplotlib for plotting the analysis results.
         """
+
         self.logger.info("Identifying beacon-like traffic patterns")
         try:
             if ip_address is None:
@@ -550,10 +558,11 @@ class TShark:
             self.logger.debug(f"Running TShark command for beacon-like pattern detection on IP: {ip_address}")
             tshark_output = self._run_tshark_command(
                 ['-qz',
-                 f'io,stat,{interval_frequency},MAX(frame.time_relative)frame.time_relative,ip.addr=={ip_address},MIN(frame.time_relative)frame.time_relative']
+                 f'io,stat,{interval_frequency},MIN(frame.time_relative)frame.time_relative,ip.addr=={ip_address},MAX(frame.time_relative)frame.time_relative']
             )
             print("TShark Output:", tshark_output)
             self.logger.debug("Processing TShark output for plotting")
+
             # Process TShark output to extract data for plotting
             times, frames, bytes_data = self._process_tshark_output(tshark_output)
             # Calculate total duration based on the time intervals
@@ -829,7 +838,7 @@ class TShark:
                     try:
                         ask_protocol = input(
                             f"{Color.LAVENDER}Which protocol would you like to see server response times for? "
-                            f"(icmp/ldap/smb/smb2/srvsvc/drsuapi/lsarpc/netlogon/samr){Color.END}: ")
+                            f"(icmp/ldap/smb/smb2/srvsvc/drsuapi/lsarpc/netlogon/samr/svcctl){Color.END}: ")
                         protocol_commands: Dict[str, List[str]] = {
                             'icmp': ['icmp,srt'],
                             'ldap': ['ldap,srt'],
@@ -839,7 +848,8 @@ class TShark:
                             'lsarpc': ['dcerpc,srt,12345778-1234-abcd-ef00-0123456789ab,0.0'],
                             'netlogon': ['dcerpc,srt,12345678-1234-abcd-ef00-01234567cffb,1.0'],
                             'samr': ['dcerpc,srt,12345778-1234-ABCD-EF00-0123456789AC,1.0'],
-                            'srvsvc': ['dcerpc,srt,4b324fc8-1670-01d3-1278-5a47bf6ee188,3.0']
+                            'srvsvc': ['dcerpc,srt,4b324fc8-1670-01d3-1278-5a47bf6ee188,3.0'],
+                            'svcctl': ['dcerpc,srt,367abb81-9844-35f1-ad32-98f038001003,2.0']
                         }
                         if ask_protocol in protocol_commands:
                             tshark_command = ['-qz'] + protocol_commands[ask_protocol]
