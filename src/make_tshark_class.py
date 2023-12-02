@@ -9,12 +9,6 @@ utilities, offering Pythonic access to its rich feature set. It includes methods
 specific data from pcap files, such as WHOIS information, user agents, beacon-like traffic patterns,
 and expert diagnostics. Additionally, the module contains utilities for user input validation and
 colorful terminal output to enhance user interaction.
-
-Key Features:
-- Interface to interact with TShark for pcap file analysis.
-- Methods for extracting specific network protocol information.
-- Capabilities to enumerate hosts and users, follow streams, and detect security threats.
-- Utilities for user input validation and enhanced terminal output.
 """
 
 import logging                                                  # Logging utility for debugging and error tracking
@@ -29,8 +23,12 @@ import matplotlib.pyplot as plt                                 # Plotting libra
 from rich.table import Table                                    # Rich library component for creating formatted tables
 from rich.console import Console                                # Rich library component for enhanced console output
 
-from dcerpc_method_abuse_notes import get_dcerpc_info           # MSRPC to ATT&CK lookup table
 from make_colorful import Color, ColorRandomRGB                 # Terminal color output utility
+from dcerpc_data import dcerpc_services                         # MSRPC to ATT&CK lookup table
+from dcerpc_method_abuse_notes import (
+    get_dcerpc_info, 
+    list_methods, 
+    enhanced_search)
 from make_helpers import (
     input_prompt,                                               # Standardized user input prompt
     is_valid_interval,                                          # Interval validation
@@ -74,17 +72,6 @@ class TShark:
                    max_log_size: int = 10 * 1024 * 1024, backup_count: int = 5, suppress_output: bool = False):
         """
         Static method to initialize and return a logger object.
-
-        Args:
-            log_file (str): Path to the log file.
-            level (str): Logging level as a string, e.g., 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'.
-            log_format (str): Format for the logging messages.
-            max_log_size (int): Maximum size of the log file in bytes before it is rotated.
-            backup_count (int): The number of backup files to keep.
-            suppress_output (bool): If True, suppresses console output.
-
-        Returns:
-            logging.Logger: A configured logger object.
         """
         logger = logging.getLogger('TSharkLogger')
 
@@ -154,12 +141,6 @@ class TShark:
         """
         This method checks for the existence of a directory corresponding to the given profile name
         in the user's personal Wireshark profiles path.
-
-        Args:
-            profile_name (str): The name of the Wireshark profile to check.
-
-        Returns:
-            bool: True if the profile directory exists, False otherwise.
         """
         wireshark_profiles_path = os.path.expanduser('~/.config/wireshark/profiles')
         profile_path = os.path.join(wireshark_profiles_path, profile_name)
@@ -172,15 +153,6 @@ class TShark:
 
         This method constructs and executes a tshark command based on the provided arguments. If the specified
         profile does not exist, it falls back to the default profile and logs a warning.
-
-        Args:
-            options (List[str]): Command-line options for tshark.
-            display_filter (Optional[str]): Display filter string for tshark.
-            custom_fields (Optional[str]): Custom fields to be included in the tshark output.
-            profile_name (Optional[str]): Name of the Wireshark profile to use (defaults to 'THunt').
-
-        Returns:
-            str: The standard output from the tshark command, or an empty string if an error occurs.
         """
         try:
             cmd = [tshark, '-r', self.pcap_file] + options
@@ -213,13 +185,6 @@ class TShark:
         """
         Constructs and executes a TShark command to extract specific fields from packets
         that match a given display filter.
-
-        Args:
-            display_filter (str): The display filter to apply to the TShark command.
-            fields (List[str]): A list of fields to extract from the packet data.
-
-        Returns:
-            str: The output from the TShark command as a string.
         """
         options = ['-T', 'fields'] + ['-e' + field for field in fields]
         output = self._run_tshark_command(options, display_filter=display_filter)
@@ -251,13 +216,6 @@ class TShark:
         The method constructs and executes a tshark command that filters for TLS handshakes (`tls.handshake.type eq 1`)
         on common email ports (25, 465, 587) used for sending emails. This can help identify potential spambot activity
         as these handshakes are indicative of email sending attempts.
-
-        Returns:
-            str: The output from the tshark command, which contains information about the detected TLS handshakes.
-                 It will return an empty string if an exception occurs.
-
-        Raises:
-            Exception: If there's an issue executing the tshark command, an exception will be logged with the error message.
         """
         try:
             self.logger.info("Running spambot method.")
@@ -271,9 +229,6 @@ class TShark:
     def host_enum(self) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]:
         """
         Enumerates hosts for different protocols by running tshark commands.
-        Returns:
-            Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]: A tuple containing the results and the
-                                                                    fields used for each protocol.
         """
         protocols = {
             'frame': ['frame matches "DESKTOP-*"', 'frame'],
@@ -298,9 +253,6 @@ class TShark:
     def user_enum(self) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]:
         """
         Enumerates users for different protocols by running tshark commands.
-        Returns:
-            Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]: A tuple containing the results and the
-                                                                    fields used for each protocol.
         """
         self.logger.info("Enumerating users for different protocols")
 
@@ -407,9 +359,6 @@ class TShark:
     def arp_thunt(self) -> Tuple[str, str]:
         """
         Searches for ARP poisoning attacks within the network traffic data.
-
-        Returns:
-            Tuple[str, str]: A tuple containing strings with ARP duplicate address and packet storm data.
         """
         self.logger.info("Searching for ARP poisoning attacks")
         try:
@@ -430,12 +379,6 @@ class TShark:
         This method executes a TShark command to capture the 'http.user_agent' fields from the pcap file.
         It then processes this output to count the occurrences of each unique user agent, providing insights
         into the different types of clients that have interacted with the network.
-
-        Returns:
-            Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]: A tuple containing two dictionaries.
-            The first dictionary maps a descriptive key to a list of tuples, where each tuple contains a user
-            agent string and its count. The second dictionary provides a mapping for field descriptions used in
-            the output.
         """
         self.logger.info("Extracting HTTP user agents")
         try:
@@ -454,9 +397,6 @@ class TShark:
     def web_basic(self) -> str:
         """
         Extracts basic web traffic information from the pcap file.
-
-        Returns:
-            str: A string representation of basic web traffic information.
         """
         self.logger.info("Extracting basic web traffic information")
         print('')
@@ -469,33 +409,103 @@ class TShark:
             self.logger.error(f"Error in extracting web traffic information: {e}", exc_info=True)
             return ""
 
+    @staticmethod
+    def display_options(services_list):
+        header_color = Color.BOLD + Color.LIGHTYELLOW
+        service_name_color = Color.BOLD + Color.AQUA
+
+        print(f"\n{header_color}Available Options:{Color.END}")
+        for service in services_list:
+            print(f"{service_name_color}{service}{Color.END}")
+
+    @staticmethod
+    def highlight_special_chars(text: str, highlight_color: str) -> str:
+        special_chars = ['(', ')', '/']
+        colored_text = ""
+        for char in text:
+            if char in special_chars:
+                colored_text += f"{highlight_color}{char}{Color.END}"
+            else:
+                colored_text += char
+        return colored_text
+
+    @staticmethod
+    def highlight_brackets_and_colorize_words(text: str, bracket_color: str, word_color: str) -> str:
+        # Split the text by '[' and ']'
+        parts = text.split('[')
+        highlighted_text = parts[0]
+
+        for part in parts[1:]:
+            if ']' in part:
+                word, rest = part.split(']', 1)
+                # Apply colors to the brackets and the word inside
+                highlighted_word = f"{bracket_color}[{Color.END}{word_color}{word}{Color.END}{bracket_color}]{Color.END}"
+                highlighted_text += highlighted_word + rest
+            else:
+                highlighted_text += '[' + part
+
+        return highlighted_text
+
     def get_dcerpc_abuse_info(self) -> None:
         """
         Retrieves and prints abuse information for a specified DCERPC service and method.
+        Allows users to list all services, get detailed information, or search across all services.
         """
-        self.logger.info("Retrieving DCERPC abuse information")
-        service_name_input = input("Enter the service (e.g., samr, drsuapi, netlogon, lsarpc, srvsvc, svcctl): ")
-        opnum_input = get_input_opnum()
-        try:
-            method, note, attack_ttp, attack_type, ioc = get_dcerpc_info(service_name_input, opnum_input)
-            if method:
-                print(f"{Color.AQUA}Info for {service_name_input} opnum {opnum_input}:{Color.END}")
-                print("")
-                print(f"{Color.UNDERLINE}Function{Color.END}: {method}")
-                print("")
-                print(f"{Color.UNDERLINE}Attack TTP{Color.END}: {attack_ttp}")
-                print("")
-                print(f"{Color.UNDERLINE}Attack Type{Color.END}: {attack_type}")
-                print("")
-                print(f"{Color.UNDERLINE}IOC{Color.END}: {ioc}")
-                print("")
-                print(f"{Color.UNDERLINE}Note{Color.END}: {note}")
-                print("")
+        while True:
+            options_text = "Options: [list] all services, [methods] to list methods of a service, [search] for a keyword, [exit] to quit."
+            colored_options_text = self.highlight_brackets_and_colorize_words(options_text, Color.LIGHTGREEN, Color.BLUE)
+
+            prompt_text = "Enter choice (list/methods/search/exit) or service name: "
+            colored_prompt_text = self.highlight_special_chars(prompt_text, Color.LIGHTRED)
+
+            print(f"\n{colored_options_text}")
+            print(colored_prompt_text, end="")  # 'end=""' to keep the input on the same line
+
+            user_input = input().lower()
+
+            if user_input == 'exit':
+                break
+            elif user_input == 'list':
+                services = get_dcerpc_info(list_services=True)
+                self.display_options(services)
+            elif user_input == 'search':
+                keyword = input("Enter a specific keyword to search (e.g., a part of method name, specific attack type, detail in notes): ").strip()
+                if not keyword:
+                    print("Please enter a valid keyword to search.")
+                    continue
+                search_results = enhanced_search(keyword, dcerpc_services)
+                if search_results:
+                    formatted_results = "\n".join(search_results)
+                    self.paginate_output(formatted_results)
+                else:
+                    print("No results found for the keyword.")
+            elif user_input == 'methods':
+                service_name = input("Enter the service name to list methods: ")
+                list_methods(service_name, dcerpc_services)
             else:
-                print(note)
-        except ValueError as e:
-            self.logger.error(f"Error retrieving DCERPC abuse information: {e}", exc_info=True)
-            method, note, attack_ttp, attack_type, ioc = None, None, None, None, None
+                service_name_input = user_input
+                opnum_input = get_input_opnum()
+                try:
+                    method, note, attack_ttp, attack_type, ioc = get_dcerpc_info(service_name_input, opnum_input)
+                    if method:
+                        self.print_detailed_info(service_name_input, opnum_input, method, note, attack_ttp, attack_type,
+                                                 ioc)
+                    else:
+                        print("Service or method not found.")
+                except ValueError as e:
+                    print(f"Error: {e}")
+
+    @staticmethod
+    def print_detailed_info(service_name, opnum, method, note, attack_ttp, attack_type, ioc):
+        """
+        Prints detailed information about a specific DCERPC service method.
+        """
+        print(f"\n{Color.AQUA}Info for {service_name} opnum {opnum}:{Color.END}")
+        print(f"{Color.UNDERLINE}Function{Color.END}: {method}")
+        print(f"{Color.UNDERLINE}Attack TTP{Color.END}: {attack_ttp}")
+        print(f"{Color.UNDERLINE}Attack Type{Color.END}: {attack_type}")
+        print(f"{Color.UNDERLINE}IOC{Color.END}: {ioc}")
+        print(f"{Color.UNDERLINE}Note{Color.END}: {note}")
 
     # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ Data Extraction྇ M྇e྇t྇h྇o྇d྇s྇
 
@@ -504,9 +514,6 @@ class TShark:
     def display_results(self, results: Dict[str, List[Tuple[str, int]]], fields: Dict[str, str]) -> None:
         """
         Displays the results of the tshark command processing in a formatted manner using rich.
-        Args:
-            results (Dict[str, List[Tuple[str, int]]]): The processed results from tshark commands.
-            fields (Dict[str, str]): The fields used for each protocol in the tshark command.
         """
         self.logger.info("Displaying results")
         try:
@@ -533,21 +540,6 @@ class TShark:
 
         Utilizes TShark for network traffic analysis and matplotlib for visualizing the patterns. Prompts for user
         input if ip_address or interval_frequency are not provided.
-
-        Parameters:
-        ip_address (Optional[str]): The IPv4 address for analysis. If None, prompts for input.
-        interval_frequency (Optional[str]): Interval frequency in seconds for traffic pattern analysis. If None,
-        prompts for input.
-
-        Returns:
-        None: Outputs a matplotlib plot of the traffic analysis and logs the process.
-
-        Raises:
-        ValueError: On invalid input for IP address or interval frequency.
-        Exception: On issues executing TShark command or processing its output.
-
-        Note:
-        This function requires matplotlib for plotting the analysis results.
         """
 
         self.logger.info("Identifying beacon-like traffic patterns")
@@ -613,15 +605,6 @@ class TShark:
         The function assumes the output is formatted in a table where each row represents a time interval
         and the columns include the maximum and minimum frame times, the number of frames, and the number
         of bytes.
-
-        Parameters:
-        output (str): The raw string output from the TShark command.
-
-        Returns:
-        tuple: A tuple containing three lists:
-            times (list of float): A list of interval start times extracted from the output.
-            frames (list of int): A list of frame counts corresponding to each time interval.
-            bytes_data (list of int): A list of byte counts corresponding to each time interval.
         """
         times = []
         frames = []
@@ -664,9 +647,6 @@ class TShark:
     def display_filter(self) -> str:
         """
         Applies a user-specified display filter and returns the filtered output from the pcap file.
-
-        Returns:
-            str: Filtered output based on the user's specified display filter.
         """
         self.logger.info("Applying display filter")
         try:
@@ -730,9 +710,6 @@ class TShark:
     def viewframe_getstream(self) -> str:
         """
         Retrieves the TCP stream index for a specified frame number.
-
-        Returns:
-            str: The TCP stream index associated with the specified frame number.
         """
         self.logger.info("Retrieving TCP stream index for frame")
         try:
@@ -748,9 +725,6 @@ class TShark:
     def tcp_stream(self) -> str:
         """
         Follows a specified TCP stream index and returns its contents.
-
-        Returns:
-            str: The content of the followed TCP stream.
         """
         self.logger.info("Following TCP stream")
         try:
@@ -765,9 +739,6 @@ class TShark:
     def http_stream(self) -> str:
         """
         Follows a specified HTTP stream and returns its contents.
-
-        Returns:
-            str: The content of the followed HTTP stream.
         """
         try:
             self.logger.info("Running http_stream method.")
@@ -778,28 +749,52 @@ class TShark:
         except Exception as e:
             self.logger.error(f"Error in http_stream method: {e}", exc_info=True)
 
-    def flow_any(self) -> str:
+    def paginate_output(self, output: str, lines_per_page: int = 25) -> None:
         """
-        Prompts the user for a valid display filter and retrieves communication flow statistics between two endpoints
-        based on that filter using the tshark tool.
-
-        The function first logs the action of getting flow statistics, then prompts the user to enter a valid display
-        filter. It then runs the tshark command with the provided filter and returns the result.
-
-        Returns:
-            str: The result from the tshark command execution.
-
-        Raises:
-            Exception: If any error occurs during the process, it is logged and the exception is raised.
+        Paginates the output for better readability.
         """
-        try:
-            self.logger.info("Getting flow statistics.")
-            prompt1 = input('Enter a valid display filter to see communication flows between two endpoints: ')
-            prompt2 = self._run_tshark_command(['-qz', f'flow,any,standard,{prompt1}'])
-            return prompt2
-        except Exception as e:
-            self.logger.error(f"Error in flow_any method: {e}", exc_info=True)
-            raise
+        lines = output.split('\n')
+        for i in range(0, len(lines), lines_per_page):
+            print('\n'.join(lines[i:i + lines_per_page]))
+            if i + lines_per_page < len(lines):
+                cont = input("Press Enter to continue, type 'stop' to halt: ").lower().strip()
+                if cont == 'stop':
+                    break
+
+    def flow_any(self) -> None:
+        """
+        Continuously prompts the user for a valid display filter to retrieve communication flow statistics between two endpoints
+        using the tshark tool. If the user inputs 'help', its misspellings, or a single 'h', sample input values are displayed.
+        The user can exit the loop by typing 'exit'.
+        """
+        help_examples = [
+            "Example 1: dns matches \".xyz*\"",
+            "Example 2: ip.addr==10.12.19.1",
+            "Example 3: !(dns matches \".xyz*\")",
+            "Example 4: tcp.stream eq 1"
+        ]
+        while True:
+            try:
+                self.logger.info("Getting flow statistics.")
+                prompt1 = input(
+                    'To see the communication flows between two endpoints, enter a valid display filter.\n\n'
+                    'Enter "help" for examples, "exit" to go back to the main menu, or a valid display filter: ')
+
+                if prompt1 == 'exit':
+                    break
+
+                help_variations = {'help', 'hlep', 'hepl', 'ehlp', 'hel', 'hlp', 'h'}
+
+                if prompt1 in help_variations:
+                    print("\n".join(help_examples))
+                    continue
+
+                prompt2 = self._run_tshark_command(['-qz', f'flow,any,standard,{prompt1}'])
+                self.paginate_output(prompt2)
+
+            except Exception as e:
+                self.logger.error(f"Error in flow_any method: {e}", exc_info=True)
+                raise
 
     def show_packets(self) -> None:
         """
@@ -992,10 +987,6 @@ class TShark:
     def read_verbose(self) -> Union[Tuple[Dict[Any, List[Tuple[Any, int]]], Dict[Any, Any]], str]:
         """
         Reads and processes verbose information based on a user-specified protocol in a TShark analysis.
-
-        Returns:
-            Union[Tuple[Dict, Dict], str]: A tuple containing processed verbose results and fields if successful,
-                                           or an error message string in case of an exception.
         """
         self.logger.info("Reading verbose information")
 
