@@ -1,13 +1,7 @@
-"""  # pylint: disable=line-too-long
+"""
 This module provides an interactive menu-driven interface for analyzing PCAP files using TShark, a network protocol analyzer.
 It allows users to perform various operations such as getting PCAP information, viewing protocol statistics, following streams,
 enumerating hosts and users, and more. Rich library is used to create a colorful terminal interface, enhancing user experience.
-
-Functions:
-    clear_screen(): Clears the console screen based on the operating system.
-    wait_for_menu(): Waits for the user to press Enter to continue.
-    print_menu_options(menu_options, colors): Prints the available menu options in a table format.
-    main(): The main function that initiates the menu loop and processes user input to perform actions.
 
 The program uses a command-line interface and expects the user to interact by entering the path to a PCAP file and selecting
 options from the presented menu. The TShark class methods are invoked based on the user's choices to analyze the PCAP data
@@ -60,10 +54,6 @@ def wait_for_menu() -> None:
 def print_menu_options(menu_options: dict, colors: dict) -> None:
     """
     Prints the menu options in a formatted table.
-
-    Args:
-        menu_options (dict): A dictionary containing the menu options and their descriptions.
-        colors (dict): A dictionary containing the color settings for each menu option.
     """
     console = Console()
     table = Table(show_header=True)
