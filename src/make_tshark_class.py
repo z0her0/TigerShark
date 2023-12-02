@@ -26,8 +26,8 @@ from rich.console import Console                                # Rich library c
 from make_colorful import Color, ColorRandomRGB                 # Terminal color output utility
 from dcerpc_data import dcerpc_services                         # MSRPC to ATT&CK lookup table
 from dcerpc_method_abuse_notes import (
-    get_dcerpc_info, 
-    list_methods, 
+    get_dcerpc_info,
+    list_methods,
     enhanced_search)
 from make_helpers import (
     input_prompt,                                               # Standardized user input prompt
