@@ -778,6 +778,29 @@ class TShark:
         except Exception as e:
             self.logger.error(f"Error in http_stream method: {e}", exc_info=True)
 
+    def flow_any(self) -> str:
+        """
+        Prompts the user for a valid display filter and retrieves communication flow statistics between two endpoints
+        based on that filter using the tshark tool.
+
+        The function first logs the action of getting flow statistics, then prompts the user to enter a valid display
+        filter. It then runs the tshark command with the provided filter and returns the result.
+
+        Returns:
+            str: The result from the tshark command execution.
+
+        Raises:
+            Exception: If any error occurs during the process, it is logged and the exception is raised.
+        """
+        try:
+            self.logger.info("Getting flow statistics.")
+            prompt1 = input('Enter a valid display filter to see communication flows between two endpoints: ')
+            prompt2 = self._run_tshark_command(['-qz', f'flow,any,standard,{prompt1}'])
+            return prompt2
+        except Exception as e:
+            self.logger.error(f"Error in flow_any method: {e}", exc_info=True)
+            raise
+
     def show_packets(self) -> None:
         """
         Continuously prompts the user to display network packets, either all or filtered by a specific protocol.
