@@ -1,6 +1,10 @@
 """  # pylint: disable=line-too-long
 Module: dcerpc_data
 
+Purpose: Defines the dcerpc_services dictionary which contains detailed information about various DCERPC services, including methods, notes, attack tactics, types, and indicators of compromise.
+
+Functionality: Provides a comprehensive data source for DCERPC service information.
+
 Focus on being purely a data repository.
 
 Contains structured data on DCERPC services, including methods and security implications.
