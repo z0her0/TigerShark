@@ -392,6 +392,13 @@ class TShark:
                 else:
                     print(whois_info)
 
+            if excluded_ips:
+                print("\nExcluded IPs:")
+                for ip in excluded_ips:
+                    print(ip)
+
+            print("\n")
+
             self.logger.info("WHOIS information retrieved for IPs successfully.")
 
         except Exception as e:
