@@ -1,31 +1,15 @@
 """  # pylint: disable=line-too-long
 Module: dcerpc_data
 
-This module defines structured data representations for DCERPC (Distributed Computing Environment/Remote Procedure Call)
-services and their associated methods, focusing on identifying and understanding potential vulnerabilities and common
-attack patterns leveraged by Advanced Persistent Threats (APTs). It includes detailed descriptions of several key DCERPC
-services, their operation numbers (opnums), and specific RPC methods that are known targets for exploitation.
+Focus on being purely a data repository.
 
-Classes:
-- MethodDetails: Defines detailed information about specific methods in a DCERPC service, including potential attack
-vectors and indicators of compromise.
-- ServiceInfo: Encapsulates information about a DCERPC service, including its UUID, protocol, version, and methods.
-- SummaryDetail: Provides summary information for various aspects of DCERPC services, offering a high-level overview
-of their roles and characteristics.
-- DcerpcData: A comprehensive collection of DCERPC data, including service details, summaries, and references.
+Contains structured data on DCERPC services, including methods and security implications.
 
-Data:
-- dcerpc_services: A dictionary containing a comprehensive map of DCERPC services, their methods, and associated
-security implications. Each entry provides insights into how these services and methods might be exploited by APTs
-and includes references to additional information.
+Avoids any data processing or retrieval logic, making it a clean and dedicated data storage module.
 
-The module is structured to facilitate easy access and interpretation of complex DCERPC data, serving as a valuable
-resource for security analysis and threat modeling in network protocol environments.
 """
 
 from typing import Dict, TypedDict
-
-# pylint: disable=line-too-long
 
 
 class MethodDetails(TypedDict, total=False):
@@ -438,7 +422,7 @@ dcerpc_services = {
                 "Method": "IDL_DRSBind",
                 "Note": "The IDL_DRSBind method creates a context handle that is necessary to call any other \n"
                         "method in this interface. This is like introducing yourself when you pick up the phone \n"
-                        "and start a conversation.\n\n"
+                        " and start a conversation.\n\n"
                         ""
                         "In a computer network, IDL_DRSBind is used to start a session between two systems that want \n"
                         "to communicate about replication. It's the way a computer says 'Hello, I'd like to talk \n"
@@ -697,7 +681,7 @@ dcerpc_services = {
                         "accounts.",
                 "Attack_TTP": "T1136.002 - Create Account: Domain Account, T1069, T1087",
                 "Attack_Type": "Persistence, Privilege Escalation, and Initial Access, Unauthorized Directory Object\n"
-                               " Modification, Privilege Escalation Attempt",
+                               "Modification, Privilege Escalation Attempt",
                 "IOC": "Unusual addition of new directory objects or entries, particularly those with elevated \n"
                        "privileges."
             },
