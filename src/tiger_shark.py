@@ -206,18 +206,22 @@ def main() -> None:
             "action": lambda: print(f"{TShark(pcap_file=ask_user_input).statistics()}")
         },
         "22": {
+            "description": "Follow Flows",
+            "action": lambda: print(f"{TShark(pcap_file=ask_user_input).flow_any()}")
+        },
+        "23": {
             "description": "Lookup DCERPC Service Method Abuse Info",
             "action": lambda: print(f"{TShark(pcap_file=ask_user_input).get_dcerpc_abuse_info()}")
         },
-        "23": {
+        "24": {
             "description": "Help Menu",
             "action": lambda: show_help()
         },
-        "24": {
+        "25": {
             "description": "Clear Screen",
             "action": lambda: (clear_screen(), None)[1]
         },
-        "25": {
+        "26": {
             "description": "Quit",
             "action": lambda: sys.exit("Exit program.")
         }
@@ -251,11 +255,11 @@ def main() -> None:
                 print("Error: The action is not callable.")
 
         else:
-            print(f"{Color.RED}Invalid selection. Please choose a number between 1 and 25.{Color.END}")
+            print(f"{Color.RED}Invalid selection. Please choose a number between 1 and 26.{Color.END}")
 
 
 # Dictionary of menu colors for each menu option
-menu_colors: Dict[str, tuple] = {str(i): ColorRandomRGB.random_color() for i in range(1, 26)}
+menu_colors: Dict[str, tuple] = {str(i): ColorRandomRGB.random_color() for i in range(1, 27)}
 
 # Check if this script is the main script (it is) and call the main function
 if __name__ == '__main__':
