@@ -22,6 +22,7 @@ from logging.handlers import RotatingFileHandler                # Logging handle
 import matplotlib.pyplot as plt                                 # Plotting library for creating graphs and charts
 from rich.table import Table                                    # Rich library component for creating formatted tables
 from rich.console import Console                                # Rich library component for enhanced console output
+import dns.resolver
 
 from make_colorful import Color, ColorRandomRGB                 # Terminal color output utility
 from dcerpc_data import dcerpc_services                         # MSRPC to ATT&CK lookup table
@@ -323,12 +324,13 @@ class TShark:
 
     def whois_ip(self) -> None:
         """
-        Retrieves WHOIS information for unique destination IP addresses found in the pcap file
-        and lists IPs belonging to specified Autonomous Systems at the end.
+        Retrieves WHOIS information for unique destination IP addresses found in the pcap file,
+        checks if IPs are blacklisted using DNSBL, and lists IPs belonging to specified Autonomous Systems at the end.
         """
         excluded_as_names = ["MICROSOFT-CORP-MSN-AS-BLOCK", "NA", "AKAMAI-AS, US", "GOOGLE, US", "CLOUDFLARENET, US",
                              "AMAZON-02, US"]
         excluded_ips = []
+        blacklisted_ips = []
 
         self.logger.info("Retrieving WHOIS information using the whois_ip method.")
         try:
@@ -339,15 +341,29 @@ class TShark:
             for ip in unique_ips:
                 whois_info = self.run_command(['whois', '-h', 'whois.cymru.com', ip])
 
+                # Check if IP is blacklisted using DNSBL
+                reversed_ip = '.'.join(ip.split('.')[::-1])
+                query = f"{reversed_ip}.zen.spamhaus.org"
+                is_blacklisted = False
+                try:
+                    dns.resolver.resolve(query, 'A')
+                    is_blacklisted = True
+                    blacklisted_ips.append(ip)
+                except dns.resolver.NXDOMAIN:
+                    pass
+                except Exception as e:
+                    self.logger.error(f"Error during DNSBL lookup: {e}")
+
                 if any(excluded_as in whois_info for excluded_as in excluded_as_names):
                     excluded_ips.append(ip)
                 else:
                     print(whois_info)
 
-            if excluded_ips:
-                print("\nExcluded IPs:")
-                for ip in excluded_ips:
-                    print(ip)
+            # Print blacklisted IPs at the end
+            if blacklisted_ips:
+                print("\nBlacklisted IPs:")
+                for ip in blacklisted_ips:
+                    print(f"IP {ip} is blacklisted on DNSBL.")
 
             print("\n")
 
