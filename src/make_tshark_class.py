@@ -15,14 +15,18 @@ import logging                                                  # Logging utilit
 import sys                                                      # System-specific parameters and functions
 import os                                                       # Operating system interfaces
 import subprocess                                               # Process creation and management
+import requests                                                 # Simplifies making HTTP requests in Python
 from collections import Counter                                 # Container for counting hashable objects
 from typing import Optional, Dict, List, Tuple, Any, Union      # Type hinting and generic types for better code clarity
 from logging.handlers import RotatingFileHandler                # Logging handler for log file rotation
+import warnings                                                 # Used to issue warning messages in the code
+from urllib3.exceptions import InsecureRequestWarning           # Warning for requests made to insecure URLs (non-HTTPS)
 
+from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt                                 # Plotting library for creating graphs and charts
 from rich.table import Table                                    # Rich library component for creating formatted tables
 from rich.console import Console                                # Rich library component for enhanced console output
-import dns.resolver
+import dns.resolver                                             # Used for querying DNS servers to retrieve DNS records
 
 from make_colorful import Color, ColorRandomRGB                 # Terminal color output utility
 from dcerpc_data import dcerpc_services                         # MSRPC to ATT&CK lookup table
@@ -39,6 +43,8 @@ from make_helpers import (
     get_input_opnum,                                            # Get and validate user input
 )
 
+
+warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
 # tuple unpacking into the variables tshark and capinfo
 tshark, capinfo = set_tshark_path()
@@ -322,11 +328,65 @@ class TShark:
         except Exception as e:
             self.logger.error(f"Error in failed_connections method: {e}", exc_info=True)
 
+    #@staticmethod
+    def fetch_ip_addresses(self, url='https://blackip.ustc.edu.cn/list.php'):
+        """
+        Fetches a list of IP addresses from the specified URL.
+
+        This method sends a GET request to the given URL, parses the HTML content
+        to extract IP addresses assuming they are located in the third column of a table row.
+
+        Parameters:
+        url (str): The URL from which to fetch the IP addresses.
+
+        Returns:
+        list: A list of extracted IP addresses.
+        """
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+        try:
+            # Log the initiation of a URL request
+            logging.info("Sending request to URL: %s", url)
+            # Send a GET request to the specified URL
+            response = requests.get(url)
+            # Raise an exception if the request returned an unsuccessful status code
+            response.raise_for_status()
+            # Log the successful receipt of the response
+            logging.info("Received response from URL successfully")
+            # Parse the HTML content of the response
+            soup = BeautifulSoup(response.content, 'html.parser')
+            ip_addresses = []
+            # Log the start of the HTML parsing process
+            logging.info("Starting to parse the HTML content")
+
+            # Iterate over all table rows (<tr>) in the HTML
+            for row in soup.find_all('tr'):
+                # Extract all table data (<td>) elements from the row
+                columns = row.find_all('td')
+                # Check if the row has more than 2 columns (to avoid index errors)
+                if len(columns) > 2:
+                    # Append the text from the third column to the ip_addresses list
+                    ip_addresses.append(columns[2].text.strip())
+
+            # Log the completion of the HTML parsing
+            logging.info("Completed parsing HTML content")
+            return ip_addresses
+        except requests.RequestException as e:
+            print(f"An error occurred: {e}")
+            return []
+
     def whois_ip(self) -> None:
         """
-        Retrieves WHOIS information for unique destination IP addresses found in the pcap file,
-        checks if IPs are blacklisted using DNSBL, and lists IPs belonging to specified Autonomous Systems at the end.
+        Retrieves WHOIS information for IP addresses.
+
+        This method fetches IP addresses using the fetch_ip_addresses method, compares them
+        with a list of unique IPs obtained from a tshark command, and performs WHOIS lookups.
+        It also checks if the IPs are blacklisted using DNSBL and excludes IPs from specified AS names.
+
+        Output:
+        Prints WHOIS information, blacklisted IPs, and any suspicious IPs found.
         """
+        fetch_ips = self.fetch_ip_addresses()
+        blackips = set(fetch_ips)
         excluded_as_names = ["MICROSOFT-CORP-MSN-AS-BLOCK", "NA", "AKAMAI-AS, US", "GOOGLE, US", "CLOUDFLARENET, US",
                              "AMAZON-02, US"]
         excluded_ips = []
@@ -337,6 +397,8 @@ class TShark:
             check_tshark_output = self._run_tshark_command(['-T', 'fields', '-e', 'ip.dst'])
             tshark_dest_ips = check_tshark_output.strip().splitlines()
             unique_ips = set(filter(None, tshark_dest_ips))
+
+            suspicious_ips = set(blackips) & set(unique_ips)
 
             for ip in unique_ips:
                 whois_info = self.run_command(['whois', '-h', 'whois.cymru.com', ip])
@@ -364,6 +426,15 @@ class TShark:
                 print("\nBlacklisted IPs:")
                 for ip in blacklisted_ips:
                     print(f"IP {ip} is blacklisted on DNSBL.")
+
+            if len(suspicious_ips) == 0:
+                print("\n")
+                print('[*] Good news. Nothing suspicious found :-)')
+            else:
+                print("\n")
+                print('[!!] The following suspicious IPs were found:')
+                for ip in suspicious_ips:
+                    print(ip)
 
             print("\n")
 
