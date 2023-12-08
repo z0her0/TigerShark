@@ -328,7 +328,6 @@ class TShark:
         except Exception as e:
             self.logger.error(f"Error in failed_connections method: {e}", exc_info=True)
 
-    #@staticmethod
     def fetch_ip_addresses(self, url='https://blackip.ustc.edu.cn/list.php'):
         """
         Fetches a list of IP addresses from the specified URL.
@@ -342,21 +341,20 @@ class TShark:
         Returns:
         list: A list of extracted IP addresses.
         """
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         try:
             # Log the initiation of a URL request
-            logging.info("Sending request to URL: %s", url)
+            self.logger.info("Sending request to URL: %s", url)
             # Send a GET request to the specified URL
             response = requests.get(url)
             # Raise an exception if the request returned an unsuccessful status code
             response.raise_for_status()
             # Log the successful receipt of the response
-            logging.info("Received response from URL successfully")
+            self.logger.info("Received response from URL successfully")
             # Parse the HTML content of the response
             soup = BeautifulSoup(response.content, 'html.parser')
             ip_addresses = []
             # Log the start of the HTML parsing process
-            logging.info("Starting to parse the HTML content")
+            self.logger.info("Starting to parse the HTML content")
 
             # Iterate over all table rows (<tr>) in the HTML
             for row in soup.find_all('tr'):
@@ -368,7 +366,7 @@ class TShark:
                     ip_addresses.append(columns[2].text.strip())
 
             # Log the completion of the HTML parsing
-            logging.info("Completed parsing HTML content")
+            self.logger.info("Completed parsing HTML content")
             return ip_addresses
         except requests.RequestException as e:
             print(f"An error occurred: {e}")
@@ -414,7 +412,7 @@ class TShark:
                 except dns.resolver.NXDOMAIN:
                     pass
                 except Exception as e:
-                    self.logger.error(f"Error during DNSBL lookup: {e}")
+                    self.logger.error(f"Error during reverse IP lookup: {e}")
 
                 if any(excluded_as in whois_info for excluded_as in excluded_as_names):
                     excluded_ips.append(ip)
@@ -423,15 +421,17 @@ class TShark:
 
             # Print blacklisted IPs at the end
             if blacklisted_ips:
-                print("\nBlacklisted IPs:")
+                print("\nIPs found in Spamhaus blackhole list:")
                 for ip in blacklisted_ips:
-                    print(f"IP {ip} is blacklisted on DNSBL.")
+                    print(f"{ip}")
 
             if len(suspicious_ips) == 0:
                 print("\n")
-                print('[*] Good news. Nothing suspicious found :-)')
+                print("IPs found in University of Science and Technology of China's IP blacklist:")
+                print('[*] Good news. Nothing found :-)')
             else:
                 print("\n")
+                print('IPs found on University of Science and Technology of China (USTC) blocklist:')
                 print('[!!] The following suspicious IPs were found:')
                 for ip in suspicious_ips:
                     print(ip)
@@ -483,9 +483,9 @@ class TShark:
 
     def web_basic(self) -> str:
         """
-        Extracts basic web traffic information from the pcap file.
+        Extracts web traffic information from the pcap file.
         """
-        self.logger.info("Extracting basic web traffic information")
+        self.logger.info("Extracting web traffic information")
         print('')
         try:
             web_traffic_info = self._run_tshark_command(
@@ -582,17 +582,27 @@ class TShark:
                 except ValueError as e:
                     print(f"Error: {e}")
 
-    @staticmethod
-    def print_detailed_info(service_name, opnum, method, note, attack_ttp, attack_type, ioc):
+    def print_detailed_info(self, service_name, opnum, method, note, attack_ttp, attack_type, ioc):
         """
         Prints detailed information about a specific DCERPC service method.
         """
-        print(f"\n{Color.AQUA}Info for {service_name} opnum {opnum}:{Color.END}")
-        print(f"{Color.UNDERLINE}Function{Color.END}: {method}")
-        print(f"{Color.UNDERLINE}Attack TTP{Color.END}: {attack_ttp}")
-        print(f"{Color.UNDERLINE}Attack Type{Color.END}: {attack_type}")
-        print(f"{Color.UNDERLINE}IOC{Color.END}: {ioc}")
-        print(f"{Color.UNDERLINE}Note{Color.END}: {note}")
+        # Print the opnum and method name
+        print(f"{Color.BOLD + Color.CYAN}- Opnum {opnum}:{Color.END}")
+        print(f"  {Color.BOLD + Color.AQUA}Method{Color.END}: {Color.GREY}{method}{Color.END}")
+
+        # Print the note with proper indentation for multiline text
+        print(f"  {Color.BOLD + Color.AQUA}Note{Color.END}: ", end='')
+        note_lines = note.split('\n')
+        if len(note_lines) > 1:
+            print(f"{Color.GREY}{note_lines[0].strip()}{Color.END}")
+            for line in note_lines[1:]:
+                print(f"         {Color.GREY}{line.strip()}{Color.END}")
+        else:
+            print(f"{Color.GREY}{note.strip()}{Color.END}")
+
+        print(f"  {Color.BOLD + Color.AQUA}Attack TTP{Color.END}: {Color.GREY}{attack_ttp.strip()}{Color.END}")
+        print(f"  {Color.BOLD + Color.AQUA}Attack Type{Color.END}: {Color.GREY}{attack_type.strip()}{Color.END}")
+        print(f"  {Color.BOLD + Color.AQUA}IOC{Color.END}: {Color.GREY}{ioc.strip()}{Color.END}")
 
     # E྇N྇D྇ S྇E྇C྇T྇I྇O྇N྇:྇ Data Extraction྇ M྇e྇t྇h྇o྇d྇s྇
 
