@@ -130,5 +130,4 @@ def input_prompt(prompt: str, validator: Optional[Callable[[str], bool]] = None)
 
 # The following block will only be executed if this module is run as the main script.
 if __name__ == '__main__':
-    # This code will not run when the module is imported.
     pass
