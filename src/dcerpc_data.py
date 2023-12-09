@@ -64,6 +64,7 @@ class SummaryDetail(TypedDict):
         ms_srvs (str): Details specific to the MS-SRVS protocol.
         ms_samr (str): Details specific to the MS-SAMR protocol.
         ms_scmr (str): Details specific to the MS-SCMR protocol.
+        ms_wkst (str): Details specific to the MS-WKST protocol.
     """
     overview: str
     dcerpc: str
@@ -73,6 +74,7 @@ class SummaryDetail(TypedDict):
     ms_srvs: str
     ms_samr: str
     ms_scmr: str
+    ms_wkst: str
 
 
 class DcerpcData(TypedDict, total=False):
@@ -88,6 +90,7 @@ class DcerpcData(TypedDict, total=False):
         samr (ServiceInfo): Information about the SAMR service.
         srvsvc (ServiceInfo): Information about the SRVSVC service.
         winreg (ServiceInfo): Information about the WINREG service.
+        wkssvc (ServiceInfo): Information about the WKSSVC service.
         references (Dict[str, str]): A dictionary of references or sources of information.
     """
     summary: SummaryDetail
@@ -98,6 +101,7 @@ class DcerpcData(TypedDict, total=False):
     srvsvc: ServiceInfo
     svcctl: ServiceInfo
     winreg: ServiceInfo
+    wkssvc: ServiceInfo
     references: Dict[str, str]
 
 
@@ -134,12 +138,13 @@ dcerpc_services = {
                    "HKLM\\SYSTEM\\CurrentControlSet\\Services. When a new service is installed, the SCM creates the \n"
                    "relevant entry in the registry. When the system boots, this registry hive is enumerated and \n"
                    "pulled into the memory of the SCM. You can also manually create a registry entry for a \n"
-                   "new service. During a system’s reboot, that service is loaded and recognized by the SCM."
+                   "new service. During a system’s reboot, that service is loaded and recognized by the SCM.",
+        "ms_wkst": ""
     },
     "svcctl": {
         "UUID": "367abb81-9844-35f1-ad32-98f038001003",
         "Protocol": "MS-SCMR (Service Control Manager Remote Protocol) interface",
-        "Version": "1.0",    # 5.0?
+        "Version": "1.0",
         "Methods": {
             1: {
                 "Method": "RControlService",
@@ -1529,6 +1534,25 @@ dcerpc_services = {
                 "Attack_Type": "Discovery and Information Gathering",
                 "IOC": "Systematic scanning or enumeration of registry values, especially if correlated with other \n"
                        "suspicious activities."
+            }
+        }
+    },
+    "wkssvc": {
+        "UUID": "6BFFD098-A112-3610-9833-46C3F87E345A",
+        "Protocol": "Workstation Service Remote Protocol (MS-WKST)",
+        "Version": "1.0",
+        "Methods": {
+            0: {
+                "Method": "NetrWkstaGetInfo",
+                "Note": "Returns details about the configuration of a remote computer, including the computer \n"
+                        "name and major and minor version numbers of the operating system.",
+                "Attack_TTP": "T1082, T1016, T1033, T1007",
+                "Attack_Type": "System Information Discovery, System Network Configuration Discovery, System \n"
+                               "Owner/User Discovery, System Service Discovery. Adversaries can use this method \n"
+                               "to gather information about a workstation.",
+                "IOC": "Server or workstation logs indicating access to workstation information, especially if \n"
+                       "correlated with frequent or atypical network connections to TCP port 445 (used for SMB) \n"
+                       "on workstations or servers, especially from unknown or external IP addresses."
             }
         }
     },
