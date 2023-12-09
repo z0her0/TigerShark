@@ -11,6 +11,7 @@ and expert diagnostics. Additionally, the module contains utilities for user inp
 colorful terminal output to enhance user interaction.
 """
 
+import ipaddress
 import logging                                                  # Logging utility for debugging and error tracking
 import sys                                                      # System-specific parameters and functions
 import os                                                       # Operating system interfaces
@@ -181,7 +182,6 @@ class TShark:
                 self.logger.error(f"TShark command execution failed with error: {completed_process.stderr.decode()}")
                 return ""
 
-            self.logger.info("TShark command executed successfully")
             return completed_process.stdout.decode()
 
         except subprocess.CalledProcessError as e:
@@ -385,12 +385,15 @@ class TShark:
         """
         fetch_ips = self.fetch_ip_addresses()
         blackips = set(fetch_ips)
-        excluded_as_names = ["MICROSOFT-CORP-MSN-AS-BLOCK", "NA", "AKAMAI-AS, US", "GOOGLE, US", "CLOUDFLARENET, US",
+        excluded_as_names = ["MICROSOFT-CORP-MSN-AS-BLOCK", "AKAMAI-AS, US", "GOOGLE, US", "CLOUDFLARENET, US",
                              "AMAZON-02, US"]
         excluded_ips = []
-        blacklisted_ips = []
+        blacklisted_ips = {}
 
         self.logger.info("Retrieving WHOIS information using the whois_ip method.")
+        self.logger.warning(
+            "[!!] IPs from top CDN providers are deliberately excluded in order to filter out noise typically associated with high-traffic CDN providers.")
+
         try:
             check_tshark_output = self._run_tshark_command(['-T', 'fields', '-e', 'ip.dst'])
             tshark_dest_ips = check_tshark_output.strip().splitlines()
@@ -399,42 +402,74 @@ class TShark:
             suspicious_ips = set(blackips) & set(unique_ips)
 
             for ip in unique_ips:
+                try:
+                    if ipaddress.ip_address(ip).is_private:
+                        continue
+                except ValueError as e:
+                    self.logger.error(f"Invalid IP address format: {ip} - {e}")
+                    continue  # Skip invalid IP formats
+
                 whois_info = self.run_command(['whois', '-h', 'whois.cymru.com', ip])
 
-                # Check if IP is blacklisted using DNSBL
-                reversed_ip = '.'.join(ip.split('.')[::-1])
-                query = f"{reversed_ip}.zen.spamhaus.org"
-                is_blacklisted = False
-                try:
-                    dns.resolver.resolve(query, 'A')
-                    is_blacklisted = True
-                    blacklisted_ips.append(ip)
-                except dns.resolver.NXDOMAIN:
-                    pass
-                except Exception as e:
-                    self.logger.error(f"Error during reverse IP lookup: {e}")
-
+                # Only exclude and skip DNSBL checks if IP is in excluded AS names
                 if any(excluded_as in whois_info for excluded_as in excluded_as_names):
+                    self.logger.info(f"Excluding IP {ip} based on WHOIS info")
                     excluded_ips.append(ip)
                 else:
+                    # Print WHOIS info for IPs not in the exclusion list
                     print(whois_info)
 
-            # Print blacklisted IPs at the end
+                    # Check if IP is blacklisted using DNSBL
+                    reversed_ip = '.'.join(ip.split('.')[::-1])
+                    dnsbl_services = [
+                        "zen.spamhaus.org",
+                        "cbl.abuseat.org",
+                        "b.barracudacentral.org",
+                        "dnsbl-1.uceprotect.net",
+                        "spam.dnsbl.sorbs.net"
+                    ]
+
+                    is_blacklisted = False
+                    for service in dnsbl_services:
+                        query = f"{reversed_ip}.{service}"
+                        try:
+                            dns.resolver.resolve(query, 'A')
+                            is_blacklisted = True
+                            blacklisted_ips.setdefault(service, []).append(ip)
+                        except dns.resolver.NXDOMAIN:
+                            self.logger.info(f"IP address {ip} not found in {service}")
+                        except Exception as e:
+                            if "The DNS operation timed out" not in str(e):
+                                self.logger.error(f"Error during reverse IP lookup for {service}: {e}")
+
+            # Print blacklisted IPs grouped by service
             if blacklisted_ips:
-                print("\nIPs found in Spamhaus blackhole list:")
-                for ip in blacklisted_ips:
-                    print(f"{ip}")
+                print("\nIPs found in DNSBL blackhole lists:")
+                for service, ips in blacklisted_ips.items():
+                    print(f"\nService: {service}")
+                    for ip in ips:
+                        print(f"  {ip}")
+            else:
+                print("\nNo IPs found in DNSBL blackhole lists.")
 
             if len(suspicious_ips) == 0:
                 print("\n")
-                print("IPs found in University of Science and Technology of China's IP blacklist:")
+                print("service: University of Science and Technology of China's IP blacklist:")
                 print('[*] Good news. Nothing found :-)')
             else:
                 print("\n")
-                print('IPs found on University of Science and Technology of China (USTC) blocklist:')
+                print('service: University of Science and Technology of China (USTC) blacklist:')
                 print('[!!] The following suspicious IPs were found:')
                 for ip in suspicious_ips:
                     print(ip)
+
+            # Print the list of excluded IPs
+            if excluded_ips:
+                print("\nExcluded IPs:")
+                for ip in excluded_ips:
+                    print(ip)
+            else:
+                print("\nNo IPs were excluded.")
 
             print("\n")
 
@@ -960,7 +995,7 @@ class TShark:
                     try:
                         ask_protocol = input(
                             f"{Color.LAVENDER}Which protocol would you like to see server response times for? "
-                            f"(icmp/ldap/smb/smb2/srvsvc/drsuapi/lsarpc/netlogon/samr/svcctl){Color.END}: ")
+                            f"(icmp/ldap/smb/smb2/srvsvc/drsuapi/lsarpc/netlogon/samr/svcctl/wkssvc){Color.END}: ")
                         protocol_commands: Dict[str, List[str]] = {
                             'icmp': ['icmp,srt'],
                             'ldap': ['ldap,srt'],
@@ -971,7 +1006,8 @@ class TShark:
                             'netlogon': ['dcerpc,srt,12345678-1234-abcd-ef00-01234567cffb,1.0'],
                             'samr': ['dcerpc,srt,12345778-1234-ABCD-EF00-0123456789AC,1.0'],
                             'srvsvc': ['dcerpc,srt,4b324fc8-1670-01d3-1278-5a47bf6ee188,3.0'],
-                            'svcctl': ['dcerpc,srt,367abb81-9844-35f1-ad32-98f038001003,2.0']
+                            'svcctl': ['dcerpc,srt,367abb81-9844-35f1-ad32-98f038001003,2.0'],
+                            'wkssvc': ['dcerpc,srt,6BFFD098-A112-3610-9833-46C3F87E345A,1.0']
                         }
                         if ask_protocol in protocol_commands:
                             tshark_command = ['-qz'] + protocol_commands[ask_protocol]
