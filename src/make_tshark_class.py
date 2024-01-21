@@ -413,7 +413,7 @@ class TShark:
 
                 # Only exclude and skip DNSBL checks if IP is in excluded AS names
                 if any(excluded_as in whois_info for excluded_as in excluded_as_names):
-                    self.logger.info(f"Excluding IP {ip} based on WHOIS info")
+                    #self.logger.info(f"Excluding IP {ip} based on WHOIS info")
                     excluded_ips.append(ip)
                 else:
                     # Print WHOIS info for IPs not in the exclusion list
@@ -437,7 +437,8 @@ class TShark:
                             is_blacklisted = True
                             blacklisted_ips.setdefault(service, []).append(ip)
                         except dns.resolver.NXDOMAIN:
-                            self.logger.info(f"IP address {ip} not found in {service}")
+                            #self.logger.info(f"IP address {ip} not found in {service}")
+                            pass
                         except Exception as e:
                             if "The DNS operation timed out" not in str(e):
                                 self.logger.error(f"Error during reverse IP lookup for {service}: {e}")
