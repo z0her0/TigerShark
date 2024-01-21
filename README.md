@@ -42,16 +42,38 @@ TigerShark is a Python script that provides a user-friendly interface for intera
 ## Installation
 
 1. Clone the TigerShark repository to your local machine:
-   ```bash
+   ```
    git clone https://github.com/z0her0/TigerShark.git
    ```
 
-2. Navigate to the TigerShark directory:
-   ```bash
+2. Navigate to the TigerShark root directory:
+   ```
    cd TigerShark
    ```
 
-3. Run the `tiger_shark.py` script:
-   ```bash
-   python src/tiger_shark.py
+3. Create a virtual environment:
    ```
+   python3 -m venv venv_tigershark
+   ```
+
+4. Activate the virtual environment:
+   ```
+   source venv_tigershark/bin/activate
+   ```
+
+5. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+
+6. Run the main program `tiger_shark.py`:
+   ```
+   python3 src/tiger_shark.py
+   ```
+
+7. When prompted, provide path to PCAP file (point this to where your PCAP file exists):
+   ```
+   ../pcaps/name_of_pcap.pcap
+   ```
+
+8. Press ENTER to display the main menu.
