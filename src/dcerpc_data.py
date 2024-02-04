@@ -1,7 +1,8 @@
 """  # pylint: disable=line-too-long
 Module: dcerpc_data
 
-Purpose: Defines the dcerpc_services dictionary which contains detailed information about various DCERPC services, including methods, notes, attack tactics, types, and indicators of compromise.
+Purpose: Defines the dcerpc_services dictionary which contains detailed information about various DCERPC services, 
+including methods, notes, attack tactics, types, and indicators of compromise.
 
 Functionality: Provides a comprehensive data source for DCERPC service information.
 
@@ -1246,20 +1247,25 @@ dcerpc_services = {
         "Protocol": "Security Account Manager (SAM) Remote Protocol (MS-SAMR) - samsrv.dll (loads into) lsass.exe",
         "Version": "1.0",
         "Methods": {
-            6: {
-                "Method": "SamrEnumerateDomainsInSamServer",
-                "Note": "Can be used by attackers to map out Active Directory domains within an organization, \n"
-                        "understanding its structure for further attacks.\n\n"
-                        ""
-                        "The SamrEnumerateDomainsInSamServer method obtains a listing of all domains hosted by the \n"
-                        "server side of this protocol. It's like asking for a complete list of all the departments in\n"
-                        "a large company. ",
-                "Attack_TTP": "T1087 - Account Discovery",
-                "Attack_Type": "Discovery",
-                "IOC": "Numerous or repeated queries to enumerate domain names in a network."
+            1: {
+                "Method": "Close",
+                "Note": "This procedure closes a handle to a SAMR object that was opened previously. It's a standard \n"
+                        "cleanup operation.",
+                "Attack_TTP": "",
+                "Attack_Type": "",
+                "IOC": "Frequent calls to Close without corresponding open calls might indicate an attempt to disrupt \n"
+                       "service or an error in a malicious script."
+            },
+            3: {
+                "Method": "QuerySecurity",
+                "Note": "Retrieves the security descriptor of a SAMR object.",
+                "Attack_TTP": "",
+                "Attack_Type": "",
+                "IOC": "Unusual frequency or patterns of security descriptor queries could suggest attempts to \n"
+                       "enumerate permissions and find vulnerabilities."
             },
             5: {
-                "Method": "SamrLookupDomainInSamServer",
+                "Method": "SamrLookupDomainInSamServer/LookupDomain",
                 "Note": "May be used to resolve domain names to SIDs, aiding in lateral movement and privilege \n"
                         "escalation strategies by attackers.\n\n"
                         ""
@@ -1268,27 +1274,22 @@ dcerpc_services = {
                         "department's internal code by its name.",
                 "Attack_TTP": "T1069 - Permission Groups Discovery",
                 "Attack_Type": "Privilege Escalation",
-                "IOC": "Repeated queries to resolve domain names to SIDs."
+                "IOC": "Repeated queries to resolve domain names to SIDs. Repeated or bulk domain lookups could be \n"
+                       "indicative of reconnaissance activity as attackers map out domain resources."
             },
-            17: {
-                "Method": "SamrLookupNamesInDomain",
-                "Note": "Translating usernames to RIDs can help in account compromise by linking usernames to \n"
-                        "specific domain accounts.\n\n"
+            6: {
+                "Method": "SamrEnumerateDomainsInSamServer/EnumDomains",
+                "Note": "Can be used by attackers to map out Active Directory domains within an organization, \n"
+                        "understanding its structure for further attacks.\n\n"
                         ""
-                        "Translates a set of account names into a set of RIDs.",
+                        "The SamrEnumerateDomainsInSamServer method obtains a listing of all domains hosted by the \n"
+                        "server side of this protocol. It's like asking for a complete list of all the departments in\n"
+                        "a large company. ",
                 "Attack_TTP": "T1087 - Account Discovery",
-                "Attack_Type": "Credential Access",
-                "IOC": "Frequent translation requests from usernames to RIDs."
-            },
-            13: {
-                "Method": "SamrEnumerateUsersInDomain",
-                "Note": "Used to enumerate user accounts, which can be exploited by threat actors to identify \n"
-                        "targets for credential theft.\n\n"
-                        ""
-                        "Enumerates all users.",
-                "Attack_TTP": "T1087 - Account Discovery",
-                "Attack_Type": "Credential Access",
-                "IOC": "Multiple queries to list all user accounts in a domain."
+                "Attack_Type": "Discovery",
+                "IOC": "Numerous or repeated queries to enumerate domain names in a network. Similar to LookupDomain, \n"
+                       "frequent use might indicate reconnaissance or attempts to scope out accessible domains for \n"
+                       "lateral movement."
             },
             7: {
                 "Method": "SamrOpenDomain",
@@ -1310,25 +1311,31 @@ dcerpc_services = {
                 "Attack_Type": "Credential Access",
                 "IOC": "Queries to access domain policies or attributes."
             },
-            34: {
-                "Method": "SamrOpenUser",
-                "Note": "Opening user objects can allow attackers to gather detailed information or modify \n"
-                        "attributes for persistence or privilege escalation.\n\n"
+            13: {
+                "Method": "SamrEnumerateUsersInDomain",
+                "Note": "Used to enumerate user accounts, which can be exploited by threat actors to identify \n"
+                        "targets for credential theft.\n\n"
                         ""
-                        "Obtains a handle to a user, given a RID.",
+                        "Enumerates all users.",
                 "Attack_TTP": "T1087 - Account Discovery",
-                "Attack_Type": "Persistence",
-                "IOC": "Repeated requests to obtain handles to various user accounts."
-            },
-            36: {
-                "Method": "SamrQueryInformationUser",
-                "Note": "Querying for user information such as last logon times can be used for targeting active \n"
-                        "users in phishing or other campaigns.\n\n"
-                        ""
-                        "Obtains attributes from a user object.",
-                "Attack_TTP": "T1078 - Valid Accounts, T1087: Account Discovery",
                 "Attack_Type": "Credential Access",
-                "IOC": "Frequent requests for detailed user account information."
+                "IOC": "Multiple queries to list all user accounts in a domain."
+            },
+            16: {
+                "Method": "GetAliasMembership",
+                "Note": "Determines the alias memberships of given SID(s).",
+                "Attack_TTP": "",
+                "Attack_Type": "",
+                "IOC": "Bulk queries for alias memberships could point to attempts at mapping group memberships \n"
+                       "for privilege escalation paths."
+            },
+            17: {
+                "Method": "SamrLookupNamesInDomain/LookupNames",
+                "Note": "Translates a set of account names into their corresponding SIDs.",
+                "Attack_TTP": "",
+                "Attack_Type": "",
+                "IOC": "Bulk name lookups can be a sign of an attacker trying to translate easily discoverable account\n"
+                       " names into SIDs for further attacks."
             },
             25: {
                 "Method": "SamrGetMembersInGroup",
@@ -1340,6 +1347,22 @@ dcerpc_services = {
                 "Attack_Type": "Privilege Escalation",
                 "IOC": "Queries to obtain group membership details, especially for administrative or sensitive groups."
             },
+            34: {
+                "Method": "SamrOpenUser/OpenUser",
+                "Note": "Opens a user object and returns a handle for further operations on the user.",
+                "Attack_TTP": "",
+                "Attack_Type": "",
+                "IOC": "Frequent opening of user objects could indicate an attempt to manipulate user accounts or \n"
+                       "gather detailed user information."
+            },
+            36: {
+                "Method": "SamrQueryInformationUser/QueryUserInfo",
+                "Note": "Obtains attributes from a user object. Retrieves information about a user account.",
+                "Attack_TTP": "",
+                "Attack_Type": "",
+                "IOC": "Excessive querying for user information might be used for harvesting data for phishing attacks\n"
+                       " or for identifying high-value targets for further exploitation."
+            },
             38: {
                 "Method": "SamrChangePasswordUser",
                 "Note": "The SamrChangePasswordUser method changes the password of a user object.",
@@ -1347,6 +1370,23 @@ dcerpc_services = {
                 "Attack_Type": "Credential Dumping",
                 "IOC": "Attempts to change user passwords, especially if targeting multiple accounts or \n"
                        "privileged users."
+            },
+            39: {
+                "Method": "GetGroupsForUser",
+                "Note": "Retrieves the list of groups that a user is a member of.",
+                "Attack_TTP": "",
+                "Attack_Type": "",
+                "IOC": "Similar to GetAliasMembership, querying for user group memberships en masse could be used for\n"
+                       " building an attack plan based on group-based permissions."
+            },
+            64: {
+                "Method": "Connect5",
+                "Note": "This is a later version of the Connect operation that establishes a connection to the SAMR \n"
+                        "server.",
+                "Attack_TTP": "",
+                "Attack_Type": "",
+                "IOC": "Multiple connections from unexpected sources could indicate brute force attempts or \n"
+                       "unauthorized access attempts."
             }
         }
     },
