@@ -1,8 +1,7 @@
 """  # pylint: disable=line-too-long
 Module: dcerpc_data
 
-Purpose: Defines the dcerpc_services dictionary which contains detailed information about various DCERPC services, 
-including methods, notes, attack tactics, types, and indicators of compromise.
+Purpose: Defines the dcerpc_services dictionary which contains detailed information about various DCERPC services, including methods, notes, attack tactics, types, and indicators of compromise.
 
 Functionality: Provides a comprehensive data source for DCERPC service information.
 
@@ -1395,37 +1394,33 @@ dcerpc_services = {
         "Protocol": "SRVSVC - System Enumeration - srvsvc.dll (loads into) svchost.exe",
         "Version": "3.0",
         "Methods": {
-            15: {
-                "Method": "NetrShareEnum",
-                "Note": "Can be used by APT groups to enumerate network shares for lateral movement and data \n"
-                        "harvesting.\n\n"
+            9: {
+                "Method": "NetrFileEnum/NetFileEnum",
+                "Note": "Can be abused to monitor file usage patterns and identify critical assets for attack planning.\n\n"
                         ""
-                        "Retrieves a list of all shared resources on a server. Think of it as asking the server for \n"
-                        "a complete catalog of everything it's currently sharing with others. This could include \n"
-                        "shared folders, printers, and other resources that are available on the network for use by \n"
-                        "authorized individuals.\n\n"
-                        ""
-                        "The NetrShareEnum method retrieves information about each shared resource on a server.",
-                "Attack_TTP": "T1135 - Network Share Discovery",
-                "Attack_Type": "Discovery and Lateral Movement",
-                "IOC": "Unusual network share enumeration requests, especially from unexpected sources or at odd times."
-            },
-            16: {
-                "Method": "NetrShareGetInfo",
-                "Note": "May be used by adversaries to gather detailed information about specific network shares.\n\n"
-                        ""
-                        "More specific than NetrShareEnum. Gets detailed information about a particular shared \n"
-                        "resource from the server. It's like looking up detailed information about one item in \n"
-                        "the catalog, such as who can access a specific shared folder and what permissions they have.\n"
-                        ""
-                        "Retrieves information about a particular shared resource on the server from the ShareList.",
-                "Attack_TTP": "T1082 - System Information Discovery",
+                        "The NetrFileEnum method MUST return information about some or all open files on a server, \n"
+                        "depending on the parameters specified, or return an error code.",
+                "Attack_TTP": "T1083 - File and Directory Discovery",
                 "Attack_Type": "Discovery",
-                "IOC": "Specific queries for information on particular network shares, outside of regular \n"
-                       "administrative activity."
+                "IOC": "Abnormal patterns of file access queries, which might indicate an adversary trying to locate \n"
+                       "specific files or directories."
+            },
+            11: {
+                "Method": "NetrFileClose/NetFileClose",
+                "Note": "If abused, this could be used to interfere with critical processes or alter files, \n"
+                        "potentially in ransomware attacks.\n\n"
+                        ""
+                        "The server receives the NetrFileClose method in an RPC_REQUEST packet. In response, the \n"
+                        "server MUST force an open resource instance (for example, file, device, or named pipe) on \n"
+                        "the server to close. This message can be used when an error prevents closure by any other \n"
+                        "means.",
+                "Attack_TTP": "T1489 - Service Stop",
+                "Attack_Type": "Impact",
+                "IOC": "Unusual closing of files, especially those critical to system or application functionality, \n"
+                       "which could disrupt services."
             },
             12: {
-                "Method": "NetrSessionEnum",
+                "Method": "NetrSessionEnum/NetSessionEnum",
                 "Note": "Could be leveraged by attackers to gather information on active user sessions for targeted \n"
                         "attacks or scope access.\n\n"
                         ""
@@ -1442,7 +1437,7 @@ dcerpc_services = {
                        "connections and user sessions."
             },
             13: {
-                "Method": "NetrSessionDel",
+                "Method": "NetrSessionDel/NetSessionDel",
                 "Note": "Might be used by threat actors to remove sessions and cover tracks after data exfil.\n\n"
                         ""
                         "The NetrSessionDel method MUST end one or more network sessions between a server and a \n"
@@ -1452,33 +1447,8 @@ dcerpc_services = {
                 "IOC": "Unexpected termination of user sessions, potentially disrupting normal operations or hiding \n"
                        "unauthorized access."
             },
-            9: {
-                "Method": "NetrFileEnum",
-                "Note": "Can be abused to monitor file usage patterns and identify critical assets for attack planning.\n\n"
-                        ""
-                        "The NetrFileEnum method MUST return information about some or all open files on a server, \n"
-                        "depending on the parameters specified, or return an error code.",
-                "Attack_TTP": "T1083 - File and Directory Discovery",
-                "Attack_Type": "Discovery",
-                "IOC": "Abnormal patterns of file access queries, which might indicate an adversary trying to locate \n"
-                       "specific files or directories."
-            },
-            11: {
-                "Method": "NetrFileClose",
-                "Note": "If abused, this could be used to interfere with critical processes or alter files, \n"
-                        "potentially in ransomware attacks.\n\n"
-                        ""
-                        "The server receives the NetrFileClose method in an RPC_REQUEST packet. In response, the \n"
-                        "server MUST force an open resource instance (for example, file, device, or named pipe) on \n"
-                        "the server to close. This message can be used when an error prevents closure by any other \n"
-                        "means.",
-                "Attack_TTP": "T1489 - Service Stop",
-                "Attack_Type": "Impact",
-                "IOC": "Unusual closing of files, especially those critical to system or application functionality, \n"
-                       "which could disrupt services."
-            },
             14: {
-                "Method": "NetrShareAdd",
+                "Method": "NetrShareAdd/NetShareAdd",
                 "Note": "Exploitable by APTs to create network shares for data exfiltration or persistent access.\n\n"
                         ""
                         "The NetrShareAdd method shares a server resource.",
@@ -1487,8 +1457,47 @@ dcerpc_services = {
                 "IOC": "Creation of new network shares that are not in line with standard IT practices or business \n"
                        "needs."
             },
+            15: {
+                "Method": "NetrShareEnum/NetShareEnum",
+                "Note": "Can be used by APT groups to enumerate network shares for lateral movement and data \n"
+                        "harvesting.\n\n"
+                        ""
+                        "Retrieves a list of all shared resources on a server. Think of it as asking the server for \n"
+                        "a complete catalog of everything it's currently sharing with others. This could include \n"
+                        "shared folders, printers, and other resources that are available on the network for use by \n"
+                        "authorized individuals.\n\n"
+                        ""
+                        "The NetrShareEnum method retrieves information about each shared resource on a server.",
+                "Attack_TTP": "T1135 - Network Share Discovery",
+                "Attack_Type": "Discovery and Lateral Movement",
+                "IOC": "Unusual network share enumeration requests, especially from unexpected sources or at odd times."
+            },
+            16: {
+                "Method": "NetrShareGetInfo/NetShareGetInfo",
+                "Note": "May be used by adversaries to gather detailed information about specific network shares.\n\n"
+                        ""
+                        "More specific than NetrShareEnum. Gets detailed information about a particular shared \n"
+                        "resource from the server. It's like looking up detailed information about one item in \n"
+                        "the catalog, such as who can access a specific shared folder and what permissions they have.\n"
+                        ""
+                        "Retrieves information about a particular shared resource on the server from the ShareList.",
+                "Attack_TTP": "T1082 - System Information Discovery",
+                "Attack_Type": "Discovery",
+                "IOC": "Specific queries for information on particular network shares, outside of regular \n"
+                       "administrative activity."
+            },
+            17: {
+                "Method": "NetrShareSetInfo/NetShareSetInfo",
+                "Note": "May be exploited to change share permissions, allowing unauthorized data access.\n\n"
+                        ""
+                        "The NetrShareSetInfo method sets the parameters of a shared resource in a ShareList.",
+                "Attack_TTP": "T1222 - File and Directory Permissions Modification",
+                "Attack_Type": "Privilege Escalation",
+                "IOC": "Changes to network share permissions or settings, particularly those granting wider access or\n"
+                       "reducing security controls."
+            },
             18: {
-                "Method": "NetrShareDel",
+                "Method": "NetrShareDel/NetShareDel",
                 "Note": "Could be used post-compromise to remove evidence of unauthorized network shares.\n\n"
                         ""
                         "The NetrShareDel method deletes a share name from the ShareList, which disconnects all \n"
@@ -1498,16 +1507,6 @@ dcerpc_services = {
                 "Attack_Type": "Defense Evasion",
                 "IOC": "Deletion of network shares, possibly in an effort to cover tracks after data exfiltration or \n"
                        "unauthorized access."
-            },
-            17: {
-                "Method": "NetrShareSetInfo",
-                "Note": "May be exploited to change share permissions, allowing unauthorized data access.\n\n"
-                        ""
-                        "The NetrShareSetInfo method sets the parameters of a shared resource in a ShareList.",
-                "Attack_TTP": "T1222 - File and Directory Permissions Modification",
-                "Attack_Type": "Privilege Escalation",
-                "IOC": "Changes to network share permissions or settings, particularly those granting wider access or\n"
-                       "reducing security controls."
             }
         }
     },
