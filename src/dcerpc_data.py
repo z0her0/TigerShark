@@ -428,7 +428,7 @@ dcerpc_services = {
         "Version": "4.0",
         "Methods": {
             0: {
-                "Method": "IDL_DRSBind",
+                "Method": "IDL_DRSBind/DsBind",
                 "Note": "The IDL_DRSBind method creates a context handle that is necessary to call any other \n"
                         "method in this interface. This is like introducing yourself when you pick up the phone \n"
                         " and start a conversation.\n\n"
@@ -443,7 +443,7 @@ dcerpc_services = {
                        "exploitation or reconnaissance attempts."
             },
             1: {
-                "Method": "IDL_DRSUnbind",
+                "Method": "IDL_DRSUnbind/DsUnbind",
                 "Note": "The IDL_DRSUnbind method destroys a context handle previously created by the IDL_DRSBind\n"
                         "method. This is the equivalent of saying 'Goodbye' at the end of a phone call. After two \n"
                         "systems have finished communicating about replication, IDL_DRSUnbind is used to end the \n"
@@ -455,7 +455,7 @@ dcerpc_services = {
                        "of cleanup activities post-attack."
             },
             2: {
-                "Method": "IDL_DRSReplicaSync",
+                "Method": "IDL_DRSReplicaSync/DsReplicaSync",
                 "Note": "Triggers replication from another DC, which could be used in a DCSync attack to spread \n"
                         "malicious changes rapidly. This is like a request to immediately send out any new updates or\n"
                         "changes. It's like calling a friend and saying, 'Hi, if you have any new news, tell me now!'\n"
@@ -606,7 +606,7 @@ dcerpc_services = {
                        "data."
             },
             12: {
-                "Method": "IDL_DRSCrackNames",
+                "Method": "IDL_DRSCrackNames/DsCrackNames",
                 "Note": "Translates object names for replication changes, potentially used in reconnaissance to \n"
                         "map domain resources.\n\n"
                         ""
@@ -621,7 +621,7 @@ dcerpc_services = {
                 "IOC": "High volume of name resolution requests, potentially for account enumeration."
             },
             13: {
-                "Method": "IDL_DRSWriteAccountSpn",
+                "Method": "IDL_DRSWriteAccountSpn/DsWriteAccountSpn",
                 "Note": "Updates the set of SPNs on an object. "
                         ""
                         "Writing SPNs could be abused in a Kerberoasting attack to gain access to service account \n"
