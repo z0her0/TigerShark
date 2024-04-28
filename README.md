@@ -1,17 +1,13 @@
 # TigerShark - A Python Wrapper for TShark
 TigerShark is a Python script that provides a user-friendly interface for interacting with TShark, a network protocol analyzer. It allows you to perform various network analysis tasks, view statistics, and extract information from packet capture (PCAP) files. TigerShark simplifies the use of TShark's command-line capabilities and provides an easy-to-use menu-driven interface.
 
-## Usage
-1. Run `tiger_shark.py` and provide the path to a PCAP file when prompted.
-2. Choose from a variety of options in the interactive menu to perform specific tasks or analyses on the PCAP file.
-
 ## Requirements
-- Python 3.9+
-    - see `requirements.txt`
+- Python 3.9 - 3.12
+- see `requirements.txt`
 - Mac or Linux.
 - WireShark (Required tshark location on Mac: /Applications/Wireshark.app/Contents/MacOS/tshark)
 
-## Installation
+## Installation and Usage
 
 1. Clone the TigerShark repository to your local machine:
    ```
