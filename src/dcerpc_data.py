@@ -1,4 +1,4 @@
-"""  # pylint: disable=line-too-long
+"""
 Module: dcerpc_data
 
 Purpose: Defines the dcerpc_services dictionary which contains detailed information about various DCERPC services, including methods, notes, attack tactics, types, and indicators of compromise.
