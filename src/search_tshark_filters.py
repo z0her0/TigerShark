@@ -1,4 +1,4 @@
-"""  # pylint: disable=line-too-long
+"""
 This module provides functionality to interact with TShark, a network protocol analyzer,
 to retrieve and display valid display filters based on user-specified protocols. It is
 designed to assist users in identifying relevant TShark filters for their network analysis
