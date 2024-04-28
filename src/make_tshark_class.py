@@ -1,4 +1,4 @@
-"""  # pylint: disable=line-too-long
+"""
 This Python module provides a comprehensive interface to the TShark network protocol analyzer,
 enabling detailed analysis and reporting on network packet capture (pcap) files. It includes
 classes and methods for performing a variety of network analysis tasks, including enumerating
