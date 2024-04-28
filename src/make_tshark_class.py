@@ -88,23 +88,29 @@ class TShark:
         if not isinstance(numeric_level, int):
             raise ValueError(f'Invalid log level: {level}')
         logger.setLevel(numeric_level)
+        
         # Avoid adding handlers if they are already set up
         if logger.hasHandlers():
             logger.handlers.clear()
+        
         # Log format
         if not log_format:
             log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         formatter = logging.Formatter(log_format)
         try:
+            
             # Console handler
             if not suppress_output:
                 c_handler = logging.StreamHandler(sys.stdout)
                 c_handler.setFormatter(ColorfulFormatter(log_format or '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
                 logger.addHandler(c_handler)
+            
             # File handler with rotation
             if log_file:
+                
                 # Extract directory from log_file path
                 log_dir = os.path.dirname(log_file)
+                
                 # Check if the directory path is not empty
                 if log_dir:
                     os.makedirs(log_dir, exist_ok=True)
@@ -342,26 +348,35 @@ class TShark:
         list: A list of extracted IP addresses.
         """
         try:
+            
             # Log the initiation of a URL request
             self.logger.info("Sending request to URL: %s", url)
+            
             # Send a GET request to the specified URL
             response = requests.get(url)
+            
             # Raise an exception if the request returned an unsuccessful status code
             response.raise_for_status()
+            
             # Log the successful receipt of the response
             self.logger.info("Received response from URL successfully")
+            
             # Parse the HTML content of the response
             soup = BeautifulSoup(response.content, 'html.parser')
             ip_addresses = []
+            
             # Log the start of the HTML parsing process
             self.logger.info("Starting to parse the HTML content")
 
             # Iterate over all table rows (<tr>) in the HTML
             for row in soup.find_all('tr'):
+                
                 # Extract all table data (<td>) elements from the row
                 columns = row.find_all('td')
+                
                 # Check if the row has more than 2 columns (to avoid index errors)
                 if len(columns) > 2:
+                    
                     # Append the text from the third column to the ip_addresses list
                     ip_addresses.append(columns[2].text.strip())
 
@@ -416,6 +431,7 @@ class TShark:
                     #self.logger.info(f"Excluding IP {ip} based on WHOIS info")
                     excluded_ips.append(ip)
                 else:
+                    
                     # Print WHOIS info for IPs not in the exclusion list
                     print(whois_info)
 
@@ -554,6 +570,7 @@ class TShark:
 
     @staticmethod
     def highlight_brackets_and_colorize_words(text: str, bracket_color: str, word_color: str) -> str:
+        
         # Split the text by '[' and ']'
         parts = text.split('[')
         highlighted_text = parts[0]
@@ -561,6 +578,7 @@ class TShark:
         for part in parts[1:]:
             if ']' in part:
                 word, rest = part.split(']', 1)
+                
                 # Apply colors to the brackets and the word inside
                 highlighted_word = f"{bracket_color}[{Color.END}{word_color}{word}{Color.END}{bracket_color}]{Color.END}"
                 highlighted_text += highlighted_word + rest
@@ -622,6 +640,7 @@ class TShark:
         """
         Prints detailed information about a specific DCERPC service method.
         """
+        
         # Print the opnum and method name
         print(f"{Color.BOLD + Color.CYAN}- Opnum {opnum}:{Color.END}")
         print(f"  {Color.BOLD + Color.AQUA}Method{Color.END}: {Color.GREY}{method}{Color.END}")
@@ -653,14 +672,16 @@ class TShark:
             console = Console()
             for protocol, data in results.items():
                 field = fields[protocol]
+                
                 # Enhanced table with custom box and header style
                 table = Table(title=f"{field}: {protocol}")
                 table.add_column("Count", style="bold cyan", justify="right")
                 table.add_column(f"{protocol}", style=f"rgb({ColorRandomRGB.random_color()[0]},{ColorRandomRGB.random_color()[1]},{ColorRandomRGB.random_color()[2]})", overflow="fold")
+                
                 # Conditional row styling
                 for host, count in data:
                     style = "bold" if count > 100 else ""
-                    # table.add_row(str(count), host)
+                    #table.add_row(str(count), host)
                     table.add_row(str(count), host, style=style)
                 console.print(table)
             self.logger.debug(f"Results displayed for protocols: {list(results.keys())}")
@@ -697,31 +718,42 @@ class TShark:
 
             # Process TShark output to extract data for plotting
             times, frames, bytes_data = self._process_tshark_output(tshark_output)
+            
             # Calculate total duration based on the time intervals
             total_duration = times[-1] - times[0] if times else 0
+            
             # Create figure and axis objects
             fig, ax1 = plt.subplots(figsize=(15, 8))
             fig.patch.set_facecolor('lightgray')
             ax1.set_facecolor('lightblue')
+            
             # Plotting frames
             frame_line, = ax1.plot(times, frames, marker='o', color='blue', label='Frame Count')
+            
             # Set x-axis label
             ax1.set_xlabel(f"Time Intervals (s) - Total Duration: {total_duration} s", labelpad=15)
+            
             # Add additional text below the x-axis label for the chosen interval frequency
             ax1.text(0.5, -0.15, f"Interval Frequency: {interval_frequency} s",transform=ax1.transAxes, ha='center', va='center', fontsize=10)
+            
             # Plotting bytes on a secondary y-axis
             ax2 = ax1.twinx()
             bytes_line, = ax2.plot(times, bytes_data, marker='x', color='red', label='Byte Count')
+            
             # Ensure this matches ax1 for a consistent look
             ax2.set_facecolor("lightblue")
+            
             # Setting title
             plt.title(f"Network Traffic Patterns for IP {ip_address}")
+            
             # Creating combined legend for both lines
             lines = [frame_line, bytes_line]
             labels = [line.get_label() for line in lines]
             ax1.legend(lines, labels, loc='upper left')
+            
             # Explicitly adjust subplots to fit the figure area
             fig.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.17)
+            
             # Show grid and plot
             ax1.grid(True)
             plt.show()
@@ -749,11 +781,13 @@ class TShark:
         # Flag to start reading the table data
         start_reading = False
         for line in lines:
+            
             # Start reading after the table header is detected
             if line.startswith('| Interval'):
                 start_reading = True
                 continue
             if start_reading and line.startswith('|'):
+                
                 # Extract data from each line
                 parts = line.split('|')
                 if len(parts) >= 6:
@@ -761,13 +795,16 @@ class TShark:
                         interval = parts[1].strip()
                         frame_count = parts[3].strip()
                         byte_count = parts[4].strip()
+                        
                         # Extract the start of the interval
                         interval_start = interval.split('<>')[0].strip()
                         times.append(float(interval_start))
+                        
                         # Convert frame and byte counts to integers
                         frames.append(int(frame_count))
                         bytes_data.append(int(byte_count))
                     except ValueError:
+                        
                         # Skip lines that can't be parsed
                         continue
 
@@ -807,6 +844,7 @@ class TShark:
                 custom_field_options = input("Enter one or more custom field options (comma-separated): ")
                 self.logger.debug(f"Custom fields specified: {custom_field_options}")
                 output = self._run_tshark_command(options, custom_fields=custom_field_options)
+                
                 # Process the output if custom fields were specified
                 non_blank_lines = [line for line in output.splitlines() if line.strip()]
                 sorted_output = sorted(non_blank_lines, key=lambda x: x.split()[0])
@@ -973,6 +1011,7 @@ class TShark:
                         ask_protocol = input(
                             f"{Color.CYAN}Which protocol would you like to view conversations for? "
                             f"(bluetooth/eth/ip/tcp/usb/wlan){Color.END}: ")
+                        
                         # Dictionary mapping protocol names to TShark commands
                         protocol_commands: Dict[str, List[str]] = {
                             'bluetooth': ['conv,bluetooth'],
@@ -1105,9 +1144,11 @@ class TShark:
         """
         try:
             result = self.user_agent()
+            
             # Check if the result is a tuple or list with two elements
             if isinstance(result, (tuple, list)) and len(result) == 2:
                 user_agent_results, user_agent_fields = result
+                
                 # Check if user_agent_results and user_agent_fields are not None before using them
                 if user_agent_results is not None and user_agent_fields is not None:
                     self.display_results(user_agent_results, user_agent_fields)
@@ -1133,6 +1174,7 @@ class TShark:
             'http': (['http.request.full_uri'], 'http'),                # HTTP protocol, filter on requests
         }
         try:
+            
             # Prompt the user to select a protocol to search within the pcap file.
             ask_protocol = input(f"{Color.CYAN}Choose a protocol to search (dns, eth, http, smb2, tls){Color.END}: ")
 
