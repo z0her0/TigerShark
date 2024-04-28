@@ -1,4 +1,4 @@
-"""  # pylint: disable=line-too-long
+"""
 This module contains the functionality for generating a decorative banner art for a Python-based TShark wrapper
 application. The banner art, created using various ASCII characters and symbols, adds a unique and creative touch
 to the command-line interface of the application.
