@@ -30,6 +30,7 @@ def set_tshark_path() -> Tuple[str, str]:
     Raises:
         ValueError: If the host operating system is not supported.
     """
+    
     # Get the host operating system
     os_system = platform.system()
 
@@ -39,12 +40,14 @@ def set_tshark_path() -> Tuple[str, str]:
 
     # Check if the host operating system is macOS (Darwin)
     if os_system == 'Darwin':
+        
         # Set the paths for macOS
         tshark += '/Applications/Wireshark.app/Contents/MacOS/tshark'
         capinfo += '/Applications/Wireshark.app/Contents/MacOS/capinfos'
 
     # Check if the host operating system is Linux
     elif os_system == 'Linux':
+        
         # Set the paths for Linux
         tshark += '/usr/bin/tshark'
         capinfo += '/usr/bin/capinfos'
