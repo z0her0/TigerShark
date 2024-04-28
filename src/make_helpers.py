@@ -1,4 +1,4 @@
-"""  # pylint: disable=line-too-long
+"""
 This module provides utility functions and classes for working with TShark,
 a network protocol analyzer. It includes functionality to set the path for
 TShark based on the operating system, validate various types of user input
@@ -19,7 +19,6 @@ import platform
 from typing import Callable, Optional, Tuple
 
 
-# pylint: disable=line-too-long
 def set_tshark_path() -> Tuple[str, str]:
     """
     Set the paths for tshark and capinfos based on the host operating system.
