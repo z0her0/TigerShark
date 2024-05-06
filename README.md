@@ -5,7 +5,7 @@ TigerShark is a Python script that provides a user-friendly interface for intera
 - Python 3.9 - 3.12
 - see `requirements.txt`
 - Mac or Linux.
-- WireShark (Required tshark location on Mac: /Applications/Wireshark.app/Contents/MacOS/tshark)
+- WireShark (tshark)
 
 ## Installation and Usage
 
