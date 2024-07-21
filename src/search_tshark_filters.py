@@ -21,7 +21,6 @@ Example Usage:
 Run the script directly, and when prompted, enter a protocol name (e.g., 'dns') to see
 a list of related TShark display filters.
 """
-
 import subprocess
 from make_helpers import set_tshark_path
 
