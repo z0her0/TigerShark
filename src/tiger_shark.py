@@ -7,7 +7,6 @@ The program uses a command-line interface and expects the user to interact by en
 options from the presented menu. The TShark class methods are invoked based on the user's choices to analyze the PCAP data
 and provide results back to the user.
 """
-
 import os
 import ctypes
 import sys
