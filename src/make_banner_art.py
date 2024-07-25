@@ -1,7 +1,6 @@
 """
 This module contains the functionality for generating a decorative banner art for a Python-based TShark wrapper
-application. The banner art, created using various ASCII characters and symbols, adds a unique and creative touch
-to the command-line interface of the application.
+application. 
 
 Author: 4u7h0r (80y13)
 Created: July 2023
@@ -13,7 +12,7 @@ the start of the application.
 
 Usage:
 The `banner` variable, defined as a raw formatted string, can be printed to the console to display the art. It
-includes colorful elements and symbols to create an engaging visual.
+includes colorful elements and symbols.
 
 Dependencies:
 - The module relies on the `make_colorful` module for colorizing certain parts of the banner.
@@ -27,7 +26,6 @@ It's designed to be part of a larger application that provides network packet an
 
 This module is purely for aesthetic purposes and does not contain any functional logic related to packet analysis.
 """
-
 from make_colorful import Color
 
 
