@@ -13,7 +13,6 @@ Key components include:
 
 These utilities are designed to assist in automating and simplifying the usage of TShark in network analysis tasks.
 """
-
 import ipaddress
 import platform
 from typing import Callable, Optional, Tuple
@@ -29,7 +28,6 @@ def set_tshark_path() -> Tuple[str, str]:
     Raises:
         ValueError: If the host operating system is not supported.
     """
-    
     # Get the host operating system
     os_system = platform.system()
 
