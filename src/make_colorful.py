@@ -1,5 +1,8 @@
 """
-This module contains classes for color management in terminal applications. It provides classes for generating random RGB colors, representing RGB colors equivalent to ANSI codes, and managing custom text color codes for terminal output. The module is designed to enhance the visual appeal of CLI applications by allowing dynamic and colorful text displays.
+This module contains classes for color management in terminal applications. It provides classes for 
+generating random RGB colors, representing RGB colors equivalent to ANSI codes, and managing custom 
+text color codes for terminal output. The module is designed to enhance the visual appeal of CLI applications 
+by allowing dynamic and colorful text displays.
 
 Classes:
 - ColorRandomRGB: Generates random RGB color tuples.
@@ -7,9 +10,9 @@ Classes:
 - ColorCustom: Manages a set of custom color codes for terminal text.
 - Color: Defines standard and custom ANSI color codes for terminal text.
 
-The module is versatile, offering both predefined color sets and the capability to generate random colors, making it suitable for applications requiring dynamic color themes or specific color coding for text output.
+The module is versatile, offering both predefined color sets and the capability to generate random colors, making 
+it suitable for applications requiring dynamic color themes or specific color coding for text output.
 """
-
 import random
 # Import the random module to generate random numbers, shuffle sequences randomly, and choose random items.
 # This is used to generate different menu option colors each time you use TigerShark
@@ -37,7 +40,6 @@ class ColorRGB:
     This class provides RGB representations of common ANSI colors as well as some custom colors.
     It is useful for applications that need RGB values for color coding but want to maintain consistency with ANSI color schemes.
     """
-
     # Builtin colors (approximations)
     PURPLE = (128, 0, 128)  # Equivalent to ANSI 'Purple'
     CYAN = (0, 255, 255)    # Equivalent to ANSI 'Cyan'
@@ -85,7 +87,6 @@ class ColorCustom:
     This class manages a set of custom color codes, allowing for varied and vibrant text outputs in terminal applications.
     It randomly selects a color code upon instantiation, making each instance potentially unique in terms of color.
     """
-
     COLORS = [
         "\033[95m", "\033[96m", "\033[36m", "\033[35m", "\033[34m",
         "\033[94m", "\033[32m", "\033[92m", "\033[93m", "\033[33m",
@@ -108,7 +109,6 @@ class Color:
     Class to represent the text color codes used for terminal output.
     This class defines a range of color codes, including standard ANSI colors and custom colors, to be used for styling text in terminal applications. It provides an easy way to apply color coding to text output, enhancing readability and user experience.
     """
-
     # Cool Blues and Warm Yellows
     # Pair cool blues with warm yellows and golds for a classic complementary theme.
     BLUE = "\033[34m"
