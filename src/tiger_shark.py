@@ -32,15 +32,10 @@ MenuOptionsType = Dict[str, Dict[str, Union[str, ActionType]]]
 
 def clear_screen() -> None:
     """
-    Clears the console screen using alternative methods, instead of using shell commands.
+    Clears the console screen.
     """
-    # For Windows
-    if os.name == 'nt':
-        # We can use the ctypes library to call the Win32 API for clearing the console.
-        ctypes.windll.kernel32.SetConsoleCursorPosition(ctypes.windll.kernel32.GetStdHandle(-11), 0)
-    else:
-        # We can use an escape sequence to clear the terminal
-        print("\033c", end="")
+    # Escape sequence to clear the terminal
+    print("\033c", end="")
 
 
 def wait_for_menu() -> None:
