@@ -10,7 +10,6 @@ specific data from pcap files, such as WHOIS information, user agents, beacon-li
 and expert diagnostics. Additionally, the module contains utilities for user input validation and
 colorful terminal output to enhance user interaction.
 """
-
 import ipaddress
 import logging                                                  # Logging utility for debugging and error tracking
 import sys                                                      # System-specific parameters and functions
@@ -570,7 +569,6 @@ class TShark:
 
     @staticmethod
     def highlight_brackets_and_colorize_words(text: str, bracket_color: str, word_color: str) -> str:
-        
         # Split the text by '[' and ']'
         parts = text.split('[')
         highlighted_text = parts[0]
@@ -640,7 +638,6 @@ class TShark:
         """
         Prints detailed information about a specific DCERPC service method.
         """
-        
         # Print the opnum and method name
         print(f"{Color.BOLD + Color.CYAN}- Opnum {opnum}:{Color.END}")
         print(f"  {Color.BOLD + Color.AQUA}Method{Color.END}: {Color.GREY}{method}{Color.END}")
@@ -695,7 +692,6 @@ class TShark:
         Utilizes TShark for network traffic analysis and matplotlib for visualizing the patterns. Prompts for user
         input if ip_address or interval_frequency are not provided.
         """
-
         self.logger.info("Identifying beacon-like traffic patterns")
         try:
             if ip_address is None:
@@ -1174,7 +1170,6 @@ class TShark:
             'http': (['http.request.full_uri'], 'http'),                # HTTP protocol, filter on requests
         }
         try:
-            
             # Prompt the user to select a protocol to search within the pcap file.
             ask_protocol = input(f"{Color.CYAN}Choose a protocol to search (dns, eth, http, smb2, tls){Color.END}: ")
 
