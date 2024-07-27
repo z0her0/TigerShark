@@ -62,6 +62,9 @@ class ColorfulFormatter(logging.Formatter):
     RESET_CODE = Color.END
 
     def format(self, record):
+        """
+        Apply color codes to log messages based on their severity level.
+        """
         color_code = self.COLOR_CODES.get(record.levelno)
         message = super().format(record)
         return f"{color_code}{message}{self.RESET_CODE}" if color_code else message
@@ -86,6 +89,7 @@ class TShark:
         numeric_level = getattr(logging, level.upper(), None)
         if not isinstance(numeric_level, int):
             raise ValueError(f'Invalid log level: {level}')
+
         logger.setLevel(numeric_level)
         
         # Avoid adding handlers if they are already set up
@@ -95,9 +99,10 @@ class TShark:
         # Log format
         if not log_format:
             log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
         formatter = logging.Formatter(log_format)
+
         try:
-            
             # Console handler
             if not suppress_output:
                 c_handler = logging.StreamHandler(sys.stdout)
@@ -106,18 +111,20 @@ class TShark:
             
             # File handler with rotation
             if log_file:
-                
                 # Extract directory from log_file path
                 log_dir = os.path.dirname(log_file)
                 
                 # Check if the directory path is not empty
                 if log_dir:
                     os.makedirs(log_dir, exist_ok=True)
+
                 f_handler = RotatingFileHandler(log_file, maxBytes=max_log_size, backupCount=backup_count)
                 f_handler.setFormatter(formatter)
                 logger.addHandler(f_handler)
+
         except Exception as e:
             print(f"Error setting up logger: {e}", file=sys.stderr)
+
         return logger
 
     def __init__(self, pcap_file: str) -> None:
@@ -128,6 +135,7 @@ class TShark:
         self.pcap_file: str = pcap_file
         self.logger.info(f"TShark initialized with pcap file: {self.pcap_file}")
         self.proc: Optional[subprocess.CompletedProcess] = None
+
         if not os.path.isfile(tshark):
             self.logger.error(f'TShark not found at specified path: {tshark}')
             print("\n")
@@ -146,6 +154,7 @@ class TShark:
                                                                             check=False)
             self.logger.debug(f"Command executed: {' '.join(cmd)}")
             return completed_process.stdout.decode()
+
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Command execution failed: {e}", exc_info=True)
 
@@ -255,11 +264,13 @@ class TShark:
         }
         results = {}
         fields = {}
+
         for protocol, params in protocols.items():
             filter, field = params
             output = self._run_tshark_command(['-Y', filter, '-T', 'fields', '-e', field])
             results[protocol] = self.process_output_host_user_enum(output)
             fields[protocol] = field
+
         return results, fields
 
     def user_enum(self) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, str]]:
@@ -267,7 +278,6 @@ class TShark:
         Enumerates users for different protocols by running tshark commands.
         """
         self.logger.info("Enumerating users for different protocols")
-
         protocols = {
             'samr': ['samr', 'samr.samr_LookupNames.names'],
             'ldap': ['ldap contains "CN=Users"', 'ldap.baseObject'],
@@ -276,16 +286,20 @@ class TShark:
         }
         results = {}
         fields = {}
+
         try:
             for protocol, params in protocols.items():
                 filter, field = params
                 output = self._run_tshark_command(['-Y', filter, '-T', 'fields', '-e', field])
                 results[protocol] = self.process_output_host_user_enum(output)
                 fields[protocol] = field
+
             return results, fields
+
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Failed to run TShark command for user enumeration: {e}", exc_info=True)
             return {}, {}
+
         except ValueError as e:
             self.logger.error(f"Invalid value encountered during user enumeration: {e}", exc_info=True)
             return {}, {}
@@ -299,6 +313,7 @@ class TShark:
             info = self.run_command([capinfo, self.pcap_file])
             self.logger.debug(f"PCAP Info: {info}")
             return info
+
         except Exception as e:
             self.logger.error(f"Error retrieving pcap info: {e}", exc_info=True)
             return ""
@@ -318,6 +333,7 @@ class TShark:
             chat_info = self._run_tshark_command(['-qz', 'expert,chat'])
             self.logger.info("Expert chat information retrieved successfully.")
             return chat_info
+
         except Exception as e:
             self.logger.error(f"Error in expert_chat method: {e}", exc_info=True)
 
@@ -330,6 +346,7 @@ class TShark:
             failed_conns = self._run_tshark_command(['-Y', 'tcp.analysis.retransmission and tcp.flags eq 0x0002'])
             self.logger.info("Failed connections information retrieved successfully.")
             return failed_conns
+
         except Exception as e:
             self.logger.error(f"Error in failed_connections method: {e}", exc_info=True)
 
@@ -347,7 +364,6 @@ class TShark:
         list: A list of extracted IP addresses.
         """
         try:
-            
             # Log the initiation of a URL request
             self.logger.info("Sending request to URL: %s", url)
             
@@ -369,19 +385,19 @@ class TShark:
 
             # Iterate over all table rows (<tr>) in the HTML
             for row in soup.find_all('tr'):
-                
                 # Extract all table data (<td>) elements from the row
                 columns = row.find_all('td')
                 
                 # Check if the row has more than 2 columns (to avoid index errors)
                 if len(columns) > 2:
-                    
                     # Append the text from the third column to the ip_addresses list
                     ip_addresses.append(columns[2].text.strip())
 
             # Log the completion of the HTML parsing
             self.logger.info("Completed parsing HTML content")
+
             return ip_addresses
+
         except requests.RequestException as e:
             print(f"An error occurred: {e}")
             return []
@@ -412,13 +428,13 @@ class TShark:
             check_tshark_output = self._run_tshark_command(['-T', 'fields', '-e', 'ip.dst'])
             tshark_dest_ips = check_tshark_output.strip().splitlines()
             unique_ips = set(filter(None, tshark_dest_ips))
-
             suspicious_ips = set(blackips) & set(unique_ips)
 
             for ip in unique_ips:
                 try:
                     if ipaddress.ip_address(ip).is_private:
                         continue
+
                 except ValueError as e:
                     self.logger.error(f"Invalid IP address format: {ip} - {e}")
                     continue  # Skip invalid IP formats
@@ -430,7 +446,6 @@ class TShark:
                     #self.logger.info(f"Excluding IP {ip} based on WHOIS info")
                     excluded_ips.append(ip)
                 else:
-                    
                     # Print WHOIS info for IPs not in the exclusion list
                     print(whois_info)
 
@@ -506,6 +521,7 @@ class TShark:
                 ['-Y', 'arp.packet-storm-detected', '-T', 'fields', '-e', 'arp.packet-storm-detected'])
             self.logger.info("ARP poisoning search completed")
             return arp_duplicate_address, arp_packet_storm
+
         except Exception as e:
             self.logger.error(f"Error during ARP poisoning search: {e}", exc_info=True)
             return "", ""
@@ -528,6 +544,7 @@ class TShark:
             fields_dict = {"HTTP User Agents": "User Agent"}
             self.logger.info("HTTP user agents extracted successfully")
             return formatted_results, fields_dict
+
         except Exception as e:
             self.logger.error(f"Error extracting HTTP user agents: {e}", exc_info=True)
             return {}, {}
@@ -543,12 +560,16 @@ class TShark:
                 ['-Y', '(http.request or http.response or tls.handshake.type eq 1) and !(ssdp)'])
             self.logger.info("Web traffic information extracted successfully")
             return web_traffic_info
+
         except Exception as e:
             self.logger.error(f"Error in extracting web traffic information: {e}", exc_info=True)
             return ""
 
     @staticmethod
     def display_options(services_list):
+        """
+        Display a list of service options with color formatting.
+        """
         header_color = Color.BOLD + Color.LIGHTYELLOW
         service_name_color = Color.BOLD + Color.AQUA
 
@@ -558,6 +579,9 @@ class TShark:
 
     @staticmethod
     def highlight_special_chars(text: str, highlight_color: str) -> str:
+        """
+        Highlight specific special characters in the input text with the given color.
+        """
         special_chars = ['(', ')', '/']
         colored_text = ""
         for char in text:
@@ -569,6 +593,9 @@ class TShark:
 
     @staticmethod
     def highlight_brackets_and_colorize_words(text: str, bracket_color: str, word_color: str) -> str:
+        """
+        Highlight brackets and colorize words inside the brackets in the given text.
+        """
         # Split the text by '[' and ']'
         parts = text.split('[')
         highlighted_text = parts[0]
@@ -754,6 +781,7 @@ class TShark:
             ax1.grid(True)
             plt.show()
             self.logger.debug(f"Beacon-like traffic patterns identified and plotted for IP: {ip_address}")
+
         except ValueError as e:
             self.logger.error(f"Error in input validation for beacon-like pattern detection: {e}", exc_info=True)
         except Exception as e:
@@ -777,13 +805,11 @@ class TShark:
         # Flag to start reading the table data
         start_reading = False
         for line in lines:
-            
             # Start reading after the table header is detected
             if line.startswith('| Interval'):
                 start_reading = True
                 continue
             if start_reading and line.startswith('|'):
-                
                 # Extract data from each line
                 parts = line.split('|')
                 if len(parts) >= 6:
@@ -800,7 +826,6 @@ class TShark:
                         frames.append(int(frame_count))
                         bytes_data.append(int(byte_count))
                     except ValueError:
-                        
                         # Skip lines that can't be parsed
                         continue
 
@@ -847,11 +872,14 @@ class TShark:
                 counts = Counter(sorted_output)
                 sorted_by_count_output = '\n'.join(f'{count} {line}' for line, count in counts.most_common())
                 self.logger.debug("Display filter applied with custom fields")
+
                 return sorted_by_count_output
+
             else:
                 output = self._run_tshark_command(options)
                 self.logger.debug("Display filter applied without custom fields")
                 return output
+
         except Exception as e:
             self.logger.error(f"Error applying display filter: {e}", exc_info=True)
             return ""
@@ -1000,8 +1028,12 @@ class TShark:
                 f"{Color.LAVENDER}What type of statistics do you want to view (conv/hosts/srt/tree)?\nEnter your choice or 'exit' to quit:  {Color.END}: ")
             if which_stats.lower() == 'exit':
                 break
+
             try:
                 def conversations() -> None:
+                    """
+                    Prompt the user to select a protocol and display the corresponding conversation statistics
+                    """
                     self.logger.info("Viewing conversation statistics")
                     try:
                         ask_protocol = input(
@@ -1027,6 +1059,9 @@ class TShark:
                         self.logger.error(f"Error displaying conversations: {er}", exc_info=True)
 
                 def _server_resp_times() -> None:
+                    """
+                    Display server response times for selected protocols.
+                    """
                     self.logger.info("Viewing server response times")
                     try:
                         ask_protocol = input(
@@ -1055,6 +1090,9 @@ class TShark:
                         self.logger.error(f"Error displaying server response times: {er}", exc_info=True)
 
                 def tree() -> None:
+                    """
+                    Display tree statistics for selected protocols.
+                    """
                     self.logger.info("Viewing tree statistics")
                     try:
                         ask_protocol = input(
@@ -1080,6 +1118,9 @@ class TShark:
                         self.logger.error(f"Error displaying tree statistics: {er}", exc_info=True)
 
                 def hosts() -> None:
+                    """
+                    Display host listings.
+                    """
                     self.logger.info("Viewing host listings")
                     try:
                         tshark_command = ['-qz', 'hosts,ip']
