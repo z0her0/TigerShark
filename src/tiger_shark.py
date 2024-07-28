@@ -117,13 +117,11 @@ def main() -> None:
         },
         "7": {
             "description": "Follow TCP Stream",
-            "action": lambda: print(
-                f"{TShark(pcap_file=ask_user_input).tcp_stream()}")
+            "action": lambda: print(f"{TShark(pcap_file=ask_user_input).tcp_stream()}")
         },
         "8": {
             "description": "Follow HTTP Stream",
-            "action": lambda: print(
-                f"{TShark(pcap_file=ask_user_input).http_stream()}")
+            "action": lambda: print(f"{TShark(pcap_file=ask_user_input).http_stream()}")
         },
         "9": {
             "description": "Show Packets",
