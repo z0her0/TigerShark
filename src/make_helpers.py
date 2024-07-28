@@ -10,8 +10,6 @@ Key components include:
 - `is_valid_ipv4_address()`, `is_valid_interval()`, `is_valid_digit()`: Functions to validate user input.
 - `get_input_opnum()`, `input_prompt()`: Functions to prompt and validate user input.
 - `process_output()`: Processes the raw output from TShark commands, with special handling for HTTP and DNS protocols.
-
-These utilities are designed to assist in automating and simplifying the usage of TShark in network analysis tasks.
 """
 import ipaddress
 import platform
