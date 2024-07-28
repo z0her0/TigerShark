@@ -1,17 +1,13 @@
 """
-This module contains classes for color management in terminal applications. It provides classes for 
+This module contains classes for color management. It provides classes for 
 generating random RGB colors, representing RGB colors equivalent to ANSI codes, and managing custom 
-text color codes for terminal output. The module is designed to enhance the visual appeal of CLI applications 
-by allowing dynamic and colorful text displays.
+text color codes for terminal output. 
 
 Classes:
 - ColorRandomRGB: Generates random RGB color tuples.
 - ColorRGB: Represents RGB colors corresponding to standard ANSI color codes.
 - ColorCustom: Manages a set of custom color codes for terminal text.
 - Color: Defines standard and custom ANSI color codes for terminal text.
-
-The module is versatile, offering both predefined color sets and the capability to generate random colors, making 
-it suitable for applications requiring dynamic color themes or specific color coding for text output.
 """
 import random
 # Import the random module to generate random numbers, shuffle sequences randomly, and choose random items.
