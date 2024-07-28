@@ -1,9 +1,4 @@
 """
-This module provides functionality to interact with TShark, a network protocol analyzer,
-to retrieve and display valid display filters based on user-specified protocols. It is
-designed to assist users in identifying relevant TShark filters for their network analysis
-tasks, particularly focusing on filters that contain string fields.
-
 The module utilizes the 'subprocess' library to execute TShark commands and processes
 the output to extract and print the desired filter information. Users are prompted to
 input a protocol name, and the module then lists all the valid display filters associated
@@ -12,14 +7,6 @@ with that protocol, emphasizing those that contain string fields.
 Key Functions:
 - valid_display_filters_tshark: Prompts the user for a protocol and prints valid TShark
   display filters related to that protocol, specifically targeting filters with string fields.
-
-The module is intended to be run as a standalone script, where it executes the
-valid_display_filters_tshark function on launch, providing a user-friendly interface
-for querying TShark display filters.
-
-Example Usage:
-Run the script directly, and when prompted, enter a protocol name (e.g., 'dns') to see
-a list of related TShark display filters.
 """
 import subprocess
 from make_helpers import set_tshark_path
