@@ -1,7 +1,7 @@
 """
 This module provides an interactive menu-driven interface for analyzing PCAP files using TShark, a network protocol analyzer.
 It allows users to perform various operations such as getting PCAP information, viewing protocol statistics, following streams,
-enumerating hosts and users, and more. Rich library is used to create a colorful terminal interface, enhancing user experience.
+enumerating hosts and users, and more.
 
 The program uses a command-line interface and expects the user to interact by entering the path to a PCAP file and selecting
 options from the presented menu. The TShark class methods are invoked based on the user's choices to analyze the PCAP data
