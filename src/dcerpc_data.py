@@ -1,18 +1,15 @@
 """
 Module: dcerpc_data
 
-Purpose: Defines the dcerpc_services dictionary which contains detailed information about various DCERPC services, including methods, notes, attack tactics, types, and indicators of compromise.
+Purpose: Defines the dcerpc_services dictionary which contains detailed information about various DCERPC services, 
+including methods, notes, attack tactics, types, and indicators of compromise.
 
 Functionality: Provides a comprehensive data source for DCERPC service information.
 
 Focus on being purely a data repository.
 
 Contains structured data on DCERPC services, including methods and security implications.
-
-Avoids any data processing or retrieval logic, making it a clean and dedicated data storage module.
-
 """
-
 from typing import Dict, TypedDict
 
 
