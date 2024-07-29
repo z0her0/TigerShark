@@ -1,18 +1,7 @@
 """
 WORK IN PROGESS
 
-make_help.py
-============
-
-This module provides help and documentation for the colorful, music-themed CLI application for TShark interaction.
-
-Functions:
-    show_help() -> None:
-        Displays the general help message and then prompts the user for an option to display detailed help.
-
-Usage:
-    Import this module in your main CLI application script and call `show_help()`
-    to display help information.
+Displays the general help message and then prompts the user for an option to display detailed help.
 """
 from make_colorful import Color
 
