@@ -1,9 +1,8 @@
 """
-This module provides utility functions and classes for working with TShark,
-a network protocol analyzer. It includes functionality to set the path for
-TShark based on the operating system, validate various types of user input
-(such as IP addresses, intervals, and numeric digits), and process the
-output of TShark commands.
+This module provides utility functions and classes for working with TShark. 
+It includes functionality to set the path for TShark based on the operating system, 
+validate various types of user input (such as IP addresses, intervals, and numeric digits), 
+and process the output of TShark commands.
 
 Key components include:
 - `set_tshark_path()`: Determines the correct path for TShark and Capinfos executables.
