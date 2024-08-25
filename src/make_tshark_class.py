@@ -1,46 +1,39 @@
 """
-This Python module provides a comprehensive interface to the TShark network protocol analyzer,
-enabling detailed analysis and reporting on network packet capture (pcap) files. It includes
-classes and methods for performing a variety of network analysis tasks, including enumerating
-hosts and users, following TCP and HTTP streams, detecting ARP poisoning, and more.
-
-The TShark class at the core of this module acts as a wrapper around TShark command-line
-utilities, offering Pythonic access to its rich feature set. It includes methods for extracting
-specific data from pcap files, such as WHOIS information, user agents, beacon-like traffic patterns,
-and expert diagnostics. Additionally, the module contains utilities for user input validation and
-colorful terminal output to enhance user interaction.
+A custom TShark class is at the core of this module and acts as a wrapper around TShark command-line
+utilities. The class includes methods for extracting specific data from pcap files, such as WHOIS information, 
+user agents, and a couple dozen more different types of information.
 """
 import ipaddress
-import logging                                                  # Logging utility for debugging and error tracking
-import sys                                                      # System-specific parameters and functions
-import os                                                       # Operating system interfaces
-import subprocess                                               # Process creation and management
-import requests                                                 # Simplifies making HTTP requests in Python
-from collections import Counter                                 # Container for counting hashable objects
-from typing import Optional, Dict, List, Tuple, Any, Union      # Type hinting and generic types for better code clarity
-from logging.handlers import RotatingFileHandler                # Logging handler for log file rotation
-import warnings                                                 # Used to issue warning messages in the code
-from urllib3.exceptions import InsecureRequestWarning           # Warning for requests made to insecure URLs (non-HTTPS)
+import logging
+import sys
+import os
+import subprocess
+import requests
+from collections import Counter
+from typing import Optional, Dict, List, Tuple, Any, Union
+from logging.handlers import RotatingFileHandler
+import warnings
+from urllib3.exceptions import InsecureRequestWarning
 
 from bs4 import BeautifulSoup
-import matplotlib.pyplot as plt                                 # Plotting library for creating graphs and charts
-from rich.table import Table                                    # Rich library component for creating formatted tables
-from rich.console import Console                                # Rich library component for enhanced console output
-import dns.resolver                                             # Used for querying DNS servers to retrieve DNS records
+import matplotlib.pyplot as plt
+from rich.table import Table
+from rich.console import Console
+import dns.resolver
 
-from make_colorful import Color, ColorRandomRGB                 # Terminal color output utility
-from dcerpc_data import dcerpc_services                         # MSRPC to ATT&CK lookup table
+from make_colorful import Color, ColorRandomRGB
+from dcerpc_data import dcerpc_services
 from dcerpc_method_abuse_notes import (
     get_dcerpc_info,
     list_methods,
     enhanced_search)
 from make_helpers import (
-    input_prompt,                                               # Standardized user input prompt
-    is_valid_interval,                                          # Interval validation
-    is_valid_digit,                                             # Digit validation
-    is_valid_ipv4_address,                                      # IPv4 address validation
-    set_tshark_path,                                            # Set the path to the tshark application
-    get_input_opnum,                                            # Get and validate user input
+    input_prompt,
+    is_valid_interval,
+    is_valid_digit,
+    is_valid_ipv4_address,
+    set_tshark_path,
+    get_input_opnum,
 )
 
 
