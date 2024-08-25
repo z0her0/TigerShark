@@ -32,9 +32,6 @@ class ColorRandomRGB:
 class ColorRGB:
     """
     Class to represent RGB color values equivalent to the ANSI color codes.
-
-    This class provides RGB representations of common ANSI colors as well as some custom colors.
-    It is useful for applications that need RGB values for color coding but want to maintain consistency with ANSI color schemes.
     """
     # Builtin colors (approximations)
     PURPLE = (128, 0, 128)  # Equivalent to ANSI 'Purple'
@@ -79,9 +76,6 @@ class ColorRGB:
 class ColorCustom:
     """
     Class to represent the text color codes used for terminal output.
-
-    This class manages a set of custom color codes, allowing for varied and vibrant text outputs in terminal applications.
-    It randomly selects a color code upon instantiation, making each instance potentially unique in terms of color.
     """
     COLORS = [
         "\033[95m", "\033[96m", "\033[36m", "\033[35m", "\033[34m",
@@ -103,7 +97,6 @@ class ColorCustom:
 class Color:
     """
     Class to represent the text color codes used for terminal output.
-    This class defines a range of color codes, including standard ANSI colors and custom colors, to be used for styling text in terminal applications. It provides an easy way to apply color coding to text output, enhancing readability and user experience.
     """
     # Cool Blues and Warm Yellows
     # Pair cool blues with warm yellows and golds for a classic complementary theme.
