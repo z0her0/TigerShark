@@ -1,11 +1,13 @@
 """
-This module provides an interactive menu-driven interface for analyzing PCAP files using TShark, a network protocol analyzer.
+This module creates an interactive menu-driven interface for analyzing PCAP files using TShark, a network protocol analyzer.
 It allows users to perform various operations such as getting PCAP information, viewing protocol statistics, following streams,
-enumerating hosts and users, and more.
+enumerating hosts and users, and much more.
 
 The program uses a command-line interface and expects the user to interact by entering the path to a PCAP file and selecting
 options from the presented menu. The TShark class methods are invoked based on the user's choices to analyze the PCAP data
 and provide results back to the user.
+
+When in doubt, press ENTER.
 """
 import os
 import ctypes
