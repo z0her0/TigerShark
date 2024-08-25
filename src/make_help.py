@@ -1,5 +1,5 @@
 """
-WORK IN PROGESS
+!!!!!!!!!!!!!!!!WORK IN PROGESS!!!!!!!!!!!!!!!!
 
 Displays the general help message and then prompts the user for an option to display detailed help.
 """
@@ -8,7 +8,7 @@ from make_colorful import Color
 
 def show_help(option: int = None) -> None:
     """
-    Displays detailed help for each menu option in the TigerShark CLI application or a specific option if provided.
+    Displays detailed help for each menu option.
 
     Args:
         option (str, optional): The menu option for which detailed help is requested.
@@ -76,7 +76,8 @@ def show_help(option: int = None) -> None:
                 option = int(user_input)
                 if option in detailed_help:
                     print(detailed_help[option])
-                    input("\nPress Enter to return to the main menu...")  # Wait for user to read details
+                    # Wait for user to read details
+                    input("\nPress Enter to return to the main menu...")
                 else:
                     print("No detailed help available for this option.")
 
