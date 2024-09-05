@@ -45,3 +45,5 @@ TigerShark is a Python script that provides a user-friendly interface for intera
    ```
 
 8. Press ENTER to display the main menu.
+   
+![tigershark_premenu](https://github.com/user-attachments/assets/dcf9cb6d-e1aa-4dd5-be98-247a6c0087d1)
